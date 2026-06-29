@@ -78,6 +78,15 @@ void my_disp_flush(lv_display_t *disp, const lv_area_t *area, uint8_t * px_map) 
   uint32_t w = (area->x2 - area->x1 + 1);
   uint32_t h = (area->y2 - area->y1 + 1);
   
+  USBSerial.printf(
+      "Flush (%d,%d)-(%d,%d) w=%d h=%d\n",
+      area->x1,
+      area->y1,
+      area->x2,
+      area->y2,
+      w,
+      h
+  );
   gfx->draw16bitRGBBitmap(area->x1, area->y1, (uint16_t *)px_map, w, h);
   lv_display_flush_ready(disp);
 }
@@ -112,13 +121,13 @@ void vTaskBackground(void *pvParameters) {
   fetch_and_sync_time();
 
   while(1) {
-    unsigned long currentMillis = millis();
+    // unsigned long currentMillis = millis();
     read_battery_sensor();
 
-    if(currentMillis - previous_millis >= wifi_interval) {
-      previous_millis = currentMillis;
-      USBSerial.println("Wifi turneed on and fetched the data");
-    }
+    // if(currentMillis - previous_millis >= wifi_interval) {
+    //   previous_millis = currentMillis;
+    //   USBSerial.println("Wifi turneed on and fetched the data");
+    // }
     vTaskDelay(pdMS_TO_TICKS(3000)); // Run every 3 seconds
   }
 }
@@ -129,6 +138,17 @@ void vTaskBackground(void *pvParameters) {
 void vTaskGui(void *pvParameters) {
   while(1) {
     lv_timer_handler(); // Drive the GUI engine
+
+    static uint32_t last = 0;
+    if (millis() - last > 2000)
+    {
+        last = millis();
+
+        USBSerial.printf(
+            "GUI Stack Free = %u bytes\n",
+            uxTaskGetStackHighWaterMark(NULL) * sizeof(StackType_t)
+        );
+    }
     vTaskDelay(pdMS_TO_TICKS(5));  // 5ms delay as used in standard LVGL loops
   }
 }
@@ -146,7 +166,7 @@ uint32_t my_tick_function() {
 void setup() {
 
   // Set the CPU Frequency to 160MHz
-  setCpuFrequencyMhz(160); 
+  // setCpuFrequencyMhz(160); 
 
   USBSerial.begin(115200);
   delay(1000);
@@ -176,16 +196,18 @@ void setup() {
 
   // Init the lock
   i2c_mutex = xSemaphoreCreateMutex();
+  USBSerial.println("Lock initialised");
 
   // ACTIVATE LVGL V9 MATRIX
   lv_init();
   lv_tick_set_cb(my_tick_function); 
+  USBSerial.println("LVL9 initialised");
 
   // Create the Screen Buffer
-  static uint8_t draw_buf[LCD_WIDTH * 120 * 2];
+  static uint8_t draw_buf1[LCD_WIDTH * 20 * 2];
   lv_display_t * disp = lv_display_create(LCD_WIDTH, LCD_HEIGHT);
   lv_display_set_flush_cb(disp, my_disp_flush);
-  lv_display_set_buffers(disp, draw_buf, NULL, sizeof(draw_buf), LV_DISPLAY_RENDER_MODE_PARTIAL);
+  lv_display_set_buffers(disp, draw_buf1, NULL, sizeof(draw_buf1), LV_DISPLAY_RENDER_MODE_PARTIAL);
 
   // Connect the Touch Input
   lv_indev_t * indev = lv_indev_create();
@@ -194,6 +216,20 @@ void setup() {
 
   // LOAD THE EEZ STUDIO UI
   ui_init();
+  ui_tick();
+  USBSerial.println("UI initialised");
+
+  USBSerial.printf("Home     : %p\n", objects.home_screen);
+  USBSerial.printf("Weather  : %p\n", objects.weather_screen);
+  USBSerial.printf("News     : %p\n", objects.news_screen);
+  USBSerial.printf("Settings : %p\n", objects.settings_screen);
+  USBSerial.printf("Drawer   : %p\n", objects.app_drawer_screen);
+
+  USBSerial.printf("Heap: %u\n", ESP.getFreeHeap());
+  USBSerial.printf(
+    "Largest DMA Block: %u\n",
+    heap_caps_get_largest_free_block(MALLOC_CAP_DMA)
+  );  
 
   // Create the 1-second recurring clock update timer
   lv_timer_create(clock_timer_cb, 1000, NULL);
@@ -202,7 +238,7 @@ void setup() {
   xTaskCreatePinnedToCore(
     vTaskBackground,       // Task function
     "TaskBackground",      // Name of task
-    8192,                  // Stack size
+    4096,                  // Stack size
     NULL,                  // Parameter
     1,                     // Priority
     &TaskBackgroundHandle, // Task handle
@@ -213,11 +249,11 @@ void setup() {
   xTaskCreatePinnedToCore(
     vTaskGui,              // Task function
     "TaskGui",             // Name of task
-    8192,                  // Stack size
+    16384,                 // Stack size
     NULL,                  // Parameter
     2,                     // Priority (higher priority for smooth UI)
     &TaskGuiHandle,        // Task handle
-    1                      // Pin to core 1
+    1                    // Pin to core 1
   );
 }
 

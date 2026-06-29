@@ -7,7 +7,8 @@
 extern "C" {
 #endif
 
-extern void action_action_navigate_gesture(lv_event_t * e);
+extern void action_move_to_next_screen(lv_event_t * e);
+extern void action_navigate_gesture(lv_event_t * e);
 
 #ifdef __cplusplus
 }

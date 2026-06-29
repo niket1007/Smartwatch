@@ -27,7 +27,7 @@ lv_obj_t* get_screen(int number) {
     }
 }
 
-void action_action_navigate_gesture(lv_event_t * e) {
+void action_navigate_gesture(lv_event_t * e) {
 
   // if(global_battery_percentage > 30) {
     int current_screen = (int)(intptr_t)lv_event_get_user_data(e);
@@ -96,13 +96,19 @@ void action_action_navigate_gesture(lv_event_t * e) {
             dir
         );
 
-        lv_screen_load_anim(
-            get_screen(next_screen),
-            animate,
-            250,
-            0,
-            false
+        lv_obj_t *scr = get_screen(next_screen);
+
+        USBSerial.println("Before async");
+
+        lv_async_call(
+            [](void *p)
+            {
+                lv_screen_load((lv_obj_t *)p);
+            },
+            scr
         );
+
+        USBSerial.println("After async");
     }
   // }
 }
