@@ -3,10 +3,10 @@
 #include <lvgl.h>
 
 #include "globals.h"
-#include "navigation_manager.h"
-#include "rtc_datetime_manager.h"
-#include "battery_manager.h"
-#include "lvgl_manager.h"
+#include "src/manager/navigation_manager.h"
+#include "src/manager/rtc_datetime_manager.h"
+#include "src/manager/battery_manager.h"
+#include "src/manager/lvgl_manager.h"
 
 Arduino_DataBus *bus = new Arduino_ESP32QSPI(
   LCD_CS /* CS */, LCD_SCLK /* SCK */, LCD_SDIO0 /* SDIO0 */, LCD_SDIO1 /* SDIO1 */,
@@ -42,9 +42,14 @@ SemaphoreHandle_t i2c_mutex;
 TaskHandle_t task_gui_handle = NULL;
 TaskHandle_t task_background_handle = NULL;
 
+volatile bool lvgl_boot_complete = false;
+
 // Interval variables
 int wifi_interval = 10;
-unsigned long previous_millis = 0;
+unsigned long previous_millis_datetime = 0;
+unsigned long previous_millis_battery = 0;
+unsigned long previous_millis_read_battery = 0;
+
 // ################# Variable End #################
 
 
@@ -76,47 +81,84 @@ bool lvgl_get_touch(int16_t &x, int16_t &y) {
 // CLOCK BACKEND TIMER CALLBACK
 // ==========================================================
 static void clock_timer_cb(lv_timer_t *timer) {
-  update_datetime_ui();
-  update_battery_ui();
+  // Reserved for internal layout synchronization hooks
 }
 
 // ==========================================================
-// Task for Core 0: Handling sensors/time in the background
+// Isolated One-Time Network Time Synchronization Task
+// ==========================================================
+void task_time_sync_worker(void *pvParameters) {
+  while (!lvgl_boot_complete) {
+    vTaskDelay(pdMS_TO_TICKS(100));
+  }
+  
+  vTaskDelay(pdMS_TO_TICKS(500)); 
+  
+  usb_serial.println("[WiFi] UI Boot Complete. Launching network sync safely...");
+  // fetch_and_sync_time();
+  usb_serial.println("[WiFi] Time sync completed successfully. Terminating worker thread.");
+  
+  vTaskDelete(NULL); 
+}
+
+// ==========================================================
+// Task for Core 0: Handling hardware sensors on a dedicated core
+// ==========================================================
+// ==========================================================
+// Task for Core 0: Handling sensors in the background
 // ==========================================================
 void task_background(void *pvParameters) {
-  // Sync time via Wi-Fi & update RTC
-  fetch_and_sync_time();
+  // CRITICAL FLUSH PROTECTION BUFFER:
+  // Let Core 1 completely process setup handoff, enter task_gui, 
+  // and load the initial watch layout arrays into stable memory.
+  vTaskDelay(pdMS_TO_TICKS(1500)); 
+
+  unsigned long last_battery_check = 0;
 
   while(1) {
-    // unsigned long currentMillis = millis();
-    read_battery_sensor();
+    unsigned long now = millis();
 
-    // if(currentMillis - previous_millis >= wifi_interval) {
-    //   previous_millis = currentMillis;
-    //   usb_serial.println("Wifi turneed on and fetched the data");
-    // }
-    vTaskDelay(pdMS_TO_TICKS(3000)); // Run every 3 seconds
+    // Use our clean non-blocking tracking timer structure
+    if (now - last_battery_check >= 5000) {
+      last_battery_check = now;
+      
+      // Thread-safe lock ensures no collision happens with touch scanning
+      if (xSemaphoreTake(i2c_mutex, pdMS_TO_TICKS(50))) {
+        read_battery_sensor();
+        xSemaphoreGive(i2c_mutex);
+      }
+    }
+
+    // Keep this short 50ms block so the IDLE0 task can clear stack canaries
+    vTaskDelay(pdMS_TO_TICKS(50)); 
   }
 }
 
 // ==========================================================
-// Task for Core 1: Handling the LVGL UI engine
+// Task for Core 1: Dedicated entirely to the LVGL UI Engine
 // ==========================================================
 void task_gui(void *pvParameters) {
+  // lv_timer_handler();
+  
+  lvgl_boot_complete = true;
+  usb_serial.println("[System] LVGL engine initialized & running.");
+
   while(1) {
-    lv_timer_handler(); // Drive the GUI engine
+    lv_timer_handler(); // Paint and update screen objects layout
+    unsigned long now = millis();
 
-    static uint32_t last = 0;
-    if (millis() - last > 2000)
-    {
-        last = millis();
-
-        usb_serial.printf(
-            "GUI Stack Free = %u bytes\n",
-            uxTaskGetStackHighWaterMark(NULL) * sizeof(StackType_t)
-        );
+    // Simply flash data onto the UI components from local variable memory state
+    if(now - previous_millis_battery >= 2000 && active_screen == 0) {
+      previous_millis_battery = now;
+      update_battery_ui();
     }
-    vTaskDelay(pdMS_TO_TICKS(5));  // 5ms delay as used in standard LVGL loops
+
+    if(now - previous_millis_datetime >= 30000  && active_screen == 0) {
+      previous_millis_datetime = now;
+      update_datetime_ui();
+    }
+
+    vTaskDelay(pdMS_TO_TICKS(5));  
   }
 }
 
@@ -129,9 +171,11 @@ void setup() {
   delay(1000);
   usb_serial.println("Booting LVGL V9 OS...");
 
+  i2c_mutex = xSemaphoreCreateMutex();
+  usb_serial.println("Lock initialised");
+
   power_init();
 
-  // Init I2C bus and wake up FT3168 touch controller
   Wire.begin(IIC_SDA, IIC_SCL);
 
   while (FT3168->begin() == false) {
@@ -147,44 +191,39 @@ void setup() {
   GFX_EXTRA_PRE_INIT();
 #endif
 
-  // Init Screen
   if (!gfx->begin()) {
     usb_serial.println("Screen init failed!");
   }
   gfx->fillScreen(0x0000);
 
   rtc_init();
+  fetch_and_sync_time();
 
-  // Init the lock
-  i2c_mutex = xSemaphoreCreateMutex();
-  usb_serial.println("Lock initialised");
-
-  // Initializes LVGL, display, touch indev, EEZ Studio UI
   lvgl_manager_init();
-  // Create the 1-second recurring clock update timer
-  lv_timer_create(clock_timer_cb, 1000, NULL);
 
-  // Create Background Task, pinned to Core 0
+  // Create Background Sensor Monitoring Task, pinned to Core 0
   xTaskCreatePinnedToCore(
-     task_background,       // Task function
-     "TaskBackground",      // Name of task
-     4096,                  // Stack size
-     NULL,                  // Parameter
-     1,                     // Priority
-     &task_background_handle, // Task handle
-     0                      // Pin to core 0
-   );
+    task_background,       
+    "TaskBackground",      
+    4096,                  
+    NULL,                  
+    1,                     
+    &task_background_handle, 
+    0                      
+  );
 
   // Create GUI Task, pinned to Core 1
   xTaskCreatePinnedToCore(
-    task_gui,              // Task function
-    "TaskGui",             // Name of task
-    16384,                 // Stack size
-    NULL,                  // Parameter
-    2,                     // Priority (higher priority for smooth UI)
-    &task_gui_handle,        // Task handle
-    1                    // Pin to core 1
+    task_gui,              
+    "TaskGui",             
+    16384,                 
+    NULL,                  
+    2,                     
+    &task_gui_handle,        
+    1                    
   );
 }
 
-void loop() {}
+void loop() {
+  // Clean empty main execution loop context shifted by the RTOS kernels
+}

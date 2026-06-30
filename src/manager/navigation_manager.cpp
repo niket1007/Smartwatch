@@ -3,6 +3,7 @@
 // ################# Variables Start #################
 int previous_vertical_screen = 0;
 int total_screens = 3; // Only those screens which has left and right gesture enabled
+int active_screen = 0;
 // ################# Variables End #################
 
 
@@ -45,8 +46,9 @@ void navigate_to_screen(int screen, lv_screen_load_anim_t anim)
         transitionRunning = false;
         return;
     }
-
-    lv_screen_load_anim(scr, anim, 250, 0, false);
+    active_screen = screen;
+    lv_screen_load(scr);
+    // lv_screen_load_anim(scr, anim, 250, 0, false);
 
     lv_timer_create(
         [](lv_timer_t *timer)
