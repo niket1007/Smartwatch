@@ -8,7 +8,7 @@
 #include <WiFi.h>
 #include <time.h>
 
-HWCDC USBSerial;
+HWCDC usb_serial;
 
 Arduino_DataBus *bus = new Arduino_ESP32QSPI(
   LCD_CS /* CS */, LCD_SCLK /* SCK */, LCD_SDIO0 /* SDIO0 */, LCD_SDIO1 /* SDIO1 */,
@@ -38,8 +38,8 @@ int seconds = 0;
 
 
 void setup(void) {
-  USBSerial.begin(115200);
-  USBSerial.println("First Simple Watch Code");
+  usb_serial.begin(115200);
+  usb_serial.println("First Simple Watch Code");
 
 #ifdef GFX_EXTRA_PRE_INIT
   GFX_EXTRA_PRE_INIT();
@@ -47,39 +47,39 @@ void setup(void) {
 
   // Init Display
   if (!gfx->begin()) {
-    USBSerial.println("gfx->begin() failed!");
+    usb_serial.println("gfx->begin() failed!");
   }
 
   // Now init RTC (Clock chip) - Make sure to pass the address!
   if (!rtc.begin(Wire, IIC_SDA, IIC_SCL)) {
-      USBSerial.println("RTC failed!");
+      usb_serial.println("RTC failed!");
   } else {
-      USBSerial.println("RTC OK!");
+      usb_serial.println("RTC OK!");
   }
 
   // --- NTP TIME SYNC SEQUENCE ---
-  USBSerial.print("Connecting to Wi-Fi...");
+  usb_serial.print("Connecting to Wi-Fi...");
   WiFi.begin(ssid, password);
 
   // Wait for connection (with a timeout so we don't get stuck forever)
   int attempts = 0;
   while (WiFi.status() != WL_CONNECTED && attempts < 20) {
     delay(500);
-    USBSerial.print(".");
+    usb_serial.print(".");
     attempts++;
   }
 
   if (WiFi.status() == WL_CONNECTED) {
-    USBSerial.println("\nWi-Fi Connected!");
+    usb_serial.println("\nWi-Fi Connected!");
     
     // Initialize the NTP client
     configTime(gmtOffset_sec, daylightOffset_sec, ntp_server, backup_ntp_server);
     
     struct tm timeinfo;
     if (!getLocalTime(&timeinfo, 15000)) {
-      USBSerial.println("Failed to obtain time from NTP server.");
+      usb_serial.println("Failed to obtain time from NTP server.");
     } else {
-      USBSerial.println("NTP Time Fetched Successfully!");
+      usb_serial.println("NTP Time Fetched Successfully!");
       
       // Pass the fetched time into the Hardware RTC chip
       // Note: tm_year is years since 1900, tm_mon is 0-11
@@ -90,16 +90,16 @@ void setup(void) {
                       timeinfo.tm_min, 
                       timeinfo.tm_sec);
                       
-      USBSerial.println("Hardware RTC Updated!");
+      usb_serial.println("Hardware RTC Updated!");
     }
     
     // CRITICAL: Turn off Wi-Fi to save battery!
     WiFi.disconnect(true);
     WiFi.mode(WIFI_OFF);
-    USBSerial.println("Wi-Fi Powered Down.");
+    usb_serial.println("Wi-Fi Powered Down.");
     
   } else {
-    USBSerial.println("\nWi-Fi Connection Failed. Relying on existing RTC time.");
+    usb_serial.println("\nWi-Fi Connection Failed. Relying on existing RTC time.");
   }
 
   gfx->fillScreen(0xFFFF);

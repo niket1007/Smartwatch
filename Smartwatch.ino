@@ -21,12 +21,12 @@ Arduino_GFX *gfx = new Arduino_CO5300(bus, LCD_RESET /* RST */,
 
 
 // ################# Variable Start #################
-HWCDC USBSerial;
+HWCDC usb_serial;
 SemaphoreHandle_t i2c_mutex;
 
 // Task handles
-TaskHandle_t TaskGuiHandle = NULL;
-TaskHandle_t TaskBackgroundHandle = NULL;
+TaskHandle_t task_gui_handle = NULL;
+TaskHandle_t task_background_handle = NULL;
 
 // Interval variables
 int wifi_interval = 10;
@@ -36,7 +36,7 @@ unsigned long previous_millis = 0;
 // ==========================================================
 // CUSTOM TOUCH DRIVER (Thread-Safe)
 // ==========================================================
-bool getTouch(int16_t &x, int16_t &y) {
+bool lvgl_get_touch(int16_t &x, int16_t &y) {
   bool is_touched = false;
 
   // 1. MUST lock the I2C bus because this runs on Core 1!
@@ -74,29 +74,28 @@ bool getTouch(int16_t &x, int16_t &y) {
 // ==========================================================
 // LVGL GLUE: DISPLAY ENGINE
 // ==========================================================
-void my_disp_flush(lv_display_t *disp, const lv_area_t *area, uint8_t * px_map) {
-  uint32_t w = (area->x2 - area->x1 + 1);
-  uint32_t h = (area->y2 - area->y1 + 1);
-  
-  USBSerial.printf(
-      "Flush (%d,%d)-(%d,%d) w=%d h=%d\n",
-      area->x1,
-      area->y1,
-      area->x2,
-      area->y2,
-      w,
-      h
-  );
-  gfx->draw16bitRGBBitmap(area->x1, area->y1, (uint16_t *)px_map, w, h);
-  lv_display_flush_ready(disp);
+void lvgl_display_flush_cb(lv_display_t *disp, const lv_area_t *area, uint8_t *px_map)
+{
+    uint32_t w = area->x2 - area->x1 + 1;
+    uint32_t h = area->y2 - area->y1 + 1;
+
+    gfx->draw16bitRGBBitmap(
+        area->x1,
+        area->y1,
+        (uint16_t *)px_map,
+        w,
+        h
+    );
+
+    lv_display_flush_ready(disp);
 }
 
 // ==========================================================
 // LVGL GLUE: TOUCH ENGINE
 // ==========================================================
-void my_touch_read(lv_indev_t * indev, lv_indev_data_t * data) {
+void lvgl_touch_read_cb(lv_indev_t * indev, lv_indev_data_t * data) {
   int16_t touchX, touchY;
-  if (digitalRead(TP_INT) == LOW && getTouch(touchX, touchY)) {
+  if (digitalRead(TP_INT) == LOW && lvgl_get_touch(touchX, touchY)) {
     data->state = LV_INDEV_STATE_PRESSED;
     data->point.x = touchX;
     data->point.y = touchY;
@@ -116,7 +115,7 @@ static void clock_timer_cb(lv_timer_t *timer) {
 // ==========================================================
 // Task for Core 0: Handling sensors/time in the background
 // ==========================================================
-void vTaskBackground(void *pvParameters) {
+void task_background(void *pvParameters) {
   // Sync time via Wi-Fi & update RTC
   fetch_and_sync_time();
 
@@ -126,7 +125,7 @@ void vTaskBackground(void *pvParameters) {
 
     // if(currentMillis - previous_millis >= wifi_interval) {
     //   previous_millis = currentMillis;
-    //   USBSerial.println("Wifi turneed on and fetched the data");
+    //   usb_serial.println("Wifi turneed on and fetched the data");
     // }
     vTaskDelay(pdMS_TO_TICKS(3000)); // Run every 3 seconds
   }
@@ -135,7 +134,7 @@ void vTaskBackground(void *pvParameters) {
 // ==========================================================
 // Task for Core 1: Handling the LVGL UI engine
 // ==========================================================
-void vTaskGui(void *pvParameters) {
+void task_gui(void *pvParameters) {
   while(1) {
     lv_timer_handler(); // Drive the GUI engine
 
@@ -144,7 +143,7 @@ void vTaskGui(void *pvParameters) {
     {
         last = millis();
 
-        USBSerial.printf(
+        usb_serial.printf(
             "GUI Stack Free = %u bytes\n",
             uxTaskGetStackHighWaterMark(NULL) * sizeof(StackType_t)
         );
@@ -156,21 +155,18 @@ void vTaskGui(void *pvParameters) {
 // ==========================================================
 // LVGL TICK WRAPPER
 // ==========================================================
-uint32_t my_tick_function() {
+uint32_t lvgl_tick_function() {
   return (uint32_t)millis();
 }
 
 // ==========================================================
 // MAIN SETUP
 // ==========================================================
-void setup() {
+void setup() { 
 
-  // Set the CPU Frequency to 160MHz
-  // setCpuFrequencyMhz(160); 
-
-  USBSerial.begin(115200);
+  usb_serial.begin(115200);
   delay(1000);
-  USBSerial.println("Booting LVGL V9 OS...");
+  usb_serial.println("Booting LVGL V9 OS...");
 
   power_init();
 
@@ -188,7 +184,7 @@ void setup() {
 
   // Init Screen
   if (!gfx->begin()) {
-    USBSerial.println("Screen init failed!");
+    usb_serial.println("Screen init failed!");
   }
   gfx->fillScreen(0x0000);
 
@@ -196,63 +192,50 @@ void setup() {
 
   // Init the lock
   i2c_mutex = xSemaphoreCreateMutex();
-  USBSerial.println("Lock initialised");
+  usb_serial.println("Lock initialised");
 
   // ACTIVATE LVGL V9 MATRIX
   lv_init();
-  lv_tick_set_cb(my_tick_function); 
-  USBSerial.println("LVL9 initialised");
+  lv_tick_set_cb(lvgl_tick_function); 
+  usb_serial.println("LVL9 initialised");
 
   // Create the Screen Buffer
-  static uint8_t draw_buf1[LCD_WIDTH * 20 * 2];
+  static uint8_t draw_buf1[LCD_WIDTH * 120];
+  static uint8_t draw_buf2[LCD_WIDTH * 120];
   lv_display_t * disp = lv_display_create(LCD_WIDTH, LCD_HEIGHT);
-  lv_display_set_flush_cb(disp, my_disp_flush);
-  lv_display_set_buffers(disp, draw_buf1, NULL, sizeof(draw_buf1), LV_DISPLAY_RENDER_MODE_PARTIAL);
+  lv_display_set_flush_cb(disp, lvgl_display_flush_cb);
+  lv_display_set_buffers(disp, draw_buf1, draw_buf2, sizeof(draw_buf1), LV_DISPLAY_RENDER_MODE_PARTIAL);
 
   // Connect the Touch Input
   lv_indev_t * indev = lv_indev_create();
   lv_indev_set_type(indev, LV_INDEV_TYPE_POINTER);
-  lv_indev_set_read_cb(indev, my_touch_read);
+  lv_indev_set_read_cb(indev, lvgl_touch_read_cb);
 
   // LOAD THE EEZ STUDIO UI
   ui_init();
-  ui_tick();
-  USBSerial.println("UI initialised");
-
-  USBSerial.printf("Home     : %p\n", objects.home_screen);
-  USBSerial.printf("Weather  : %p\n", objects.weather_screen);
-  USBSerial.printf("News     : %p\n", objects.news_screen);
-  USBSerial.printf("Settings : %p\n", objects.settings_screen);
-  USBSerial.printf("Drawer   : %p\n", objects.app_drawer_screen);
-
-  USBSerial.printf("Heap: %u\n", ESP.getFreeHeap());
-  USBSerial.printf(
-    "Largest DMA Block: %u\n",
-    heap_caps_get_largest_free_block(MALLOC_CAP_DMA)
-  );  
-
+  
   // Create the 1-second recurring clock update timer
   lv_timer_create(clock_timer_cb, 1000, NULL);
 
   // Create Background Task, pinned to Core 0
   xTaskCreatePinnedToCore(
-    vTaskBackground,       // Task function
-    "TaskBackground",      // Name of task
-    4096,                  // Stack size
-    NULL,                  // Parameter
-    1,                     // Priority
-    &TaskBackgroundHandle, // Task handle
-    0                      // Pin to core 0
-  );
+     task_background,       // Task function
+     "TaskBackground",      // Name of task
+     4096,                  // Stack size
+     NULL,                  // Parameter
+     1,                     // Priority
+     &task_background_handle, // Task handle
+     0                      // Pin to core 0
+   );
 
   // Create GUI Task, pinned to Core 1
   xTaskCreatePinnedToCore(
-    vTaskGui,              // Task function
+    task_gui,              // Task function
     "TaskGui",             // Name of task
     16384,                 // Stack size
     NULL,                  // Parameter
     2,                     // Priority (higher priority for smooth UI)
-    &TaskGuiHandle,        // Task handle
+    &task_gui_handle,        // Task handle
     1                    // Pin to core 1
   );
 }

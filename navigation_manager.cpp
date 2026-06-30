@@ -27,6 +27,38 @@ lv_obj_t* get_screen(int number) {
     }
 }
 
+static bool transitionRunning = false;
+
+void navigate_to_screen(int screen, lv_screen_load_anim_t anim)
+{
+    if (transitionRunning)
+    {
+        return;
+    }
+
+    transitionRunning = true;
+
+    lv_obj_t *scr = get_screen(screen);
+
+    if (scr == nullptr)
+    {
+        transitionRunning = false;
+        return;
+    }
+
+    lv_screen_load_anim(scr, anim, 250, 0, false);
+
+    lv_timer_create(
+        [](lv_timer_t *timer)
+        {
+            transitionRunning = false;
+            lv_timer_delete(timer);
+        },
+        300,
+        NULL
+    );
+}
+
 void action_navigate_gesture(lv_event_t * e) {
 
   // if(global_battery_percentage > 30) {
@@ -39,7 +71,7 @@ void action_navigate_gesture(lv_event_t * e) {
 
     if(previous_vertical_screen < 0) {
       previous_vertical_screen = 0;
-      USBSerial.println("Previous Vertical Screen default to 0");
+      usb_serial.println("Previous Vertical Screen default to 0");
     }
 
     // Vertical Movement
@@ -48,14 +80,14 @@ void action_navigate_gesture(lv_event_t * e) {
       if(current_screen == -20) {
         next_screen = previous_vertical_screen;
         animate = LV_SCR_LOAD_ANIM_MOVE_BOTTOM;
-        USBSerial.printf("Bottom Direction Swipe: Current Screen: %d and Next Screen: %d\n", current_screen, next_screen);
+        usb_serial.printf("Bottom Direction Swipe: Current Screen: %d and Next Screen: %d\n", current_screen, next_screen);
       }
       // Main Screens -> Settings
       else if(current_screen >= 0) {
         previous_vertical_screen = current_screen;
         next_screen = -10;
         animate = LV_SCR_LOAD_ANIM_MOVE_BOTTOM;
-        USBSerial.printf("Bottom Direction Swipe: Current Screen: %d and Next Screen: %d\n", current_screen, next_screen);
+        usb_serial.printf("Bottom Direction Swipe: Current Screen: %d and Next Screen: %d\n", current_screen, next_screen);
       }
     }
     else if(dir == LV_DIR_TOP) {
@@ -64,31 +96,31 @@ void action_navigate_gesture(lv_event_t * e) {
         next_screen = previous_vertical_screen;
         previous_vertical_screen = 0;
         animate = LV_SCR_LOAD_ANIM_MOVE_TOP;
-        USBSerial.printf("Top Direction Swipe: Current Screen: %d and Next Screen: %d\n", current_screen, next_screen);
+        usb_serial.printf("Top Direction Swipe: Current Screen: %d and Next Screen: %d\n", current_screen, next_screen);
       }
       // Main Screens -> App drawer
       else if (current_screen >= 0) {
         previous_vertical_screen = current_screen;
         next_screen = -20;
         animate = LV_SCR_LOAD_ANIM_MOVE_TOP;
-        USBSerial.printf("Top Direction Swipe: Current Screen: %d and Next Screen: %d\n", current_screen, next_screen);
+        usb_serial.printf("Top Direction Swipe: Current Screen: %d and Next Screen: %d\n", current_screen, next_screen);
       }
     }
     // Horizontal Movement
     else if(dir == LV_DIR_LEFT && current_screen >= 0) {
       next_screen = (current_screen + 1) % total_screens;
       animate = LV_SCR_LOAD_ANIM_MOVE_LEFT;
-      USBSerial.printf("Left Direction Swipe: Current Screen: %d and Next Screen: %d\n", current_screen, next_screen);
+      usb_serial.printf("Left Direction Swipe: Current Screen: %d and Next Screen: %d\n", current_screen, next_screen);
     }
     else if(dir == LV_DIR_RIGHT && current_screen >= 0) {
       next_screen = (current_screen - 1 + total_screens) % total_screens;
       animate = LV_SCR_LOAD_ANIM_MOVE_RIGHT;
-      USBSerial.printf("Right Direction Swipe: Current Screen: %d and Next Screen: %d\n", current_screen, next_screen);
+      usb_serial.printf("Right Direction Swipe: Current Screen: %d and Next Screen: %d\n", current_screen, next_screen);
     }
 
     if(next_screen != current_screen)
     {
-        USBSerial.printf(
+        usb_serial.printf(
             "Current:%d Previous:%d Next:%d Gesture:%d\n",
             current_screen,
             previous_vertical_screen,
@@ -98,17 +130,15 @@ void action_navigate_gesture(lv_event_t * e) {
 
         lv_obj_t *scr = get_screen(next_screen);
 
-        USBSerial.println("Before async");
+        if (scr == nullptr) {
+          usb_serial.println("ERROR: get_screen returned nullptr");
+          return;
+        }
+        usb_serial.println("Before async");
 
-        lv_async_call(
-            [](void *p)
-            {
-                lv_screen_load((lv_obj_t *)p);
-            },
-            scr
-        );
+        navigate_to_screen(next_screen, animate);
 
-        USBSerial.println("After async");
+        usb_serial.println("After async");
     }
   // }
 }

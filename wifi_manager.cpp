@@ -1,16 +1,18 @@
 #include "wifi_manager.h"
 
-const char* ssid     = "Amit 1st Floor";
-const char* password = "12345689";
+const char* SSID     = "Amit 1st Floor";
+const char* PASSWORD = "12345689";
+const int WIFI_MAX_ATTEMPTS = 20;
 
 bool connect_to_wifi() {
     int attempts = 0;
 
-    USBSerial.println("Initiating Wifi Connection");
-    WiFi.begin(ssid, password);
-    while (WiFi.status() != WL_CONNECTED && attempts < 20) {
+    usb_serial.println("Initiating Wifi Connection");
+    WiFi.begin(SSID, PASSWORD);
+    WiFi.persistent(false);
+    while (WiFi.status() != WL_CONNECTED && attempts < WIFI_MAX_ATTEMPTS) {
         delay(500);
-        USBSerial.print(".");
+        usb_serial.print(".");
         attempts++;
     }
     return WiFi.status() == WL_CONNECTED;
@@ -19,5 +21,5 @@ bool connect_to_wifi() {
 void disconnect_wifi() {
     WiFi.disconnect(true);
     WiFi.mode(WIFI_OFF);
-    USBSerial.println("Wi-Fi Powered Down.");
+    usb_serial.println("Wi-Fi Powered Down.");
 }

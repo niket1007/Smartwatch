@@ -10,8 +10,12 @@ extern "C" {
   #include "src/ui/actions.h"
 }
 
-// Below variables will be used in most of the files
-extern HWCDC USBSerial;
+
+extern HWCDC usb_serial;
 extern SemaphoreHandle_t i2c_mutex;
-extern volatile int global_battery_percentage;
-extern volatile bool global_is_charging;
+
+int get_battery_percentage();
+void set_battery_percentage(int percentage);
+
+bool is_battery_charging();
+void set_battery_charging(bool charging);
