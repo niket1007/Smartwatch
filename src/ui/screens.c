@@ -55,24 +55,6 @@ void create_screen_home_screen() {
             {
                 lv_obj_t *parent_obj = obj;
                 {
-                    // wifi_bluetooth_container
-                    lv_obj_t *obj = lv_obj_create(parent_obj);
-                    objects.wifi_bluetooth_container = obj;
-                    lv_obj_set_pos(obj, 212, 24);
-                    lv_obj_set_size(obj, 125, 53);
-                    lv_obj_set_style_pad_left(obj, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
-                    lv_obj_set_style_pad_top(obj, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
-                    lv_obj_set_style_pad_right(obj, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
-                    lv_obj_set_style_pad_bottom(obj, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
-                    lv_obj_remove_flag(obj, LV_OBJ_FLAG_CLICKABLE|LV_OBJ_FLAG_SCROLLABLE);
-                    lv_obj_set_style_border_opa(obj, 100, LV_PART_MAIN | LV_STATE_DEFAULT);
-                    lv_obj_set_style_border_width(obj, 2, LV_PART_MAIN | LV_STATE_DEFAULT);
-                    lv_obj_set_style_border_color(obj, lv_color_hex(0x155dfc), LV_PART_MAIN | LV_STATE_DEFAULT);
-                    lv_obj_set_style_radius(obj, 100, LV_PART_MAIN | LV_STATE_DEFAULT);
-                    lv_obj_set_style_bg_color(obj, lv_color_hex(0x155dfc), LV_PART_MAIN | LV_STATE_DEFAULT);
-                    lv_obj_set_style_bg_opa(obj, 30, LV_PART_MAIN | LV_STATE_DEFAULT);
-                }
-                {
                     // battery_container
                     lv_obj_t *obj = lv_obj_create(parent_obj);
                     objects.battery_container = obj;
@@ -90,29 +72,6 @@ void create_screen_home_screen() {
                     lv_obj_set_style_radius(obj, 50, LV_PART_MAIN | LV_STATE_DEFAULT);
                 }
             }
-        }
-        {
-            // wifi_label
-            lv_obj_t *obj = lv_label_create(parent_obj);
-            objects.wifi_label = obj;
-            lv_obj_set_pos(obj, 250, 52);
-            lv_obj_set_size(obj, 37, 30);
-            lv_obj_remove_flag(obj, LV_OBJ_FLAG_CLICK_FOCUSABLE|LV_OBJ_FLAG_SCROLLABLE|LV_OBJ_FLAG_SCROLL_CHAIN_HOR|LV_OBJ_FLAG_SCROLL_CHAIN_VER|LV_OBJ_FLAG_SCROLL_ELASTIC|LV_OBJ_FLAG_SCROLL_MOMENTUM|LV_OBJ_FLAG_SCROLL_WITH_ARROW);
-            lv_obj_set_style_text_color(obj, lv_color_hex(0x155dfc), LV_PART_MAIN | LV_STATE_DEFAULT);
-            lv_obj_set_style_text_opa(obj, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
-            lv_obj_set_style_text_font(obj, &lv_font_montserrat_24, LV_PART_MAIN | LV_STATE_DEFAULT);
-            lv_label_set_text_static(obj, "");
-        }
-        {
-            // bluetooth_label
-            lv_obj_t *obj = lv_label_create(parent_obj);
-            objects.bluetooth_label = obj;
-            lv_obj_set_pos(obj, 313, 52);
-            lv_obj_set_size(obj, 21, 30);
-            lv_obj_set_style_text_color(obj, lv_color_hex(0x155dfc), LV_PART_MAIN | LV_STATE_DEFAULT);
-            lv_obj_set_style_text_font(obj, &lv_font_montserrat_24, LV_PART_MAIN | LV_STATE_DEFAULT);
-            lv_obj_set_style_text_opa(obj, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
-            lv_label_set_text_static(obj, "");
         }
         {
             // time_label
@@ -763,28 +722,28 @@ ext_font_desc_t fonts[] = {
     { "MONTSERRAT_14", &lv_font_montserrat_14 },
 #endif
 #if LV_FONT_MONTSERRAT_16
-    { "MONTSERRAT_16", &lv_font_montserrat_16 }, // used
+    { "MONTSERRAT_16", &lv_font_montserrat_16 },
 #endif
 #if LV_FONT_MONTSERRAT_18
     { "MONTSERRAT_18", &lv_font_montserrat_18 },
 #endif
 #if LV_FONT_MONTSERRAT_20
-    { "MONTSERRAT_20", &lv_font_montserrat_20 }, // used
+    { "MONTSERRAT_20", &lv_font_montserrat_20 },
 #endif
 #if LV_FONT_MONTSERRAT_22
-    { "MONTSERRAT_22", &lv_font_montserrat_22 }, // used
+    { "MONTSERRAT_22", &lv_font_montserrat_22 },
 #endif
 #if LV_FONT_MONTSERRAT_24
-    { "MONTSERRAT_24", &lv_font_montserrat_24 }, // used
+    { "MONTSERRAT_24", &lv_font_montserrat_24 },
 #endif
 #if LV_FONT_MONTSERRAT_26
-    { "MONTSERRAT_26", &lv_font_montserrat_26 }, // used
+    { "MONTSERRAT_26", &lv_font_montserrat_26 },
 #endif
 #if LV_FONT_MONTSERRAT_28
     { "MONTSERRAT_28", &lv_font_montserrat_28 },
 #endif
 #if LV_FONT_MONTSERRAT_30
-    { "MONTSERRAT_30", &lv_font_montserrat_30 }, // used
+    { "MONTSERRAT_30", &lv_font_montserrat_30 },
 #endif
 #if LV_FONT_MONTSERRAT_32
     { "MONTSERRAT_32", &lv_font_montserrat_32 },
@@ -811,7 +770,7 @@ ext_font_desc_t fonts[] = {
     { "MONTSERRAT_46", &lv_font_montserrat_46 },
 #endif
 #if LV_FONT_MONTSERRAT_48
-    { "MONTSERRAT_48", &lv_font_montserrat_48 }, // used
+    { "MONTSERRAT_48", &lv_font_montserrat_48 },
 #endif
 };
 

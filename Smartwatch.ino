@@ -42,8 +42,6 @@ SemaphoreHandle_t i2c_mutex;
 TaskHandle_t task_gui_handle = NULL;
 TaskHandle_t task_background_handle = NULL;
 
-volatile bool lvgl_boot_complete = false;
-
 // Interval variables
 int wifi_interval = 10;
 unsigned long previous_millis_datetime = 0;
@@ -85,32 +83,9 @@ static void clock_timer_cb(lv_timer_t *timer) {
 }
 
 // ==========================================================
-// Isolated One-Time Network Time Synchronization Task
-// ==========================================================
-void task_time_sync_worker(void *pvParameters) {
-  while (!lvgl_boot_complete) {
-    vTaskDelay(pdMS_TO_TICKS(100));
-  }
-  
-  vTaskDelay(pdMS_TO_TICKS(500)); 
-  
-  usb_serial.println("[WiFi] UI Boot Complete. Launching network sync safely...");
-  // fetch_and_sync_time();
-  usb_serial.println("[WiFi] Time sync completed successfully. Terminating worker thread.");
-  
-  vTaskDelete(NULL); 
-}
-
-// ==========================================================
-// Task for Core 0: Handling hardware sensors on a dedicated core
-// ==========================================================
-// ==========================================================
 // Task for Core 0: Handling sensors in the background
 // ==========================================================
 void task_background(void *pvParameters) {
-  // CRITICAL FLUSH PROTECTION BUFFER:
-  // Let Core 1 completely process setup handoff, enter task_gui, 
-  // and load the initial watch layout arrays into stable memory.
   vTaskDelay(pdMS_TO_TICKS(1500)); 
 
   unsigned long last_battery_check = 0;
@@ -118,19 +93,12 @@ void task_background(void *pvParameters) {
   while(1) {
     unsigned long now = millis();
 
-    // Use our clean non-blocking tracking timer structure
-    if (now - last_battery_check >= 5000) {
+    if (now - last_battery_check >= 2000) {
       last_battery_check = now;
-      
-      // Thread-safe lock ensures no collision happens with touch scanning
-      if (xSemaphoreTake(i2c_mutex, pdMS_TO_TICKS(50))) {
-        read_battery_sensor();
-        xSemaphoreGive(i2c_mutex);
-      }
+      read_battery_sensor();
     }
 
-    // Keep this short 50ms block so the IDLE0 task can clear stack canaries
-    vTaskDelay(pdMS_TO_TICKS(50)); 
+    vTaskDelay(pdMS_TO_TICKS(50)); // 50 ms
   }
 }
 
@@ -138,24 +106,24 @@ void task_background(void *pvParameters) {
 // Task for Core 1: Dedicated entirely to the LVGL UI Engine
 // ==========================================================
 void task_gui(void *pvParameters) {
-  // lv_timer_handler();
-  
-  lvgl_boot_complete = true;
   usb_serial.println("[System] LVGL engine initialized & running.");
 
   while(1) {
     lv_timer_handler(); // Paint and update screen objects layout
     unsigned long now = millis();
 
-    // Simply flash data onto the UI components from local variable memory state
-    if(now - previous_millis_battery >= 2000 && active_screen == 0) {
+    if(now - previous_millis_battery >= 2000) {
       previous_millis_battery = now;
-      update_battery_ui();
+      if(active_screen == 0) {
+        update_battery_ui();
+      }
     }
 
-    if(now - previous_millis_datetime >= 30000  && active_screen == 0) {
+    if(now - previous_millis_datetime >= 5000) {
       previous_millis_datetime = now;
-      update_datetime_ui();
+      if(active_screen == 0) {
+        update_datetime_ui();
+      }
     }
 
     vTaskDelay(pdMS_TO_TICKS(5));  
@@ -205,7 +173,7 @@ void setup() {
   xTaskCreatePinnedToCore(
     task_background,       
     "TaskBackground",      
-    4096,                  
+    8192,                  
     NULL,                  
     1,                     
     &task_background_handle, 
@@ -224,6 +192,4 @@ void setup() {
   );
 }
 
-void loop() {
-  // Clean empty main execution loop context shifted by the RTOS kernels
-}
+void loop() {}

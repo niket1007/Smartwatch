@@ -63,7 +63,7 @@ int read_pmu_battery_percent() {
 
 void read_battery_sensor() {
     int calculated_percentage = 0;
-    bool charging_status = false; 
+    bool charging_status = false;   
 
     if (xSemaphoreTake(i2c_mutex, pdMS_TO_TICKS(500))) { // Wait up to 500ms for lock
       calculated_percentage = read_pmu_battery_percent();

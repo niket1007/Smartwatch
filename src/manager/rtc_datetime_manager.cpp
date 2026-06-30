@@ -55,7 +55,7 @@ void fetch_and_sync_time() {
 
 void update_datetime_ui()
 {
-    if (!xSemaphoreTake(i2c_mutex, portMAX_DELAY)) {
+    if (!xSemaphoreTake(i2c_mutex, 0)) {
         return;
     }
 

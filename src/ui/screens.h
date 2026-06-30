@@ -26,10 +26,7 @@ typedef struct _objects_t {
     lv_obj_t *settings_screen;
     lv_obj_t *news_screen;
     lv_obj_t *parent_container;
-    lv_obj_t *wifi_bluetooth_container;
     lv_obj_t *battery_container;
-    lv_obj_t *wifi_label;
-    lv_obj_t *bluetooth_label;
     lv_obj_t *time_label;
     lv_obj_t *date_label;
     lv_obj_t *day_label;
