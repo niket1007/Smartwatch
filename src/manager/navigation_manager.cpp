@@ -63,7 +63,7 @@ void navigate_to_screen(int screen, lv_screen_load_anim_t anim)
 
 void action_navigate_gesture(lv_event_t * e) {
 
-  // if(global_battery_percentage > 30) {
+  if(get_battery_percentage() >= 20) {
     int current_screen = (int)(intptr_t)lv_event_get_user_data(e);
 
     lv_dir_t dir = lv_indev_get_gesture_dir(lv_indev_active());
@@ -142,5 +142,5 @@ void action_navigate_gesture(lv_event_t * e) {
 
         usb_serial.println("After async");
     }
-  // }
+  }
 }
