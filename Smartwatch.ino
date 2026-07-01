@@ -193,11 +193,9 @@ void task_background(void *pvParameters) {
   while(1) {
     unsigned long now = millis();
 
-    if(screen_state) {
-      if (now - last_battery_check >= battery_sensor_read_interval) {
-        last_battery_check = now;
-        read_battery_sensor();
-      }
+    if (now - last_battery_check >= battery_sensor_read_interval) {
+      last_battery_check = now;
+      read_battery_sensor();
     }
 
     vTaskDelay(pdMS_TO_TICKS(50)); // 50 ms
