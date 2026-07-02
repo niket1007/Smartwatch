@@ -1,6 +1,7 @@
 {
   "navigation": {
     "selectedUserPageObject": "[SmartWatchUI.eez-project]:/userPages/1",
+    "selectedBitmapObject": "[SmartWatchUI.eez-project]:/bitmaps/-1",
     "subnavigationSelectedItems": {}
   },
   "layoutModel": {
@@ -21,6 +22,7 @@
           },
           {
             "type": "border",
+            "selected": 2,
             "size": 240,
             "location": "right",
             "children": [
@@ -193,10 +195,10 @@
                 {
                   "type": "tab",
                   "id": "#4b6b86de-7836-4784-a254-09841b57a1ff",
-                  "name": "Home_Screen",
+                  "name": "App_Drawer_Screen",
                   "component": "editor",
                   "config": {
-                    "objectPath": "[SmartWatchUI.eez-project]:/userPages/0",
+                    "objectPath": "[SmartWatchUI.eez-project]:/userPages/2",
                     "permanent": false
                   },
                   "icon": "svg:page"
@@ -625,7 +627,8 @@
                       "component": "bitmaps",
                       "enableClose": false
                     }
-                  ]
+                  ],
+                  "active": true
                 },
                 {
                   "type": "tabset",
@@ -852,7 +855,8 @@
                       "component": "styles",
                       "enableClose": false
                     }
-                  ]
+                  ],
+                  "active": true
                 },
                 {
                   "type": "tabset",
@@ -1091,7 +1095,11 @@
         "0": {
           "0": {
             "0": {},
-            "1": {}
+            "1": {},
+            "4": {},
+            "5": {},
+            "6": {},
+            "8": {}
           }
         }
       },
@@ -1187,5 +1195,6 @@
   "showInactiveFlowsInDebugger": true,
   "globalFlowZoom": true,
   "flowZoom": 0.8,
-  "implementationLanguage": "C"
+  "implementationLanguage": "C",
+  "openDialogDefaultPath": "C:\\Users\\user\\Downloads\\thermometer-snowflake.png"
 }

@@ -858,6 +858,7 @@
                     "conditionalStyles": [],
                     "childStyles": []
                   },
+                  "hiddenInEditor": false,
                   "timeline": [],
                   "eventHandlers": [],
                   "identifier": "temp_label",
@@ -910,6 +911,7 @@
                     "conditionalStyles": [],
                     "childStyles": []
                   },
+                  "hiddenInEditor": false,
                   "timeline": [],
                   "eventHandlers": [],
                   "identifier": "loc_label",
@@ -962,6 +964,7 @@
                     "conditionalStyles": [],
                     "childStyles": []
                   },
+                  "hiddenInEditor": false,
                   "timeline": [],
                   "eventHandlers": [],
                   "identifier": "feels_like_label",
@@ -1122,6 +1125,7 @@
                     "conditionalStyles": [],
                     "childStyles": []
                   },
+                  "hiddenInEditor": false,
                   "timeline": [],
                   "eventHandlers": [],
                   "identifier": "high_temp_container",
@@ -1133,10 +1137,10 @@
                     {
                       "objID": "cf32e87c-1c6d-423c-c102-28ee17ff9a59",
                       "type": "LVGLLabelWidget",
-                      "left": 31,
-                      "top": 56,
-                      "width": 39,
-                      "height": 18,
+                      "left": 26,
+                      "top": 28,
+                      "width": 50,
+                      "height": 22,
                       "customInputs": [],
                       "customOutputs": [],
                       "style": {
@@ -1170,7 +1174,7 @@
                           "MAIN": {
                             "DEFAULT": {
                               "text_color": "#ffffff",
-                              "text_font": "MONTSERRAT_16",
+                              "text_font": "MONTSERRAT_20",
                               "text_opa": 255
                             }
                           }
@@ -1186,7 +1190,7 @@
                     {
                       "objID": "9642f5c3-8cb1-4a55-87af-72d2d3fd0258",
                       "type": "LVGLLabelWidget",
-                      "left": 31,
+                      "left": 32,
                       "top": 92,
                       "width": 37,
                       "height": 24,
@@ -1198,6 +1202,7 @@
                         "conditionalStyles": [],
                         "childStyles": []
                       },
+                      "hiddenInEditor": false,
                       "timeline": [],
                       "eventHandlers": [],
                       "identifier": "high_temp_label",
@@ -1265,7 +1270,7 @@
                 {
                   "objID": "933add58-d1b8-45dd-c2cd-c0dd43d58861",
                   "type": "LVGLContainerWidget",
-                  "left": 135,
+                  "left": 131,
                   "top": 207,
                   "width": 104,
                   "height": 137,
@@ -1277,6 +1282,7 @@
                     "conditionalStyles": [],
                     "childStyles": []
                   },
+                  "hiddenInEditor": false,
                   "timeline": [],
                   "eventHandlers": [],
                   "identifier": "low_temp_container",
@@ -1288,10 +1294,10 @@
                     {
                       "objID": "46bca4eb-e67f-4e04-a7a9-2c6246e56e26",
                       "type": "LVGLLabelWidget",
-                      "left": 34,
-                      "top": 56,
-                      "width": 33,
-                      "height": 18,
+                      "left": 31,
+                      "top": 27,
+                      "width": 42,
+                      "height": 22,
                       "customInputs": [],
                       "customOutputs": [],
                       "style": {
@@ -1301,6 +1307,7 @@
                         "childStyles": []
                       },
                       "locked": false,
+                      "hiddenInEditor": false,
                       "timeline": [],
                       "eventHandlers": [],
                       "identifier": "low_const_label",
@@ -1325,7 +1332,7 @@
                           "MAIN": {
                             "DEFAULT": {
                               "text_color": "#ffffff",
-                              "text_font": "MONTSERRAT_16",
+                              "text_font": "MONTSERRAT_20",
                               "text_opa": 255
                             }
                           }
@@ -1353,6 +1360,7 @@
                         "conditionalStyles": [],
                         "childStyles": []
                       },
+                      "hiddenInEditor": false,
                       "timeline": [],
                       "eventHandlers": [],
                       "identifier": "low_temp_label",
@@ -1420,9 +1428,9 @@
                 {
                   "objID": "92f7bca6-b86a-404f-e433-f8389c357f60",
                   "type": "LVGLContainerWidget",
-                  "left": 258,
+                  "left": 248,
                   "top": 206,
-                  "width": 104,
+                  "width": 114,
                   "height": 137,
                   "customInputs": [],
                   "customOutputs": [],
@@ -1432,6 +1440,7 @@
                     "conditionalStyles": [],
                     "childStyles": []
                   },
+                  "hiddenInEditor": false,
                   "timeline": [],
                   "eventHandlers": [],
                   "identifier": "humidity_container",
@@ -1443,10 +1452,10 @@
                     {
                       "objID": "e907cda7-5696-4dac-cbb4-0eb90ea1f94e",
                       "type": "LVGLLabelWidget",
-                      "left": 15,
-                      "top": 60,
-                      "width": 75,
-                      "height": 18,
+                      "left": 10,
+                      "top": 28,
+                      "width": 96,
+                      "height": 22,
                       "customInputs": [],
                       "customOutputs": [],
                       "style": {
@@ -1455,6 +1464,7 @@
                         "conditionalStyles": [],
                         "childStyles": []
                       },
+                      "hiddenInEditor": false,
                       "timeline": [],
                       "eventHandlers": [],
                       "identifier": "humidity_const_label",
@@ -1479,7 +1489,7 @@
                           "MAIN": {
                             "DEFAULT": {
                               "text_color": "#ffffff",
-                              "text_font": "MONTSERRAT_16",
+                              "text_font": "MONTSERRAT_20",
                               "text_opa": 255
                             }
                           }
@@ -1495,7 +1505,7 @@
                     {
                       "objID": "e04b4aae-b163-4342-c95b-c0707465e51f",
                       "type": "LVGLLabelWidget",
-                      "left": 34,
+                      "left": 39,
                       "top": 92,
                       "width": 37,
                       "height": 24,
@@ -1507,6 +1517,7 @@
                         "conditionalStyles": [],
                         "childStyles": []
                       },
+                      "hiddenInEditor": false,
                       "timeline": [],
                       "eventHandlers": [],
                       "identifier": "humidity_label",
@@ -1586,6 +1597,7 @@
                     "conditionalStyles": [],
                     "childStyles": []
                   },
+                  "hiddenInEditor": false,
                   "timeline": [],
                   "eventHandlers": [],
                   "identifier": "aqi_container",
@@ -1597,10 +1609,10 @@
                     {
                       "objID": "060b2f53-1a30-4252-bbfa-aa0eed0fff3b",
                       "type": "LVGLLabelWidget",
-                      "left": 32,
-                      "top": 10,
-                      "width": 30,
-                      "height": 18,
+                      "left": 14,
+                      "top": 31,
+                      "width": 37,
+                      "height": 22,
                       "customInputs": [],
                       "customOutputs": [],
                       "style": {
@@ -1609,6 +1621,7 @@
                         "conditionalStyles": [],
                         "childStyles": []
                       },
+                      "hiddenInEditor": false,
                       "timeline": [],
                       "eventHandlers": [],
                       "identifier": "high_const_label_1",
@@ -1633,7 +1646,7 @@
                           "MAIN": {
                             "DEFAULT": {
                               "text_color": "#ffffff",
-                              "text_font": "MONTSERRAT_16",
+                              "text_font": "MONTSERRAT_20",
                               "text_opa": 255
                             }
                           }
@@ -1649,8 +1662,8 @@
                     {
                       "objID": "378d036e-b4af-4426-9cdc-b4a60fa4ca64",
                       "type": "LVGLLabelWidget",
-                      "left": 16,
-                      "top": 41,
+                      "left": 100,
+                      "top": 28,
                       "width": 37,
                       "height": 24,
                       "customInputs": [],
@@ -1661,6 +1674,7 @@
                         "conditionalStyles": [],
                         "childStyles": []
                       },
+                      "hiddenInEditor": false,
                       "timeline": [],
                       "eventHandlers": [],
                       "identifier": "high_const_label_8",
@@ -1740,6 +1754,7 @@
                     "conditionalStyles": [],
                     "childStyles": []
                   },
+                  "hiddenInEditor": false,
                   "timeline": [],
                   "eventHandlers": [],
                   "identifier": "rain_chances_container",
@@ -1751,10 +1766,10 @@
                     {
                       "objID": "73a502bc-61aa-4f22-d640-e166b2ac2b9e",
                       "type": "LVGLLabelWidget",
-                      "left": 44,
-                      "top": 10,
-                      "width": 104,
-                      "height": 18,
+                      "left": 10,
+                      "top": 18,
+                      "width": 77,
+                      "height": 44,
                       "customInputs": [],
                       "customOutputs": [],
                       "style": {
@@ -1763,6 +1778,7 @@
                         "conditionalStyles": [],
                         "childStyles": []
                       },
+                      "hiddenInEditor": false,
                       "timeline": [],
                       "eventHandlers": [],
                       "identifier": "high_const_label_3",
@@ -1787,7 +1803,7 @@
                           "MAIN": {
                             "DEFAULT": {
                               "text_color": "#ffffff",
-                              "text_font": "MONTSERRAT_16",
+                              "text_font": "MONTSERRAT_20",
                               "text_opa": 255
                             }
                           }
@@ -1795,7 +1811,7 @@
                       },
                       "group": "",
                       "groupIndex": 0,
-                      "text": "Rain Chance",
+                      "text": "Rain \nChance",
                       "textType": "literal",
                       "longMode": "DOT",
                       "recolor": false
@@ -1803,8 +1819,8 @@
                     {
                       "objID": "d35e0fea-b546-4a81-8775-d9e14f7eadae",
                       "type": "LVGLLabelWidget",
-                      "left": 15,
-                      "top": 41,
+                      "left": 104,
+                      "top": 29,
                       "width": 37,
                       "height": 24,
                       "customInputs": [],
@@ -1815,6 +1831,7 @@
                         "conditionalStyles": [],
                         "childStyles": []
                       },
+                      "hiddenInEditor": false,
                       "timeline": [],
                       "eventHandlers": [],
                       "identifier": "high_const_label_9",
