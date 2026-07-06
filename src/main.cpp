@@ -42,6 +42,8 @@ void Arduino_IIC_Touch_Interrupt(void) {
 HWCDC usb_serial;
 SemaphoreHandle_t i2c_mutex;
 
+uint32_t ble_passkey;
+
 // ESP Power Management Locks (The Two-Lock Strategy)
 esp_pm_lock_handle_t sleep_lock;
 esp_pm_lock_handle_t speed_lock;
@@ -56,11 +58,13 @@ int battery_update_ui_interval = 5000;
 int datetime_update_ui_interval = 3000;
 int battery_sensor_read_interval = 2000;
 int screen_timeout_interval = 15000;
-// uint64_t light_sleep_mode_timer = 10;
+int battery_data_to_phone_interval = 10000;
 unsigned long previous_millis_datetime = 0;
 unsigned long previous_millis_battery = 0;
 unsigned long previous_millis_read_battery = 0;
 unsigned long previous_millis_screen_timeout = 0;
+unsigned long previous_millis_battery_to_phone = 0;
+
 
 // Screen and Button State variables
 volatile bool power_button_pressed = false;
@@ -184,6 +188,7 @@ void task_background(void *pvParameters) {
   vTaskDelay(pdMS_TO_TICKS(1500)); 
 
   unsigned long last_battery_check = 0;
+  unsigned long last_bat_to_phone_check = 0;
 
   while(1) {
     unsigned long now = millis();
@@ -193,6 +198,11 @@ void task_background(void *pvParameters) {
       read_battery_sensor();
     }
 
+    // if (now - last_bat_to_phone_check >= battery_data_to_phone_interval) {
+    //   last_bat_to_phone_check = now;
+    //   send_battery_percentage_to_phone();
+    // }
+    
     vTaskDelay(pdMS_TO_TICKS(1000)); // 1000 ms
   }
 }
@@ -203,6 +213,7 @@ void task_background(void *pvParameters) {
 void task_gui(void *pvParameters) {
   usb_serial.println("[System] LVGL engine initialized & running.");
   uint8_t last_brightness_value = 0xFF;
+  previous_millis_screen_timeout = millis();
 
   while(1) {
     if(screen_state) {
@@ -254,6 +265,18 @@ void task_gui(void *pvParameters) {
       }
     }
 
+    if (show_passkey_display != 0) {
+      if(!screen_state) {
+        usb_serial.println("Screen was off, turned on for ble passkey screen");
+        turn_on_screen();
+      }
+
+      // Screen will never go to sleep mode if paskey is shown
+      previous_millis_screen_timeout = millis();
+
+      update_ble_passkey_display();
+    }
+
     // Process power button hardware interrupt checks
     check_power_button_action();
 
@@ -284,10 +307,11 @@ void task_gui(void *pvParameters) {
        
        // NO LOCKS HERE: Let the screen_state locks handle it globally!
        uint32_t time_till_next = lv_timer_handler();
-       if(time_till_next < 5) time_till_next = 5;
-       if(time_till_next >= 500) time_till_next = 500;
+      //  if(time_till_next < 5) time_till_next = 5;
+      //  if(time_till_next >= 500) time_till_next = 500;
        
-       vTaskDelay(pdMS_TO_TICKS(time_till_next));  
+      //  vTaskDelay(pdMS_TO_TICKS(time_till_next));  
+      vTaskDelay(pdMS_TO_TICKS(5));
     }
     else {
       vTaskDelay(pdMS_TO_TICKS(200)); // 200 ms
@@ -357,9 +381,12 @@ void setup() {
   }
   gfx->fillScreen(0x0000);
 
-  gfx->setCursor(180, 251);
-  gfx->setTextColor(0xffffff)
-  gfx->printf("Loading System.....");
+  gfx->setTextSize(2);
+  gfx->setTextColor(0xFFFF);
+  gfx->setCursor(100, 251);
+  gfx->printf("Loading System...");
+
+  ble_passkey = 100000 + (esp_random() % 900000);
 
   rtc_init();
   fetch_and_sync_time();
@@ -388,6 +415,8 @@ void setup() {
     &task_gui_handle,        
     1                    
   );
+
+  vTaskDelete(NULL);
 }
 
 void loop() {}

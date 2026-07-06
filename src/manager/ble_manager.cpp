@@ -1,4 +1,5 @@
 #include "ble_manager.h"
+#include "navigation_manager.h"
 #include <NimBLEDevice.h>
 
 // ---------------------------------------------------------------------
@@ -11,12 +12,10 @@
 #define CHAR_RX_UUID  "6E400002-B5A3-F393-E0A9-E50E24DCCA9E"  // Gadgetbridge -> watch
 #define CHAR_TX_UUID  "6E400003-B5A3-F393-E0A9-E50E24DCCA9E"  // watch -> Gadgetbridge
 
-// File-scope pointers - these need to be reachable from callbacks and from
-// other functions (e.g. ble_is_connected(), future battery/time-sync replies).
-// FIX: previously pServer was shadowed by a local variable of the same name
-// inside ble_manager_init(), so this global was never actually assigned.
 static NimBLEServer* pServer = nullptr;
 static NimBLECharacteristic* pTxCharacteristic = nullptr;
+bool is_bluetooth_connected = false;
+volatile uint32_t show_passkey_display = 0;
 
 // Accumulates incoming bytes until a full line (ending in '\n') is seen -
 // Gadgetbridge can split one message across multiple BLE writes.
@@ -27,14 +26,36 @@ static String rxBuffer = "";
 // ---------------------------------------------------------------------
 class ServerCallbacks : public NimBLEServerCallbacks {
     void onConnect(NimBLEServer* pServer, NimBLEConnInfo& connInfo) override {
-        usb_serial.printf("Client connected:\n%s", connInfo.toString().c_str());
+        usb_serial.printf("onconnect: Client connected:\n%s", connInfo.toString().c_str());
+        is_bluetooth_connected = true;
+        show_passkey_display = 1;
         pServer->updateConnParams(connInfo.getConnHandle(), 80, 160, 0, 300);
     }
 
     void onDisconnect(NimBLEServer* pServer, NimBLEConnInfo& connInfo, int reason) override {
-        usb_serial.printf("Client disconnected (Reason: %d) - start advertising\n", reason);
+        usb_serial.printf("ondisconnect: Client disconnected (Reason: %d) - start advertising\n", reason);
+        is_bluetooth_connected = false;
+        show_passkey_display = 4;
         NimBLEDevice::startAdvertising();
     }
+
+    uint32_t onPassKeyDisplay() override {
+        show_passkey_display = 1;
+        usb_serial.printf("Called onPassKeyDisplay %d", show_passkey_display);
+        return ble_passkey;
+    }
+
+    void onAuthenticationComplete(NimBLEConnInfo& connInfo) override {
+        /** Check that encryption was successful, if not we disconnect the client */
+        if (!connInfo.isEncrypted()) {
+            NimBLEDevice::getServer()->disconnect(connInfo.getConnHandle());
+            show_passkey_display = 3;
+            return;
+        }
+        show_passkey_display = 2;
+        usb_serial.printf("Called onAuthenticationComplete %d", show_passkey_display);
+    }
+
 } serverCallbacks;
 
 // ---------------------------------------------------------------------
@@ -65,11 +86,7 @@ static void handleNotification(const String &payload) {
     usb_serial.println("Body:  " + body);
     usb_serial.println("-----------------------");
 
-    // EXTENSION POINT - display rendering.
-    // You already have `gfx` initialized (saw the fillScreen test in your
-    // onWrite), so this is where a real draw call goes, e.g.:
-    //   showNotificationOnScreen(app, title, body);
-    gfx->fillScreen(0x07E0);   // keeping your visual "got something" flash for now
+    // gfx->fillScreen(0x07E0); 
 }
 
 // ---------------------------------------------------------------------
@@ -115,20 +132,25 @@ class CharacteristicCallbacks : public NimBLECharacteristicCallbacks {
 void ble_manager_init() {
     NimBLEDevice::init(DEVICE_NAME);
 
+    usb_serial.printf("Bluetooth passkey: %d", ble_passkey);
+    NimBLEDevice::setSecurityAuth(true, true, false);
+    NimBLEDevice::setSecurityPasskey(ble_passkey);
+    NimBLEDevice::setSecurityIOCap(BLE_HS_IO_DISPLAY_ONLY);
+
     pServer = NimBLEDevice::createServer();   // FIX: assigns the global, not a shadow
     pServer->setCallbacks(&serverCallbacks);
     usb_serial.println("BLE: Server Created");
 
     NimBLEService* pService = pServer->createService(SERVICE_UUID);
 
-    // TX (watch -> phone): battery, HR, etc. later - stored globally so
+    // TX (watch -> Gadgetbridge): battery, HR, etc. later - stored globally so
     // other functions can notify() on it, unlike before.
     pTxCharacteristic = pService->createCharacteristic(
         CHAR_TX_UUID,
         NIMBLE_PROPERTY::NOTIFY
     );
 
-    // RX (phone -> watch): notifications, weather, etc.
+    // RX (Gadgetbridge -> watch): notifications, weather, etc.
     NimBLECharacteristic* pRxCharacteristic = pService->createCharacteristic(
         CHAR_RX_UUID,
         NIMBLE_PROPERTY::WRITE | NIMBLE_PROPERTY::WRITE_NR
@@ -143,8 +165,6 @@ void ble_manager_init() {
 
 void ble_start_advertising() {
     NimBLEAdvertising* pAdvertising = NimBLEDevice::getAdvertising();
-    // FIX: use the same Bangle.js name here - previously this overrode the
-    // name set in NimBLEDevice::init() with a non-matching one.
     pAdvertising->setName(DEVICE_NAME);
     pAdvertising->addServiceUUID(SERVICE_UUID);
     pAdvertising->enableScanResponse(true);   // required for some Android phones to see name/services
@@ -156,4 +176,46 @@ void ble_start_advertising() {
 bool ble_is_connected() {
     if (pServer == nullptr) return false;   // defensive - avoids the earlier crash if called too early
     return pServer->getConnectedCount() > 0;
+}
+
+// void send_battery_percentage_to_phone() {
+//     if(pTxCharacteristic != nullptr) {
+//         int bat_percent = get_battery_percentage();
+//         pTxCharacteristic->setValue(bat_percent);
+//         pTxCharacteristic->notify();
+//         usb_serial.printf("Battery percentage: %d sent to GadgetBridge APP\n", bat_percent);
+//     }
+//     else {
+//         usb_serial.println("Pointer Null, unable to send the battery percentage");
+//     }
+// }
+
+void update_ble_passkey_display() {
+    char passkey_str[8];
+    snprintf(passkey_str, sizeof(passkey_str), "%d", ble_passkey);
+
+    if(show_passkey_display == 1) {
+        if(active_screen != -30) {
+            usb_serial.println("Load BLE Pass key screen");
+            navigate_to_screen(-30);
+        }
+        if (objects.ble_passkey_label) {
+            lv_label_set_text(objects.ble_passkey_label, passkey_str);
+        }
+    }
+    else if (show_passkey_display == 2 || show_passkey_display == 3) {
+        if (objects.ble_passkey_label) {
+            lv_label_set_text(objects.ble_passkey_label,
+                               show_passkey_display == 2 ? "Paired!" : "Pairing failed");
+        }
+        show_passkey_display = 4;
+    }
+    else if(show_passkey_display == 4) {
+        lv_timer_create([](lv_timer_t *timer) {
+            show_passkey_display = 0; // Reset global state inside the delayed callback
+            navigate_to_screen(0);    // Transition back to home
+            lv_timer_delete(timer);   // Destroy this one-shot timer
+        }, 1000, NULL);
+        show_passkey_display = 0;
+    }
 }
