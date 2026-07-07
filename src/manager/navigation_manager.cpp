@@ -23,6 +23,9 @@ lv_obj_t* get_screen(int number) {
     else if(number == -20) {
         return objects.app_drawer_screen;
     }
+    else if(number == -30) {
+      return objects.ble_passkey_screen;
+    }
     else {
         return objects.home_screen;
     }
@@ -30,11 +33,11 @@ lv_obj_t* get_screen(int number) {
 
 static bool transitionRunning = false;
 
-void navigate_to_screen(int screen, lv_screen_load_anim_t anim)
+void navigate_to_screen(int screen)
 {
     if (transitionRunning)
     {
-        return;
+      return;
     }
 
     transitionRunning = true;
@@ -43,12 +46,12 @@ void navigate_to_screen(int screen, lv_screen_load_anim_t anim)
 
     if (scr == nullptr)
     {
+        usb_serial.printf("Screen is null %d\n", screen);
         transitionRunning = false;
         return;
     }
     active_screen = screen;
     lv_screen_load(scr);
-    // lv_screen_load_anim(scr, anim, 250, 0, false);
 
     lv_timer_create(
         [](lv_timer_t *timer)
@@ -69,7 +72,6 @@ void action_navigate_gesture(lv_event_t * e) {
     lv_dir_t dir = lv_indev_get_gesture_dir(lv_indev_active());
 
     int next_screen = current_screen;
-    lv_screen_load_anim_t animate = LV_SCR_LOAD_ANIM_NONE;
 
     if(previous_vertical_screen < 0) {
       previous_vertical_screen = 0;
@@ -81,14 +83,12 @@ void action_navigate_gesture(lv_event_t * e) {
       // App Drawer -> Main Screens 
       if(current_screen == -20) {
         next_screen = previous_vertical_screen;
-        animate = LV_SCR_LOAD_ANIM_MOVE_BOTTOM;
         usb_serial.printf("Bottom Direction Swipe: Current Screen: %d and Next Screen: %d\n", current_screen, next_screen);
       }
       // Main Screens -> Settings
       else if(current_screen >= 0) {
         previous_vertical_screen = current_screen;
         next_screen = -10;
-        animate = LV_SCR_LOAD_ANIM_MOVE_BOTTOM;
         usb_serial.printf("Bottom Direction Swipe: Current Screen: %d and Next Screen: %d\n", current_screen, next_screen);
       }
     }
@@ -97,26 +97,22 @@ void action_navigate_gesture(lv_event_t * e) {
       if (current_screen == -10) {
         next_screen = previous_vertical_screen;
         previous_vertical_screen = 0;
-        animate = LV_SCR_LOAD_ANIM_MOVE_TOP;
         usb_serial.printf("Top Direction Swipe: Current Screen: %d and Next Screen: %d\n", current_screen, next_screen);
       }
       // Main Screens -> App drawer
       else if (current_screen >= 0) {
         previous_vertical_screen = current_screen;
         next_screen = -20;
-        animate = LV_SCR_LOAD_ANIM_MOVE_TOP;
         usb_serial.printf("Top Direction Swipe: Current Screen: %d and Next Screen: %d\n", current_screen, next_screen);
       }
     }
     // Horizontal Movement
     else if(dir == LV_DIR_LEFT && current_screen >= 0) {
       next_screen = (current_screen + 1) % total_screens;
-      animate = LV_SCR_LOAD_ANIM_MOVE_LEFT;
       usb_serial.printf("Left Direction Swipe: Current Screen: %d and Next Screen: %d\n", current_screen, next_screen);
     }
     else if(dir == LV_DIR_RIGHT && current_screen >= 0) {
       next_screen = (current_screen - 1 + total_screens) % total_screens;
-      animate = LV_SCR_LOAD_ANIM_MOVE_RIGHT;
       usb_serial.printf("Right Direction Swipe: Current Screen: %d and Next Screen: %d\n", current_screen, next_screen);
     }
 
@@ -130,17 +126,7 @@ void action_navigate_gesture(lv_event_t * e) {
             dir
         );
 
-        lv_obj_t *scr = get_screen(next_screen);
-
-        if (scr == nullptr) {
-          usb_serial.println("ERROR: get_screen returned nullptr");
-          return;
-        }
-        usb_serial.println("Before async");
-
-        navigate_to_screen(next_screen, animate);
-
-        usb_serial.println("After async");
+        navigate_to_screen(next_screen);
     }
   }
 }

@@ -1258,8 +1258,11 @@
                       "MAIN": {
                         "DEFAULT": {
                           "radius": 30,
-                          "bg_color": "#09090b",
-                          "bg_opa": 255
+                          "bg_color": "#ffffff",
+                          "bg_opa": 50,
+                          "border_color": "#ffffff",
+                          "border_opa": 100,
+                          "border_width": 2
                         }
                       }
                     }
@@ -1416,8 +1419,11 @@
                       "MAIN": {
                         "DEFAULT": {
                           "radius": 30,
-                          "bg_color": "#09090b",
-                          "bg_opa": 255
+                          "bg_color": "#ffffff",
+                          "bg_opa": 50,
+                          "border_color": "#ffffff",
+                          "border_opa": 100,
+                          "border_width": 2
                         }
                       }
                     }
@@ -1573,8 +1579,11 @@
                       "MAIN": {
                         "DEFAULT": {
                           "radius": 30,
-                          "bg_color": "#09090b",
-                          "bg_opa": 255
+                          "bg_color": "#ffffff",
+                          "bg_opa": 50,
+                          "border_color": "#ffffff",
+                          "border_opa": 100,
+                          "border_width": 2
                         }
                       }
                     }
@@ -1729,9 +1738,12 @@
                     "definition": {
                       "MAIN": {
                         "DEFAULT": {
-                          "bg_color": "#09090b",
-                          "bg_opa": 255,
-                          "radius": 30
+                          "bg_color": "#ffffff",
+                          "bg_opa": 50,
+                          "radius": 30,
+                          "border_color": "#ffffff",
+                          "border_opa": 100,
+                          "border_width": 2
                         }
                       }
                     }
@@ -1886,9 +1898,12 @@
                     "definition": {
                       "MAIN": {
                         "DEFAULT": {
-                          "bg_color": "#09090b",
-                          "bg_opa": 255,
-                          "radius": 30
+                          "bg_color": "#ffffff",
+                          "bg_opa": 50,
+                          "radius": 30,
+                          "border_color": "#ffffff",
+                          "border_opa": 100,
+                          "border_width": 2
                         }
                       }
                     }
@@ -1915,10 +1930,8 @@
                     "DEFAULT": {
                       "border_opa": 100,
                       "border_width": 2,
-                      "border_color": "#ffffff",
-                      "radius": 100,
-                      "bg_color": "9f9fa9",
-                      "bg_opa": 80
+                      "border_color": "#155dfc",
+                      "radius": 100
                     }
                   }
                 }
@@ -2636,6 +2649,225 @@
       "componentGroups": [],
       "userProperties": [],
       "name": "News_Screen",
+      "left": 0,
+      "top": 0,
+      "width": 410,
+      "height": 502,
+      "isUsedAsUserWidget": false,
+      "createAtStart": true,
+      "deleteOnScreenUnload": false
+    },
+    {
+      "objID": "f8fa9c72-0d7b-4cf9-fa39-0a05da34e050",
+      "components": [
+        {
+          "objID": "83408060-c6df-4eb2-cabb-8df5234eb307",
+          "type": "LVGLScreenWidget",
+          "left": 0,
+          "top": 0,
+          "width": 800,
+          "height": 480,
+          "customInputs": [],
+          "customOutputs": [],
+          "style": {
+            "objID": "3df433c3-2d17-48ba-ac80-781ad46a3bac",
+            "useStyle": "default",
+            "conditionalStyles": [],
+            "childStyles": []
+          },
+          "timeline": [],
+          "eventHandlers": [],
+          "leftUnit": "px",
+          "topUnit": "px",
+          "widthUnit": "px",
+          "heightUnit": "px",
+          "children": [
+            {
+              "objID": "0f6a9021-e78f-4429-e5d3-ec0a43b1d658",
+              "type": "LVGLContainerWidget",
+              "left": 13,
+              "top": 14,
+              "width": 381,
+              "height": 470,
+              "customInputs": [],
+              "customOutputs": [],
+              "style": {
+                "objID": "cf11b57d-828b-47f7-a894-6351c05ae6bf",
+                "useStyle": "default",
+                "conditionalStyles": [],
+                "childStyles": []
+              },
+              "hiddenInEditor": false,
+              "timeline": [],
+              "eventHandlers": [],
+              "identifier": "ble_passkey_container",
+              "leftUnit": "px",
+              "topUnit": "px",
+              "widthUnit": "px",
+              "heightUnit": "px",
+              "children": [
+                {
+                  "objID": "47f4de27-6cfb-44bc-bad9-7c0cc5c778ec",
+                  "type": "LVGLLabelWidget",
+                  "left": 93,
+                  "top": 189,
+                  "width": 191,
+                  "height": 22,
+                  "customInputs": [],
+                  "customOutputs": [],
+                  "style": {
+                    "objID": "71b5a815-2e06-40cb-ea79-bd6517d84a33",
+                    "useStyle": "default",
+                    "conditionalStyles": [],
+                    "childStyles": []
+                  },
+                  "timeline": [],
+                  "eventHandlers": [],
+                  "leftUnit": "px",
+                  "topUnit": "px",
+                  "widthUnit": "content",
+                  "heightUnit": "content",
+                  "children": [],
+                  "widgetFlags": "CLICK_FOCUSABLE|GESTURE_BUBBLE|PRESS_LOCK|SCROLLABLE|SCROLL_CHAIN_HOR|SCROLL_CHAIN_VER|SCROLL_ELASTIC|SCROLL_MOMENTUM|SCROLL_WITH_ARROW|SNAPPABLE",
+                  "hiddenFlagType": "literal",
+                  "clickableFlagType": "literal",
+                  "flagScrollbarMode": "",
+                  "flagScrollDirection": "",
+                  "scrollSnapX": "",
+                  "scrollSnapY": "",
+                  "checkedStateType": "literal",
+                  "disabledStateType": "literal",
+                  "states": "",
+                  "localStyles": {
+                    "objID": "61196bf9-1f9d-48ad-c6d2-ce0a64f97c79",
+                    "definition": {
+                      "MAIN": {
+                        "DEFAULT": {
+                          "text_color": "#ffffff",
+                          "text_opa": 255,
+                          "text_font": "MONTSERRAT_20"
+                        }
+                      }
+                    }
+                  },
+                  "group": "",
+                  "groupIndex": 0,
+                  "text": "Bluetooth PassKey",
+                  "textType": "literal",
+                  "longMode": "WRAP",
+                  "recolor": false
+                },
+                {
+                  "objID": "710f78be-5f64-4926-ccbb-c17991dee109",
+                  "type": "LVGLLabelWidget",
+                  "left": 93,
+                  "top": 233,
+                  "width": 191,
+                  "height": 27,
+                  "customInputs": [],
+                  "customOutputs": [],
+                  "style": {
+                    "objID": "e137850b-5bb1-494a-9b82-16162829aec5",
+                    "useStyle": "default",
+                    "conditionalStyles": [],
+                    "childStyles": []
+                  },
+                  "timeline": [],
+                  "eventHandlers": [],
+                  "identifier": "ble_passkey_label",
+                  "leftUnit": "px",
+                  "topUnit": "px",
+                  "widthUnit": "px",
+                  "heightUnit": "px",
+                  "children": [],
+                  "widgetFlags": "CLICK_FOCUSABLE|GESTURE_BUBBLE|PRESS_LOCK|SCROLLABLE|SCROLL_CHAIN_HOR|SCROLL_CHAIN_VER|SCROLL_ELASTIC|SCROLL_MOMENTUM|SCROLL_WITH_ARROW|SNAPPABLE",
+                  "hiddenFlagType": "literal",
+                  "clickableFlagType": "literal",
+                  "flagScrollbarMode": "",
+                  "flagScrollDirection": "",
+                  "scrollSnapX": "",
+                  "scrollSnapY": "",
+                  "checkedStateType": "literal",
+                  "disabledStateType": "literal",
+                  "states": "",
+                  "localStyles": {
+                    "objID": "e66c9bbd-5309-4560-a580-6a230a4c4747",
+                    "definition": {
+                      "MAIN": {
+                        "DEFAULT": {
+                          "text_color": "#ffffff",
+                          "text_opa": 255,
+                          "text_font": "MONTSERRAT_24",
+                          "text_align": "CENTER"
+                        }
+                      }
+                    }
+                  },
+                  "group": "",
+                  "groupIndex": 0,
+                  "text": "1234",
+                  "textType": "literal",
+                  "longMode": "WRAP",
+                  "recolor": false
+                }
+              ],
+              "widgetFlags": "",
+              "hiddenFlagType": "literal",
+              "clickableFlag": false,
+              "clickableFlagType": "literal",
+              "flagScrollbarMode": "",
+              "flagScrollDirection": "",
+              "scrollSnapX": "",
+              "scrollSnapY": "",
+              "checkedStateType": "literal",
+              "disabledStateType": "literal",
+              "states": "",
+              "localStyles": {
+                "objID": "7be9b7eb-33f6-4074-c54a-ed7117ee30d4",
+                "definition": {
+                  "MAIN": {
+                    "DEFAULT": {
+                      "border_opa": 100,
+                      "border_width": 2,
+                      "border_color": "#155dfc",
+                      "radius": 100
+                    }
+                  }
+                }
+              },
+              "group": "",
+              "groupIndex": 0
+            }
+          ],
+          "widgetFlags": "CLICKABLE",
+          "hiddenFlagType": "literal",
+          "clickableFlag": false,
+          "clickableFlagType": "literal",
+          "checkedStateType": "literal",
+          "disabledStateType": "literal",
+          "states": "",
+          "localStyles": {
+            "objID": "93efddd8-43c0-43d3-d26c-a5324311d536",
+            "definition": {
+              "MAIN": {
+                "DEFAULT": {
+                  "bg_color": "#09090b",
+                  "border_color": "#155dfc",
+                  "border_opa": 100,
+                  "border_width": 2,
+                  "border_side": "FULL"
+                }
+              }
+            }
+          },
+          "groupIndex": 0
+        }
+      ],
+      "connectionLines": [],
+      "localVariables": [],
+      "componentGroups": [],
+      "userProperties": [],
+      "name": "BLE_Passkey_Screen",
       "left": 0,
       "top": 0,
       "width": 410,

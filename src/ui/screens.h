@@ -16,7 +16,8 @@ enum ScreensEnum {
     SCREEN_ID_APP_DRAWER_SCREEN = 3,
     SCREEN_ID_SETTINGS_SCREEN = 4,
     SCREEN_ID_NEWS_SCREEN = 5,
-    _SCREEN_ID_LAST = 5
+    SCREEN_ID_BLE_PASSKEY_SCREEN = 6,
+    _SCREEN_ID_LAST = 6
 };
 
 typedef struct _objects_t {
@@ -25,6 +26,7 @@ typedef struct _objects_t {
     lv_obj_t *app_drawer_screen;
     lv_obj_t *settings_screen;
     lv_obj_t *news_screen;
+    lv_obj_t *ble_passkey_screen;
     lv_obj_t *parent_container;
     lv_obj_t *battery_container;
     lv_obj_t *time_label;
@@ -66,6 +68,9 @@ typedef struct _objects_t {
     lv_obj_t *day_label_3;
     lv_obj_t *right_day_border_3;
     lv_obj_t *left_day_border_3;
+    lv_obj_t *ble_passkey_container;
+    lv_obj_t *obj0;
+    lv_obj_t *ble_passkey_label;
 } objects_t;
 
 extern objects_t objects;
@@ -84,6 +89,9 @@ void tick_screen_settings_screen();
 
 void create_screen_news_screen();
 void tick_screen_news_screen();
+
+void create_screen_ble_passkey_screen();
+void tick_screen_ble_passkey_screen();
 
 void tick_screen_by_id(enum ScreensEnum screenId);
 void tick_screen(int screen_index);

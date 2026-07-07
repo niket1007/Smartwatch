@@ -35,8 +35,8 @@ void set_battery_charging(bool charging) {
 }
 
 void power_init() {
-    Wire.begin(IIC_SDA, IIC_SCL);
-    Wire.setClock(100000); 
+    // Wire.begin(IIC_SDA, IIC_SCL);
+    // Wire.setClock(100000); 
 
     usb_serial.print("Initializing AXP2101 PMU...");
     if (power.begin(Wire, AXP2101_SLAVE_ADDRESS, IIC_SDA, IIC_SCL)) {
