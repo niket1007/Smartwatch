@@ -14,7 +14,7 @@
 
 Arduino_DataBus *bus = new Arduino_ESP32QSPI(
   LCD_CS /* CS */, LCD_SCLK /* SCK */, LCD_SDIO0 /* SDIO0 */, LCD_SDIO1 /* SDIO1 */,
-  LCD_SDIO2 /* SDIO2 */, LCD_SDIO3 /* SDIO3 */);
+  LCD_SDIO2 /* SDIO2 */, LCD_SDIO3 /* SDIO3 */, true /* is_shared_interface */);
 
 Arduino_GFX *gfx = new Arduino_CO5300(bus, LCD_RESET /* RST */,
                                       0 /* rotation */,  LCD_WIDTH, LCD_HEIGHT,
@@ -44,6 +44,8 @@ SemaphoreHandle_t i2c_mutex;
 
 uint32_t ble_passkey;
 
+volatile int screen_turned_on = 0;
+
 // ESP Power Management Locks (The Two-Lock Strategy)
 esp_pm_lock_handle_t sleep_lock;
 esp_pm_lock_handle_t speed_lock;
@@ -52,11 +54,14 @@ esp_pm_lock_handle_t speed_lock;
 TaskHandle_t task_gui_handle = NULL;
 TaskHandle_t task_background_handle = NULL;
 
+uint32_t sleep_count = 0;
+int64_t total_sleep_us = 0;
+
 // Interval variables
 int wifi_interval = 10;
 int battery_update_ui_interval = 5000;
-int datetime_update_ui_interval = 3000;
-int battery_sensor_read_interval = 2000;
+int datetime_update_ui_interval = 2000;
+int battery_sensor_read_interval = 3000;
 int screen_timeout_interval = 15000;
 int battery_data_to_phone_interval = 10000;
 unsigned long previous_millis_datetime = 0;
@@ -84,15 +89,23 @@ void IRAM_ATTR bootButtonISR() {
   // 200ms software debounce
   if (interrupt_time - last_interrupt_time > 200) { 
     power_button_pressed = true;
+
+    if (task_gui_handle != NULL) {
+        BaseType_t xHigherPriorityTaskWoken = pdFALSE;
+        vTaskNotifyGiveFromISR(task_gui_handle, &xHigherPriorityTaskWoken);
+        if (xHigherPriorityTaskWoken) {
+            portYIELD_FROM_ISR(); // Force context switch to UI task
+        }
+    }
   }
   last_interrupt_time = interrupt_time;
 }
 
-// ==========================================================
-// CO5300 LOW-LEVEL DISPLAY POWER / BACKLIGHT FUNCTIONS
-// ==========================================================
+// ==============================================================
+// CO5300 AND GPIO LOW-LEVEL DISPLAY POWER / BACKLIGHT FUNCTIONS
+// ==============================================================
 void set_screen_brightness(uint8_t brightness_val) {
-   #if defined(ARDUINO_ARCH_ESP32) && defined(CO5300_QSPI_BRIGHTNESS)
+  #if defined(ARDUINO_ARCH_ESP32) && defined(CO5300_QSPI_BRIGHTNESS)
       gfx->setBrightness(brightness_val);
    #else
       // Send command 0x51 (brightness register) followed by the brightness value
@@ -102,35 +115,46 @@ void set_screen_brightness(uint8_t brightness_val) {
    #endif
 }
 
+void turn_off_screen() {
+    if (!screen_state) return;
+    
+    set_screen_brightness(0x00); 
+
+    bus->beginWrite();
+    bus->writeCommand(0x28); // Amoled Display Off
+    bus->endWrite();
+
+    // Force CS HIGH to stop the display from listening for noise
+    pinMode(LCD_CS, OUTPUT);
+    digitalWrite(LCD_CS, HIGH);
+
+    screen_state = false;
+    screen_turned_on = 0;
+
+    esp_pm_lock_release(speed_lock);
+    esp_pm_lock_release(sleep_lock);
+}
+
 void turn_on_screen() {
-    // ACQUIRE LOCKS: Prevent sleep and force 240MHz for smooth UI
+    if (screen_state) return;
+    
     esp_pm_lock_acquire(sleep_lock);
     esp_pm_lock_acquire(speed_lock);
 
-    // Wake up display driver (Command 0x29: Display On)
     bus->beginWrite();
-    bus->writeCommand(0x29);
+    bus->writeCommand(0x11); // Amoled Sleep Out
     bus->endWrite();
     
-    // Full Brightness is 255 and hexadecimal value is 0xff
-    // 70% brightness is 255 * 0.70 = 178 => hexadecimal value of 178 is 0xB2
+    vTaskDelay(pdMS_TO_TICKS(150)); // Give some time for display wake up
+
+    bus->beginWrite();
+    bus->writeCommand(0x29); // Amoled Display On
+    bus->endWrite();
+    
     set_screen_brightness(screen_brightness);
     screen_state = true;
-}
+    screen_turned_on = 1;
 
-void turn_off_screen() {
-    set_screen_brightness(0x00); // Backlight off
-    
-    // Put display in sleep / display off mode (Command 0x28: Display Off)
-    bus->beginWrite();
-    bus->writeCommand(0x28);
-    bus->endWrite();
-    
-    screen_state = false;
-
-    // RELEASE LOCKS: Allow CPU to drop to 40MHz and enter Light Sleep
-    esp_pm_lock_release(speed_lock);
-    esp_pm_lock_release(sleep_lock);
 }
 
 void check_power_button_action() {
@@ -144,6 +168,7 @@ void check_power_button_action() {
     }
   }
 }
+
 // ==========================================================
 // FT3168 TOUCH DRIVER (Thread-Safe)
 // ==========================================================
@@ -155,7 +180,6 @@ bool lvgl_get_touch(int16_t &x, int16_t &y) {
     return false;
   }
 
-  // MUST lock the I2C bus because this runs on Core 1!
   if (xSemaphoreTake(i2c_mutex, pdMS_TO_TICKS(10))) {
 
     if (FT3168->IIC_Interrupt_Flag == true) {
@@ -167,18 +191,10 @@ bool lvgl_get_touch(int16_t &x, int16_t &y) {
       previous_millis_screen_timeout = millis();
     }
 
-    // Always give the lock back so Core 0 can read the battery!
     xSemaphoreGive(i2c_mutex);
   }
 
   return is_touched;
-}
-
-// ==========================================================
-// CLOCK BACKEND TIMER CALLBACK
-// ==========================================================
-static void clock_timer_cb(lv_timer_t *timer) {
-  // Reserved for internal layout synchronization hooks
 }
 
 // ==========================================================
@@ -187,23 +203,35 @@ static void clock_timer_cb(lv_timer_t *timer) {
 void task_background(void *pvParameters) {
   vTaskDelay(pdMS_TO_TICKS(1500)); 
 
-  unsigned long last_battery_check = 0;
-  unsigned long last_bat_to_phone_check = 0;
+  static bool ble_is_powered_on = false;
 
   while(1) {
     unsigned long now = millis();
+    int current_bat = get_battery_percentage();
 
-    if (now - last_battery_check >= battery_sensor_read_interval) {
-      last_battery_check = now;
-      read_battery_sensor();
+    if (screen_state) { // Only do work if screen is active
+        if (screen_turned_on == 1) {
+          read_battery_sensor();
+          previous_millis_read_battery = now;
+          screen_turned_on = 2;
+        }
+      
+        if (now - previous_millis_read_battery >= battery_sensor_read_interval) {
+          read_battery_sensor();
+          previous_millis_read_battery = now;
+        } 
     }
 
-    // if (now - last_bat_to_phone_check >= battery_data_to_phone_interval) {
-    //   last_bat_to_phone_check = now;
-    //   send_battery_percentage_to_phone();
-    // }
-    
-    vTaskDelay(pdMS_TO_TICKS(1000)); // 1000 ms
+    if(current_bat <= 20 && ble_is_powered_on) {
+      ble_manager_deinit();
+      ble_is_powered_on = false;
+    }
+    else if(current_bat > 20 && !ble_is_powered_on) {
+      ble_manager_init();
+      ble_is_powered_on = true;
+    }
+
+    vTaskDelay(pdMS_TO_TICKS(screen_state ? 1000 : 300000)); 
   }
 }
 
@@ -214,7 +242,7 @@ void task_gui(void *pvParameters) {
   usb_serial.println("[System] LVGL engine initialized & running.");
   uint8_t last_brightness_value = 0xFF;
   previous_millis_screen_timeout = millis();
-
+  
   while(1) {
     if(screen_state) {
       int bat_percent = get_battery_percentage();
@@ -222,7 +250,7 @@ void task_gui(void *pvParameters) {
         screen_brightness = 0xb2; // 70% brightness = 255 *0.70 = 178 (0xb2 hexadecimal)
         battery_update_ui_interval = 5000;
         datetime_update_ui_interval = 2000;
-        battery_sensor_read_interval = 2000;
+        battery_sensor_read_interval = 3000;
 
         screen_timeout_interval = 15000;
       }
@@ -231,7 +259,7 @@ void task_gui(void *pvParameters) {
         // Intervals doubled (slower)
         battery_update_ui_interval = 10000; 
         datetime_update_ui_interval = 4000;
-        battery_sensor_read_interval = 4000;
+        battery_sensor_read_interval = 6000;
 
         screen_timeout_interval = 10000;
       }
@@ -240,7 +268,7 @@ void task_gui(void *pvParameters) {
         // Intervals tripled (slower)
         battery_update_ui_interval = 15000; 
         datetime_update_ui_interval = 6000;
-        battery_sensor_read_interval = 6000;
+        battery_sensor_read_interval = 9000;
 
         screen_timeout_interval = 5000;
       }
@@ -249,7 +277,7 @@ void task_gui(void *pvParameters) {
         // Intervals tripled (slower)
         battery_update_ui_interval = 15000;
         datetime_update_ui_interval = 6000;
-        battery_sensor_read_interval = 6000;
+        battery_sensor_read_interval = 9000;
 
         screen_timeout_interval = 5000;
       }
@@ -280,43 +308,51 @@ void task_gui(void *pvParameters) {
     // Process power button hardware interrupt checks
     check_power_button_action();
 
-    // Paint and update screen objects layout only if screen is on
     if (screen_state) {
-       unsigned long now = millis();
+      unsigned long now = millis();
 
-       if (now - previous_millis_screen_timeout >= screen_timeout_interval) {
-          previous_millis_screen_timeout = now;
-          if (screen_state) {
-            turn_off_screen();
-          }
-       }
+      if(screen_turned_on == 2) {
+        update_battery_ui();
+        update_datetime_ui();
+        previous_millis_datetime = now;
+        previous_millis_battery = now;
+        screen_turned_on = 0;
+      }
 
-       if(now - previous_millis_battery >= battery_update_ui_interval) {
-         previous_millis_battery = now;
-         if(active_screen == 0) {
-           update_battery_ui();
-         }
-       }
+      if (now - previous_millis_screen_timeout >= screen_timeout_interval) {
+        previous_millis_screen_timeout = now;
+        if (screen_state) turn_off_screen();
+      }
 
-       if(now - previous_millis_datetime >= datetime_update_ui_interval) {
-         previous_millis_datetime = now;
-         if(active_screen == 0) {
-           update_datetime_ui();
-         }
-       }
-       
-       // NO LOCKS HERE: Let the screen_state locks handle it globally!
-       uint32_t time_till_next = lv_timer_handler();
-      //  if(time_till_next < 5) time_till_next = 5;
-      //  if(time_till_next >= 500) time_till_next = 500;
-       
-      //  vTaskDelay(pdMS_TO_TICKS(time_till_next));  
-      vTaskDelay(pdMS_TO_TICKS(5));
+      if(now - previous_millis_battery >= battery_update_ui_interval) {
+        previous_millis_battery = now;
+        update_battery_ui();
+      }
+
+      if(now - previous_millis_datetime >= datetime_update_ui_interval) {
+        previous_millis_datetime = now;
+        update_datetime_ui();
+      }
+
+      uint32_t time_till_next = lv_timer_handler();
+      if(time_till_next < 5) time_till_next = 5;
+      if(time_till_next > 20) time_till_next = 20;  
+      vTaskDelay(pdMS_TO_TICKS(time_till_next));
     }
     else {
-      vTaskDelay(pdMS_TO_TICKS(200)); // 200 ms
+      ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
     }
   }
+}
+
+static esp_err_t IRAM_ATTR before_light_sleep(int64_t sleep_time_us, void *arg) {
+    return ESP_OK;
+}
+
+static esp_err_t IRAM_ATTR after_light_sleep(int64_t sleep_time_us, void *arg) {
+    sleep_count++;
+    total_sleep_us += sleep_time_us;
+    return ESP_OK;
 }
 
 // ==========================================================
@@ -332,6 +368,9 @@ void setup() {
   pinMode(BOOT_BUTTON_PIN, INPUT_PULLUP);
   attachInterrupt(digitalPinToInterrupt(BOOT_BUTTON_PIN), bootButtonISR, FALLING);
 
+  esp_sleep_enable_gpio_wakeup();
+  gpio_wakeup_enable((gpio_num_t)BOOT_BUTTON_PIN, GPIO_INTR_LOW_LEVEL);
+
   // ── Automatic light sleep
   esp_pm_config_t pm_config = {
     .max_freq_mhz = 240,   // matches board's normal running clock
@@ -344,6 +383,15 @@ void setup() {
                        "CONFIG_FREERTOS_USE_TICKLESS_IDLE are enabled for this board\n", pm_ret);
   } else {
     usb_serial.println("[PM] Automatic light sleep enabled (BLE-safe)");
+  }
+
+  esp_pm_sleep_cbs_register_config_t cbs_conf = {
+        .enter_cb = before_light_sleep,
+        .exit_cb  = after_light_sleep,
+    };
+  esp_err_t ret = esp_pm_light_sleep_register_cbs(&cbs_conf);
+  if (ret != ESP_OK) {
+      usb_serial.printf("[PM] Failed to register sleep callbacks: %s\n", esp_err_to_name(ret));
   }
   
   // Initialize the Two Power Locks
@@ -390,8 +438,6 @@ void setup() {
 
   rtc_init();
   fetch_and_sync_time();
-  ble_manager_init();
-
   lvgl_manager_init();
 
   // Create Background Sensor Monitoring Task, pinned to Core 0
@@ -420,3 +466,7 @@ void setup() {
 }
 
 void loop() {}
+
+void action_wifi_tab_save_clicked(lv_event_t * e) {
+  usb_serial.println("Save button clicked");
+}

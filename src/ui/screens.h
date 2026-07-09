@@ -13,31 +13,34 @@ enum ScreensEnum {
     _SCREEN_ID_FIRST = 1,
     SCREEN_ID_HOME_SCREEN = 1,
     SCREEN_ID_WEATHER_SCREEN = 2,
-    SCREEN_ID_APP_DRAWER_SCREEN = 3,
+    SCREEN_ID_NOTIFICATION_SCREEN = 3,
     SCREEN_ID_SETTINGS_SCREEN = 4,
-    SCREEN_ID_NEWS_SCREEN = 5,
+    SCREEN_ID_NAVIGATION_SCREEN = 5,
     SCREEN_ID_BLE_PASSKEY_SCREEN = 6,
-    _SCREEN_ID_LAST = 6
+    SCREEN_ID_CALENDAR_SCREEN = 7,
+    _SCREEN_ID_LAST = 7
 };
 
 typedef struct _objects_t {
     lv_obj_t *home_screen;
     lv_obj_t *weather_screen;
-    lv_obj_t *app_drawer_screen;
+    lv_obj_t *notification_screen;
     lv_obj_t *settings_screen;
-    lv_obj_t *news_screen;
+    lv_obj_t *navigation_screen;
     lv_obj_t *ble_passkey_screen;
+    lv_obj_t *calendar_screen;
     lv_obj_t *parent_container;
     lv_obj_t *battery_container;
+    lv_obj_t *battery_status_label;
+    lv_obj_t *battery_percentage_bar;
+    lv_obj_t *battery_percentage_label;
     lv_obj_t *time_label;
     lv_obj_t *date_label;
     lv_obj_t *day_label;
     lv_obj_t *am_pm_label;
     lv_obj_t *right_day_border;
     lv_obj_t *left_day_border;
-    lv_obj_t *battery_percentage_bar;
-    lv_obj_t *battery_status_label;
-    lv_obj_t *battery_percentage_label;
+    lv_obj_t *sleep_label;
     lv_obj_t *weather_container;
     lv_obj_t *temp_label;
     lv_obj_t *loc_label;
@@ -54,23 +57,68 @@ typedef struct _objects_t {
     lv_obj_t *humidity_const_label;
     lv_obj_t *humidity_label;
     lv_obj_t *aqi_container;
-    lv_obj_t *high_const_label_1;
-    lv_obj_t *high_const_label_8;
+    lv_obj_t *uv_const_label;
+    lv_obj_t *uv_label;
     lv_obj_t *rain_chances_container;
-    lv_obj_t *high_const_label_3;
-    lv_obj_t *high_const_label_9;
-    lv_obj_t *day_label_1;
-    lv_obj_t *right_day_border_1;
-    lv_obj_t *left_day_border_1;
-    lv_obj_t *day_label_2;
-    lv_obj_t *right_day_border_2;
-    lv_obj_t *left_day_border_2;
-    lv_obj_t *day_label_3;
-    lv_obj_t *right_day_border_3;
-    lv_obj_t *left_day_border_3;
-    lv_obj_t *ble_passkey_container;
+    lv_obj_t *rain_chance_const_label;
+    lv_obj_t *rain_chance_label;
+    lv_obj_t *notification_container;
+    lv_obj_t *settings_tabview;
+    lv_obj_t *ble_tab;
+    lv_obj_t *ble_heading_label;
+    lv_obj_t *ble_const_label;
+    lv_obj_t *ble_device_name;
+    lv_obj_t *wifi_tab;
+    lv_obj_t *wifi_const_label;
+    lv_obj_t *wifi_pass_text_field;
+    lv_obj_t *wifi_save_button;
+    lv_obj_t *systen_info_label;
     lv_obj_t *obj0;
+    lv_obj_t *brightness_label;
+    lv_obj_t *brightness_bar;
+    lv_obj_t *obj1;
+    lv_obj_t *interval_label;
+    lv_obj_t *rbs_label;
+    lv_obj_t *ub_label;
+    lv_obj_t *udt_label;
+    lv_obj_t *udt_interval_label;
+    lv_obj_t *ub_interval_label;
+    lv_obj_t *rbs_interval_label;
+    lv_obj_t *obj2;
+    lv_obj_t *st_label;
+    lv_obj_t *st_interval_label;
+    lv_obj_t *about_tab;
+    lv_obj_t *about_row_1;
+    lv_obj_t *obj3;
+    lv_obj_t *obj4;
+    lv_obj_t *about_row_2;
+    lv_obj_t *obj5;
+    lv_obj_t *obj6;
+    lv_obj_t *about_row_3;
+    lv_obj_t *obj7;
+    lv_obj_t *obj8;
+    lv_obj_t *about_row_4;
+    lv_obj_t *obj9;
+    lv_obj_t *obj10;
+    lv_obj_t *about_row_5;
+    lv_obj_t *obj11;
+    lv_obj_t *obj12;
+    lv_obj_t *about_row_6;
+    lv_obj_t *obj13;
+    lv_obj_t *obj14;
+    lv_obj_t *about_row_7;
+    lv_obj_t *obj15;
+    lv_obj_t *obj16;
+    lv_obj_t *obj17;
+    lv_obj_t *nav_container;
+    lv_obj_t *dir_label;
+    lv_obj_t *nav_eta_container;
+    lv_obj_t *eta_label;
+    lv_obj_t *eta_datetime_label;
+    lv_obj_t *ble_passkey_container;
+    lv_obj_t *obj18;
     lv_obj_t *ble_passkey_label;
+    lv_obj_t *calendar_obj;
 } objects_t;
 
 extern objects_t objects;
@@ -81,17 +129,20 @@ void tick_screen_home_screen();
 void create_screen_weather_screen();
 void tick_screen_weather_screen();
 
-void create_screen_app_drawer_screen();
-void tick_screen_app_drawer_screen();
+void create_screen_notification_screen();
+void tick_screen_notification_screen();
 
 void create_screen_settings_screen();
 void tick_screen_settings_screen();
 
-void create_screen_news_screen();
-void tick_screen_news_screen();
+void create_screen_navigation_screen();
+void tick_screen_navigation_screen();
 
 void create_screen_ble_passkey_screen();
 void tick_screen_ble_passkey_screen();
+
+void create_screen_calendar_screen();
+void tick_screen_calendar_screen();
 
 void tick_screen_by_id(enum ScreensEnum screenId);
 void tick_screen(int screen_index);

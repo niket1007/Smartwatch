@@ -13,7 +13,7 @@ void ble_start_advertising();
 // Check if a phone is currently connected
 bool ble_is_connected();
 
-// Send Battery Percentage to GadgetBridege
-// void send_battery_percentage_to_phone();
+// Ble deinitialised
+void ble_manager_deinit();
 
 void update_ble_passkey_display();

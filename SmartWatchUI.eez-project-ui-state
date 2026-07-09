@@ -1,6 +1,6 @@
 {
   "navigation": {
-    "selectedUserPageObject": "[SmartWatchUI.eez-project]:/userPages/5",
+    "selectedUserPageObject": "[SmartWatchUI.eez-project]:/userPages/4",
     "subnavigationSelectedItems": {}
   },
   "layoutModel": {
@@ -192,10 +192,10 @@
                 {
                   "type": "tab",
                   "id": "#1a4085f5-3b3c-4cf5-b07a-00c4de906d65",
-                  "name": "BLE_Passkey_Screen",
+                  "name": "Navigation_Screen",
                   "component": "editor",
                   "config": {
-                    "objectPath": "[SmartWatchUI.eez-project]:/userPages/5",
+                    "objectPath": "[SmartWatchUI.eez-project]:/userPages/4",
                     "permanent": false
                   },
                   "icon": "svg:page"
@@ -1053,6 +1053,9 @@
       "selectionBack": {
         "0": {
           "0": {
+            "0": {
+              "$selected": true
+            },
             "$selected": true
           }
         }
@@ -1073,7 +1076,13 @@
     },
     "[SmartWatchUI.eez-project]:/userPages/4[flow-state]": {
       "selectionFront": {},
-      "selectionBack": {},
+      "selectionBack": {
+        "0": {
+          "0": {
+            "1": {}
+          }
+        }
+      },
       "transform": {
         "translate": {
           "x": -205,
@@ -1129,8 +1138,10 @@
           "0": {
             "3": {},
             "4": {},
+            "5": {},
             "6": {},
-            "7": {}
+            "7": {},
+            "8": {}
           }
         }
       },

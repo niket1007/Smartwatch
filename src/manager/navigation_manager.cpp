@@ -2,29 +2,32 @@
 
 // ################# Variables Start #################
 int previous_vertical_screen = 0;
-int total_screens = 3; // Only those screens which has left and right gesture enabled
-int active_screen = 0;
+int total_screens = 4; // Only those screens which has left and right gesture enabled
+int active_screen = HOME_SCREEN;
 // ################# Variables End #################
 
 
 lv_obj_t* get_screen(int number) {
-    if(number == 0) {
+    if(number == HOME_SCREEN) {
         return objects.home_screen;
     }
-    else if(number == 1) {
+    else if(number == WEATHER_SCREEN) {
         return objects.weather_screen;
     }
-    else if(number == 2) {
-        return objects.news_screen;
+    else if(number == NAVIGATION_SCREEN) {
+        return objects.navigation_screen;
     }
-    else if(number == -10) {
+    else if(number == SETTINGS_SCREEN) {
         return objects.settings_screen;
     }
-    else if(number == -20) {
-        return objects.app_drawer_screen;
+    else if(number == NOTIFICATION_SCREEN) {
+        return objects.notification_screen;
     }
-    else if(number == -30) {
+    else if(number == BLE_PASSKEY_SCREEN) {
       return objects.ble_passkey_screen;
+    }
+    else if(number == CALENDAR_SCREEN) {
+      return objects.calendar_screen;
     }
     else {
         return objects.home_screen;

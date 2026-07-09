@@ -11,6 +11,7 @@ extern "C" {
   #include "ui/actions.h"
 }
 
+extern TaskHandle_t task_gui_handle;
 
 extern HWCDC usb_serial;
 extern SemaphoreHandle_t i2c_mutex;
@@ -22,6 +23,8 @@ extern uint32_t ble_passkey;
 // 3-> Display Status Paired Failed;
 // 4 -> Move to Home Screen;
 extern volatile uint32_t show_passkey_display; 
+
+extern uint32_t sleep_count;
 
 extern void turn_off_screen();
 extern void turn_on_screen();

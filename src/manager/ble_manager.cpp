@@ -5,9 +5,7 @@
 // ---------------------------------------------------------------------
 // CONFIG
 // ---------------------------------------------------------------------
-// MUST start with "Bangle.js" - this is literally how Gadgetbridge decides
-// which driver to use when it sees the device while scanning.
-#define DEVICE_NAME   "Bangle.js 8f3b"
+#define DEVICE_NAME   "NSmartWatch"
 #define SERVICE_UUID  "6E400001-B5A3-F393-E0A9-E50E24DCCA9E"
 #define CHAR_RX_UUID  "6E400002-B5A3-F393-E0A9-E50E24DCCA9E"  // Gadgetbridge -> watch
 #define CHAR_TX_UUID  "6E400003-B5A3-F393-E0A9-E50E24DCCA9E"  // watch -> Gadgetbridge
@@ -29,6 +27,7 @@ class ServerCallbacks : public NimBLEServerCallbacks {
         usb_serial.printf("onconnect: Client connected:\n%s", connInfo.toString().c_str());
         is_bluetooth_connected = true;
         show_passkey_display = 1;
+        xTaskNotifyGive(task_gui_handle);
         pServer->updateConnParams(connInfo.getConnHandle(), 80, 160, 0, 300);
     }
 
@@ -37,12 +36,6 @@ class ServerCallbacks : public NimBLEServerCallbacks {
         is_bluetooth_connected = false;
         show_passkey_display = 4;
         NimBLEDevice::startAdvertising();
-    }
-
-    uint32_t onPassKeyDisplay() override {
-        show_passkey_display = 1;
-        usb_serial.printf("Called onPassKeyDisplay %d", show_passkey_display);
-        return ble_passkey;
     }
 
     void onAuthenticationComplete(NimBLEConnInfo& connInfo) override {
@@ -138,6 +131,10 @@ void ble_manager_init() {
     NimBLEDevice::setSecurityIOCap(BLE_HS_IO_DISPLAY_ONLY);
 
     pServer = NimBLEDevice::createServer();   // FIX: assigns the global, not a shadow
+    if(pServer == nullptr) {
+        usb_serial.println("Bluetooth not initialised");
+        return;
+    }
     pServer->setCallbacks(&serverCallbacks);
     usb_serial.println("BLE: Server Created");
 
@@ -157,7 +154,6 @@ void ble_manager_init() {
     );
     pRxCharacteristic->setCallbacks(&ble_callbacks);
 
-    pService->start();
     usb_serial.println("BLE: Service Started");
 
     ble_start_advertising();
@@ -167,37 +163,45 @@ void ble_start_advertising() {
     NimBLEAdvertising* pAdvertising = NimBLEDevice::getAdvertising();
     pAdvertising->setName(DEVICE_NAME);
     pAdvertising->addServiceUUID(SERVICE_UUID);
-    pAdvertising->enableScanResponse(true);   // required for some Android phones to see name/services
+    pAdvertising->enableScanResponse(true);
+    
+    pAdvertising->setMinInterval(800); // 800 * 0.625 = 500ms
+    pAdvertising->setMaxInterval(800); // 800 * 0.625 = 500ms
+    
     pAdvertising->start();
 
     usb_serial.println("BLE: Advertising Started as " DEVICE_NAME);
 }
 
 bool ble_is_connected() {
-    if (pServer == nullptr) return false;   // defensive - avoids the earlier crash if called too early
+    if (pServer == nullptr) return false;
     return pServer->getConnectedCount() > 0;
 }
 
-// void send_battery_percentage_to_phone() {
-//     if(pTxCharacteristic != nullptr) {
-//         int bat_percent = get_battery_percentage();
-//         pTxCharacteristic->setValue(bat_percent);
-//         pTxCharacteristic->notify();
-//         usb_serial.printf("Battery percentage: %d sent to GadgetBridge APP\n", bat_percent);
-//     }
-//     else {
-//         usb_serial.println("Pointer Null, unable to send the battery percentage");
-//     }
-// }
+void ble_manager_deinit() {
+    // 1. Deinitialize the NimBLE stack completely (true = free memory)
+    NimBLEDevice::deinit(true); 
+    
+    // 2. Nullify pointers to prevent dangling references
+    pServer = nullptr;
+    pTxCharacteristic = nullptr;
+    
+    // 3. Reset state variables
+    is_bluetooth_connected = false;
+    show_passkey_display = 0;
+    
+    usb_serial.println("BLE: Stack completely shut down to save battery.");
+}
+
 
 void update_ble_passkey_display() {
     char passkey_str[8];
     snprintf(passkey_str, sizeof(passkey_str), "%d", ble_passkey);
 
     if(show_passkey_display == 1) {
-        if(active_screen != -30) {
+        if(active_screen != BLE_PASSKEY_SCREEN) {
             usb_serial.println("Load BLE Pass key screen");
-            navigate_to_screen(-30);
+            navigate_to_screen(BLE_PASSKEY_SCREEN);
         }
         if (objects.ble_passkey_label) {
             lv_label_set_text(objects.ble_passkey_label, passkey_str);
@@ -213,7 +217,7 @@ void update_ble_passkey_display() {
     else if(show_passkey_display == 4) {
         lv_timer_create([](lv_timer_t *timer) {
             show_passkey_display = 0; // Reset global state inside the delayed callback
-            navigate_to_screen(0);    // Transition back to home
+            navigate_to_screen(HOME_SCREEN);    // Transition back to home
             lv_timer_delete(timer);   // Destroy this one-shot timer
         }, 1000, NULL);
         show_passkey_display = 0;

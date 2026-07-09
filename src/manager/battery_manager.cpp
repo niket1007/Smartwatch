@@ -119,4 +119,10 @@ void update_battery_ui()
             lv_label_set_text( objects.battery_status_label, "Battery");
         }
     }
+
+    if(objects.sleep_label) {
+        char slp_str[32];
+        snprintf(slp_str, sizeof(slp_str), "Slp: %lu", (unsigned long)sleep_count);
+        lv_label_set_text(objects.sleep_label, slp_str);
+    }
 }

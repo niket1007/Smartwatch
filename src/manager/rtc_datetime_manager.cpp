@@ -2,6 +2,10 @@
 
 SensorPCF85063 rtc;
 
+int cal_year = 0;
+int cal_month = 0;
+int cal_day = 0;
+
 // Timezone Settings (UTC + 5:30 for India = 19800 seconds)
 const long  GMT_OFFSET_SEC = 19800;
 const int   DAYLIGHT_OFFSET_SEC = 0;
@@ -89,14 +93,17 @@ void update_datetime_ui()
         "Jul","Aug","Sep","Oct","Nov","Dec"
     };
 
+    int day = datetime.getDay();
+    int year = datetime.getYear();
+
     char date_str[30];
     snprintf(
         date_str,
         sizeof(date_str),
         "%02d - %s - %04d",
-        datetime.getDay(),
+        day,
         months[month - 1],
-        datetime.getYear()
+        year
     );
 
     int hour = datetime.getHour();
@@ -129,4 +136,15 @@ void update_datetime_ui()
 
     if (objects.am_pm_label)
         lv_label_set_text(objects.am_pm_label, ampm);
+    
+    if(objects.calendar_obj) {
+        if(cal_year != year || cal_day != day || cal_month != month) {
+            usb_serial.println("Updated the calendar data");
+            cal_year = year;
+            cal_month = month;
+            cal_day = day;
+            lv_calendar_set_today_date(objects.calendar_obj, cal_year, cal_month, cal_day);
+            lv_calendar_set_month_shown(objects.calendar_obj, cal_year, cal_month);
+        }
+    }
 }
