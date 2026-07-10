@@ -421,58 +421,6 @@
                   "recolor": false
                 },
                 {
-                  "objID": "e37a221a-75ab-4a4a-e6d9-20099e9688a6",
-                  "type": "LVGLLabelWidget",
-                  "left": 92,
-                  "top": 29,
-                  "width": 167,
-                  "height": 52,
-                  "customInputs": [],
-                  "customOutputs": [],
-                  "style": {
-                    "objID": "48e80d83-ec53-442b-9c90-cfc695f00ef6",
-                    "useStyle": "default",
-                    "conditionalStyles": [],
-                    "childStyles": []
-                  },
-                  "timeline": [],
-                  "eventHandlers": [],
-                  "identifier": "sleep_label",
-                  "leftUnit": "px",
-                  "topUnit": "px",
-                  "widthUnit": "content",
-                  "heightUnit": "content",
-                  "children": [],
-                  "widgetFlags": "CLICK_FOCUSABLE|GESTURE_BUBBLE|PRESS_LOCK|SCROLLABLE|SCROLL_CHAIN_HOR|SCROLL_CHAIN_VER|SCROLL_ELASTIC|SCROLL_MOMENTUM|SCROLL_WITH_ARROW|SNAPPABLE",
-                  "hiddenFlagType": "literal",
-                  "clickableFlagType": "literal",
-                  "flagScrollbarMode": "",
-                  "flagScrollDirection": "",
-                  "scrollSnapX": "",
-                  "scrollSnapY": "",
-                  "checkedStateType": "literal",
-                  "disabledStateType": "literal",
-                  "states": "",
-                  "localStyles": {
-                    "objID": "6b411033-2799-4282-df79-9a09bc16024d",
-                    "definition": {
-                      "MAIN": {
-                        "DEFAULT": {
-                          "text_color": "#FFFFFF",
-                          "text_opa": 255,
-                          "text_font": "MONTSERRAT_48"
-                        }
-                      }
-                    }
-                  },
-                  "group": "",
-                  "groupIndex": 0,
-                  "text": "Screen",
-                  "textType": "literal",
-                  "longMode": "WRAP",
-                  "recolor": false
-                },
-                {
                   "objID": "de2aa290-f212-48fc-d682-e2112726dfee",
                   "type": "LVGLContainerWidget",
                   "left": 20,
@@ -2767,7 +2715,7 @@
                           "textType": "literal",
                           "placeholder": "Password.....",
                           "oneLineMode": true,
-                          "passwordMode": true,
+                          "passwordMode": false,
                           "acceptedCharacters": "",
                           "maxTextLength": 64
                         },

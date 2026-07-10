@@ -102,17 +102,6 @@ void create_screen_home_screen() {
                     lv_label_set_text_static(obj, "AM");
                 }
                 {
-                    // sleep_label
-                    lv_obj_t *obj = lv_label_create(parent_obj);
-                    objects.sleep_label = obj;
-                    lv_obj_set_pos(obj, 92, 29);
-                    lv_obj_set_size(obj, LV_SIZE_CONTENT, LV_SIZE_CONTENT);
-                    lv_obj_set_style_text_color(obj, lv_color_hex(0xffffff), LV_PART_MAIN | LV_STATE_DEFAULT);
-                    lv_obj_set_style_text_opa(obj, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
-                    lv_obj_set_style_text_font(obj, &lv_font_montserrat_48, LV_PART_MAIN | LV_STATE_DEFAULT);
-                    lv_label_set_text_static(obj, "Screen");
-                }
-                {
                     // battery_container
                     lv_obj_t *obj = lv_obj_create(parent_obj);
                     objects.battery_container = obj;
@@ -750,7 +739,7 @@ void create_screen_settings_screen() {
                                     lv_textarea_set_max_length(obj, 64);
                                     lv_textarea_set_placeholder_text(obj, "Password.....");
                                     lv_textarea_set_one_line(obj, true);
-                                    lv_textarea_set_password_mode(obj, true);
+                                    lv_textarea_set_password_mode(obj, false);
                                 }
                                 {
                                     // wifi_ssid_dropdown

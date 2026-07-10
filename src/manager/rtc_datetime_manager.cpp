@@ -43,13 +43,16 @@ void fetch_and_sync_time() {
       usb_serial.println("Failed to obtain time from NTP server.");
     } else {
       usb_serial.println("NTP Time Fetched Successfully!");
-      rtc.setDateTime(timeinfo.tm_year + 1900, 
-                      timeinfo.tm_mon + 1, 
-                      timeinfo.tm_mday, 
-                      timeinfo.tm_hour, 
-                      timeinfo.tm_min, 
-                      timeinfo.tm_sec);
-      usb_serial.println("Hardware RTC Updated!");
+      if (xSemaphoreTake(i2c_mutex, pdMS_TO_TICKS(1000))) {
+        rtc.setDateTime(timeinfo.tm_year + 1900, 
+                        timeinfo.tm_mon + 1, 
+                        timeinfo.tm_mday, 
+                        timeinfo.tm_hour, 
+                        timeinfo.tm_min, 
+                        timeinfo.tm_sec);
+        xSemaphoreGive(i2c_mutex);
+        usb_serial.println("Hardware RTC Updated!");
+      }
     }
     disconnect_wifi();
   } else {

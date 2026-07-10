@@ -12,19 +12,26 @@ extern "C" {
 }
 
 // WIFI Global Variables
-struct Wifi_Global_Variable {
+struct Wifi_Global_Variables {
   String ssid;
   String password;
   String wifi_list;
 };
-extern Wifi_Global_Variable wifi_gv; 
+extern Wifi_Global_Variables wifi_gv; 
+
+struct Bluetooth_Global_Variables {
+  bool ble_is_powered_on;
+  bool is_ble_connected;
+};
+extern Bluetooth_Global_Variables ble_gv; 
 
 struct Task_State_Variables {
   /*
     0 -> Idle
-    1 -> WiFi Scanning Started
-    2 -> WiFi Scanning completed, GUI Starts
-    3 -> Time sync
+    Wifi refresh button clicked
+      1 -> WiFi Scanning Started (Background Thread)
+      2 -> WiFi Scanning completed, GUI dropdown update (GUI Thread)
+      Flow: 0 -> 1 -> 2 -> 0
   */
   volatile int wifi_refresh;
 };

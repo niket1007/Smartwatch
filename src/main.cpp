@@ -224,10 +224,6 @@ void task_background(void *pvParameters) {
     if(ts_var.wifi_refresh == 1) {
       scan_and_save_nearby_wifi();
     }
-    else if(ts_var.wifi_refresh == 3) {
-      fetch_and_sync_time();
-      ts_var.wifi_refresh = 0;
-    }
 
     if (screen_state) { // Only do work if screen is active
         if (screen_turned_on == 1) {
@@ -262,6 +258,9 @@ void task_gui(void *pvParameters) {
   usb_serial.println("[System] LVGL engine initialized & running.");
   uint8_t last_brightness_value = 0xFF;
   previous_millis_screen_timeout = millis();
+
+  // Wifi saved connection will change after restart only so need to run it once
+  update_wifi_settings_details();
   
   while(1) {
 

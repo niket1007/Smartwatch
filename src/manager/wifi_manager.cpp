@@ -1,6 +1,6 @@
 #include "wifi_manager.h"
 
-Wifi_Global_Variable wifi_gv = {
+Wifi_Global_Variables wifi_gv = {
     "", // ssid 
     "", // password
     ""  // wifi_list
@@ -27,7 +27,7 @@ bool connect_to_wifi() {
 
     WiFi.persistent(false);
     WiFi.mode(WIFI_STA);
-
+    usb_serial.printf("SSID: %s; Password: %s\n",wifi_gv.ssid, wifi_gv.password);
     WiFi.begin(wifi_gv.ssid.c_str(), wifi_gv.password.c_str());
     
     while (WiFi.status() != WL_CONNECTED && attempts < WIFI_MAX_ATTEMPTS) {
@@ -49,10 +49,13 @@ void disconnect_wifi() {
 void scan_and_save_nearby_wifi() {
     usb_serial.println("Scanning and Saving nearby wifi");
     if(ts_var.wifi_refresh == 1) {
+
         WiFi.persistent(false);
         WiFi.mode(WIFI_STA);
         
         int n = WiFi.scanNetworks();
+
+        wifi_gv.wifi_list = "";
         
         for(int index = 0; index < n; index++) {
             wifi_gv.wifi_list += WiFi.SSID(index) + "\n";
@@ -74,6 +77,15 @@ void update_wifi_dropdown() {
     ts_var.wifi_refresh = 0;
 }
 
+void update_wifi_settings_details() {
+    if(wifi_gv.ssid.isEmpty()) {
+        lv_label_set_text(objects.wifi_ssid_name, "No Device");
+    }
+    else {
+        lv_label_set_text(objects.wifi_ssid_name, wifi_gv.ssid.c_str());
+    }
+}
+
 void action_wifi_refresh_button_clicked(lv_event_t * e) {
   usb_serial.println("Wifi refresh button clicked");
   ts_var.wifi_refresh = 1;
@@ -85,18 +97,29 @@ void action_wifi_refresh_button_clicked(lv_event_t * e) {
 void action_wifi_save_button_clicked(lv_event_t * e) {
     usb_serial.println("Wifi save button clicked");
 
-    char ssid_buffer[64]; 
+    // Guard against empty lists
+    if (wifi_gv.wifi_list.isEmpty()) {
+        usb_serial.println("Dropdown empty, aborting save.");
+        return; 
+    }
+
+    char ssid_buffer[64] = {0};
     lv_dropdown_get_selected_str(objects.wifi_ssid_dropdown, ssid_buffer, sizeof(ssid_buffer));
 
     const char* password = lv_textarea_get_text(objects.wifi_pass_text_field);
 
-    usb_serial.printf("SSID: %s, Password: %s\n", ssid_buffer, password);
+    usb_serial.printf("Saving SSID: [%s]\n", ssid_buffer);
+    usb_serial.printf("Saving Password: [%s]\n", password);
     
     preferences.begin("wifi-config", false);
     preferences.putString("SSID", ssid_buffer);
     preferences.putString("PASSWORD", password);
     preferences.end();
 
-    ts_var.wifi_refresh = 3;
-    if(task_background_handle != NULL) xTaskNotifyGive(task_background_handle);
+    usb_serial.println("Credentials saved. Rebooting system to apply changes...");
+
+    delay(1000); // Give the serial buffer and screen time to flush
+    
+    // Trigger a clean hardware-level software reset
+    ESP.restart(); 
 }

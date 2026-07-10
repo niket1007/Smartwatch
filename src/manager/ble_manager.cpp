@@ -10,6 +10,11 @@
 #define CHAR_RX_UUID  "6E400002-B5A3-F393-E0A9-E50E24DCCA9E"  // Gadgetbridge -> watch
 #define CHAR_TX_UUID  "6E400003-B5A3-F393-E0A9-E50E24DCCA9E"  // watch -> Gadgetbridge
 
+Bluetooth_Global_Variables ble_gv = {
+    false, // ble_is_powered_on
+    false // is_ble_connected
+};
+
 static NimBLEServer* pServer = nullptr;
 static NimBLECharacteristic* pTxCharacteristic = nullptr;
 volatile uint32_t show_passkey_display = 0;
@@ -27,7 +32,7 @@ class ServerCallbacks : public NimBLEServerCallbacks {
         show_passkey_display = 1;
 
         if(task_gui_handle != NULL) xTaskNotifyGive(task_gui_handle);
-        
+
         pServer->updateConnParams(connInfo.getConnHandle(), 80, 160, 0, 300);
     }
 
@@ -48,7 +53,7 @@ class ServerCallbacks : public NimBLEServerCallbacks {
         usb_serial.printf("Called onAuthenticationComplete %d", show_passkey_display);
     }
 
-} serverCallbacks;
+};
 
 // ---------------------------------------------------------------------
 // NOTIFICATION PARSING
@@ -119,7 +124,7 @@ class CharacteristicCallbacks : public NimBLECharacteristicCallbacks {
             // battery query, etc.) go here as additional else-if branches.
         }
     }
-} ble_callbacks;
+};
 
 // ---------------------------------------------------------------------
 // INIT / ADVERTISING
@@ -137,7 +142,7 @@ void ble_manager_init() {
         usb_serial.println("Bluetooth not initialised");
         return;
     }
-    pServer->setCallbacks(&serverCallbacks);
+    pServer->setCallbacks(new ServerCallbacks());
     usb_serial.println("BLE: Server Created");
 
     NimBLEService* pService = pServer->createService(SERVICE_UUID);
@@ -154,7 +159,7 @@ void ble_manager_init() {
         CHAR_RX_UUID,
         NIMBLE_PROPERTY::WRITE | NIMBLE_PROPERTY::WRITE_NR
     );
-    pRxCharacteristic->setCallbacks(&ble_callbacks);
+    pRxCharacteristic->setCallbacks(new CharacteristicCallbacks());
 
     usb_serial.println("BLE: Service Started");
 
@@ -173,6 +178,8 @@ void ble_start_advertising() {
     pAdvertising->start();
 
     usb_serial.println("BLE: Advertising Started as " DEVICE_NAME);
+    
+    ble_gv.ble_is_powered_on = true;
 }
 
 bool ble_is_connected() {
@@ -190,6 +197,8 @@ void ble_manager_deinit() {
     
     // 3. Reset state variables
     show_passkey_display = 0;
+
+    ble_gv.ble_is_powered_on = false;
     
     usb_serial.println("BLE: Stack completely shut down to save battery.");
 }

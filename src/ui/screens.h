@@ -34,7 +34,6 @@ typedef struct _objects_t {
     lv_obj_t *date_label;
     lv_obj_t *day_label;
     lv_obj_t *am_pm_label;
-    lv_obj_t *sleep_label;
     lv_obj_t *battery_container;
     lv_obj_t *battery_status_label;
     lv_obj_t *battery_percentage_bar;
