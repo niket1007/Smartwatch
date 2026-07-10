@@ -12,7 +12,6 @@
 
 static NimBLEServer* pServer = nullptr;
 static NimBLECharacteristic* pTxCharacteristic = nullptr;
-bool is_bluetooth_connected = false;
 volatile uint32_t show_passkey_display = 0;
 
 // Accumulates incoming bytes until a full line (ending in '\n') is seen -
@@ -25,21 +24,21 @@ static String rxBuffer = "";
 class ServerCallbacks : public NimBLEServerCallbacks {
     void onConnect(NimBLEServer* pServer, NimBLEConnInfo& connInfo) override {
         usb_serial.printf("onconnect: Client connected:\n%s", connInfo.toString().c_str());
-        is_bluetooth_connected = true;
         show_passkey_display = 1;
-        xTaskNotifyGive(task_gui_handle);
+
+        if(task_gui_handle != NULL) xTaskNotifyGive(task_gui_handle);
+        
         pServer->updateConnParams(connInfo.getConnHandle(), 80, 160, 0, 300);
     }
 
     void onDisconnect(NimBLEServer* pServer, NimBLEConnInfo& connInfo, int reason) override {
         usb_serial.printf("ondisconnect: Client disconnected (Reason: %d) - start advertising\n", reason);
-        is_bluetooth_connected = false;
         show_passkey_display = 4;
         NimBLEDevice::startAdvertising();
     }
 
     void onAuthenticationComplete(NimBLEConnInfo& connInfo) override {
-        /** Check that encryption was successful, if not we disconnect the client */
+        // Check that encryption was successful, if not we disconnect the client
         if (!connInfo.isEncrypted()) {
             NimBLEDevice::getServer()->disconnect(connInfo.getConnHandle());
             show_passkey_display = 3;
@@ -112,6 +111,9 @@ class CharacteristicCallbacks : public NimBLECharacteristicCallbacks {
 
             if (line.startsWith("GB(")) {
                 handleNotification(line);
+            }
+            else {
+                usb_serial.println(line);
             }
             // EXTENSION POINT - other Gadgetbridge commands (time sync,
             // battery query, etc.) go here as additional else-if branches.
@@ -187,7 +189,6 @@ void ble_manager_deinit() {
     pTxCharacteristic = nullptr;
     
     // 3. Reset state variables
-    is_bluetooth_connected = false;
     show_passkey_display = 0;
     
     usb_serial.println("BLE: Stack completely shut down to save battery.");
@@ -220,6 +221,5 @@ void update_ble_passkey_display() {
             navigate_to_screen(HOME_SCREEN);    // Transition back to home
             lv_timer_delete(timer);   // Destroy this one-shot timer
         }, 1000, NULL);
-        show_passkey_display = 0;
     }
 }

@@ -8,7 +8,9 @@ extern "C" {
 #endif
 
 extern void action_navigate_gesture(lv_event_t * e);
-extern void action_wifi_tab_save_clicked(lv_event_t * e);
+extern void action_wifi_save_button_clicked(lv_event_t * e);
+extern void action_enable_power_saver_mode(lv_event_t * e);
+extern void action_wifi_refresh_button_clicked(lv_event_t * e);
 
 #ifdef __cplusplus
 }

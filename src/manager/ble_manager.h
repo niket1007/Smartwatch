@@ -2,8 +2,6 @@
 
 #include "globals.h"
 
-extern bool is_bluetooth_connected;
-
 // Initialize BLE radio and create a basic server
 void ble_manager_init();
 

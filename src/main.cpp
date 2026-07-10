@@ -41,10 +41,15 @@ void Arduino_IIC_Touch_Interrupt(void) {
 // ################# Variable Start #################
 HWCDC usb_serial;
 SemaphoreHandle_t i2c_mutex;
+Preferences preferences;
 
 uint32_t ble_passkey;
 
 volatile int screen_turned_on = 0;
+
+Task_State_Variables ts_var = {
+  0 // wifi_refresh
+};
 
 // ESP Power Management Locks (The Two-Lock Strategy)
 esp_pm_lock_handle_t sleep_lock;
@@ -90,12 +95,17 @@ void IRAM_ATTR bootButtonISR() {
   if (interrupt_time - last_interrupt_time > 200) { 
     power_button_pressed = true;
 
+    BaseType_t taskWoken = pdFALSE;
+  
     if (task_gui_handle != NULL) {
-        BaseType_t xHigherPriorityTaskWoken = pdFALSE;
-        vTaskNotifyGiveFromISR(task_gui_handle, &xHigherPriorityTaskWoken);
-        if (xHigherPriorityTaskWoken) {
-            portYIELD_FROM_ISR(); // Force context switch to UI task
-        }
+      vTaskNotifyGiveFromISR(task_gui_handle, &taskWoken);
+    }
+    if (task_background_handle != NULL) {
+      vTaskNotifyGiveFromISR(task_background_handle, &taskWoken);
+    }
+    
+    if (taskWoken) {
+      portYIELD_FROM_ISR(); // Yield once if any higher-priority task was unblocked
     }
   }
   last_interrupt_time = interrupt_time;
@@ -117,7 +127,7 @@ void set_screen_brightness(uint8_t brightness_val) {
 
 void turn_off_screen() {
     if (!screen_state) return;
-    
+
     set_screen_brightness(0x00); 
 
     bus->beginWrite();
@@ -140,6 +150,8 @@ void turn_on_screen() {
     
     esp_pm_lock_acquire(sleep_lock);
     esp_pm_lock_acquire(speed_lock);
+
+    if(task_background_handle != NULL) xTaskNotifyGive(task_background_handle);
 
     bus->beginWrite();
     bus->writeCommand(0x11); // Amoled Sleep Out
@@ -209,6 +221,14 @@ void task_background(void *pvParameters) {
     unsigned long now = millis();
     int current_bat = get_battery_percentage();
 
+    if(ts_var.wifi_refresh == 1) {
+      scan_and_save_nearby_wifi();
+    }
+    else if(ts_var.wifi_refresh == 3) {
+      fetch_and_sync_time();
+      ts_var.wifi_refresh = 0;
+    }
+
     if (screen_state) { // Only do work if screen is active
         if (screen_turned_on == 1) {
           read_battery_sensor();
@@ -230,8 +250,8 @@ void task_background(void *pvParameters) {
       ble_manager_init();
       ble_is_powered_on = true;
     }
-
-    vTaskDelay(pdMS_TO_TICKS(screen_state ? 1000 : 300000)); 
+    TickType_t sleep_time = screen_state ? pdMS_TO_TICKS(1000) : pdMS_TO_TICKS(300000);
+    ulTaskNotifyTake(pdTRUE, sleep_time);
   }
 }
 
@@ -244,6 +264,11 @@ void task_gui(void *pvParameters) {
   previous_millis_screen_timeout = millis();
   
   while(1) {
+
+    if(ts_var.wifi_refresh == 2) {
+      update_wifi_dropdown();
+    }
+
     if(screen_state) {
       int bat_percent = get_battery_percentage();
       if(bat_percent >= 70) {
@@ -273,7 +298,7 @@ void task_gui(void *pvParameters) {
         screen_timeout_interval = 5000;
       }
       else {
-        screen_brightness = 0x26; // 15% brightness = 255 *0.15 = 38 (0x26 hexadecimal)
+        screen_brightness = 0x51; // 20% brightness = 255 *0.20 = 51 (0x51 hexadecimal)
         // Intervals tripled (slower)
         battery_update_ui_interval = 15000;
         datetime_update_ui_interval = 6000;
@@ -346,13 +371,13 @@ void task_gui(void *pvParameters) {
 }
 
 static esp_err_t IRAM_ATTR before_light_sleep(int64_t sleep_time_us, void *arg) {
-    return ESP_OK;
+  return ESP_OK;
 }
 
 static esp_err_t IRAM_ATTR after_light_sleep(int64_t sleep_time_us, void *arg) {
-    sleep_count++;
-    total_sleep_us += sleep_time_us;
-    return ESP_OK;
+  sleep_count++;
+  total_sleep_us += sleep_time_us;
+  return ESP_OK;
 }
 
 // ==========================================================
@@ -467,6 +492,6 @@ void setup() {
 
 void loop() {}
 
-void action_wifi_tab_save_clicked(lv_event_t * e) {
-  usb_serial.println("Save button clicked");
+void action_enable_power_saver_mode(lv_event_t * e) {
+  usb_serial.println("Power Saver Mode enabled");
 }
