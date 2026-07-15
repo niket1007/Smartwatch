@@ -2,8 +2,7 @@
 
 // ################# Variables Start #################
 int previous_vertical_screen = 0;
-int total_screens = 4; // Only those screens which has left and right gesture enabled
-int active_screen = HOME_SCREEN;
+int total_screens = 5; // Only those screens which has left and right gesture enabled
 // ################# Variables End #################
 
 
@@ -29,6 +28,9 @@ lv_obj_t* get_screen(int number) {
     else if(number == CALENDAR_SCREEN) {
       return objects.calendar_screen;
     }
+    else if(number == MUSIC_SCREEN) {
+      return objects.music_screen;
+    }
     else {
         return objects.home_screen;
     }
@@ -49,11 +51,11 @@ void navigate_to_screen(int screen)
 
     if (scr == nullptr)
     {
-        usb_serial.printf("Screen is null %d\n", screen);
+        // usb_serial.printf("Screen is null %d\n", screen);
         transitionRunning = false;
         return;
     }
-    active_screen = screen;
+    gv.active_screen_id = screen;
     lv_screen_load(scr);
 
     lv_timer_create(
@@ -78,7 +80,7 @@ void action_navigate_gesture(lv_event_t * e) {
 
     if(previous_vertical_screen < 0) {
       previous_vertical_screen = 0;
-      usb_serial.println("Previous Vertical Screen default to 0");
+      // usb_serial.println("Previous Vertical Screen default to 0");
     }
 
     // Vertical Movement
@@ -86,13 +88,13 @@ void action_navigate_gesture(lv_event_t * e) {
       // App Drawer -> Main Screens 
       if(current_screen == -20) {
         next_screen = previous_vertical_screen;
-        usb_serial.printf("Bottom Direction Swipe: Current Screen: %d and Next Screen: %d\n", current_screen, next_screen);
+        // usb_serial.printf("Bottom Direction Swipe: Current Screen: %d and Next Screen: %d\n", current_screen, next_screen);
       }
       // Main Screens -> Settings
       else if(current_screen >= 0) {
         previous_vertical_screen = current_screen;
         next_screen = -10;
-        usb_serial.printf("Bottom Direction Swipe: Current Screen: %d and Next Screen: %d\n", current_screen, next_screen);
+        // usb_serial.printf("Bottom Direction Swipe: Current Screen: %d and Next Screen: %d\n", current_screen, next_screen);
       }
     }
     else if(dir == LV_DIR_TOP) {
@@ -100,36 +102,41 @@ void action_navigate_gesture(lv_event_t * e) {
       if (current_screen == -10) {
         next_screen = previous_vertical_screen;
         previous_vertical_screen = 0;
-        usb_serial.printf("Top Direction Swipe: Current Screen: %d and Next Screen: %d\n", current_screen, next_screen);
+        // usb_serial.printf("Top Direction Swipe: Current Screen: %d and Next Screen: %d\n", current_screen, next_screen);
       }
       // Main Screens -> App drawer
       else if (current_screen >= 0) {
         previous_vertical_screen = current_screen;
         next_screen = -20;
-        usb_serial.printf("Top Direction Swipe: Current Screen: %d and Next Screen: %d\n", current_screen, next_screen);
+        // usb_serial.printf("Top Direction Swipe: Current Screen: %d and Next Screen: %d\n", current_screen, next_screen);
       }
     }
     // Horizontal Movement
     else if(dir == LV_DIR_LEFT && current_screen >= 0) {
       next_screen = (current_screen + 1) % total_screens;
-      usb_serial.printf("Left Direction Swipe: Current Screen: %d and Next Screen: %d\n", current_screen, next_screen);
+      // usb_serial.printf("Left Direction Swipe: Current Screen: %d and Next Screen: %d\n", current_screen, next_screen);
     }
     else if(dir == LV_DIR_RIGHT && current_screen >= 0) {
       next_screen = (current_screen - 1 + total_screens) % total_screens;
-      usb_serial.printf("Right Direction Swipe: Current Screen: %d and Next Screen: %d\n", current_screen, next_screen);
+      // usb_serial.printf("Right Direction Swipe: Current Screen: %d and Next Screen: %d\n", current_screen, next_screen);
     }
 
     if(next_screen != current_screen)
     {
-        usb_serial.printf(
-            "Current:%d Previous:%d Next:%d Gesture:%d\n",
-            current_screen,
-            previous_vertical_screen,
-            next_screen,
-            dir
-        );
+        // usb_serial.printf(
+        //     "Current:%d Previous:%d Next:%d Gesture:%d\n",
+        //     current_screen,
+        //     previous_vertical_screen,
+        //     next_screen,
+        //     dir
+        // );
 
         navigate_to_screen(next_screen);
+    }
+  } 
+  else {
+    if (gv.active_screen_id != HOME_SCREEN) {
+      navigate_to_screen(HOME_SCREEN);
     }
   }
 }

@@ -18,7 +18,8 @@ enum ScreensEnum {
     SCREEN_ID_NAVIGATION_SCREEN = 5,
     SCREEN_ID_BLE_PASSKEY_SCREEN = 6,
     SCREEN_ID_CALENDAR_SCREEN = 7,
-    _SCREEN_ID_LAST = 7
+    SCREEN_ID_MUSIC_SCREEN = 8,
+    _SCREEN_ID_LAST = 8
 };
 
 typedef struct _objects_t {
@@ -29,6 +30,7 @@ typedef struct _objects_t {
     lv_obj_t *navigation_screen;
     lv_obj_t *ble_passkey_screen;
     lv_obj_t *calendar_screen;
+    lv_obj_t *music_screen;
     lv_obj_t *parent_container;
     lv_obj_t *time_label;
     lv_obj_t *date_label;
@@ -66,15 +68,16 @@ typedef struct _objects_t {
     lv_obj_t *ble_heading_label_1;
     lv_obj_t *ble_const_label_1;
     lv_obj_t *ble_device_name_1;
+    lv_obj_t *ble_user_switch;
     lv_obj_t *obj1;
     lv_obj_t *wifi_heading_label;
     lv_obj_t *wifi_ct_const_label;
     lv_obj_t *wifi_ssid_name;
+    lv_obj_t *wifi_const_label_1;
     lv_obj_t *wifi_tab;
     lv_obj_t *wifi_const_label;
     lv_obj_t *wifi_pass_text_field;
     lv_obj_t *wifi_ssid_dropdown;
-    lv_obj_t *wifi_const_label_1;
     lv_obj_t *wifi_save_button;
     lv_obj_t *wifi_refresh_button;
     lv_obj_t *systen_info_label;
@@ -131,18 +134,30 @@ typedef struct _objects_t {
     lv_obj_t *about_row_7;
     lv_obj_t *obj27;
     lv_obj_t *obj28;
+    lv_obj_t *diagnostic_tab;
+    lv_obj_t *diag_row_1;
+    lv_obj_t *obj29;
+    lv_obj_t *lsat_label;
     lv_obj_t *settings_loading_screen;
     lv_obj_t *settings_loading_spinner;
-    lv_obj_t *obj29;
+    lv_obj_t *obj30;
     lv_obj_t *nav_container;
     lv_obj_t *dir_label;
     lv_obj_t *nav_eta_container;
     lv_obj_t *eta_label;
     lv_obj_t *eta_datetime_label;
     lv_obj_t *ble_passkey_container;
-    lv_obj_t *obj30;
+    lv_obj_t *obj31;
     lv_obj_t *ble_passkey_label;
     lv_obj_t *calendar_obj;
+    lv_obj_t *music_container;
+    lv_obj_t *obj32;
+    lv_obj_t *obj33;
+    lv_obj_t *battery_container_1;
+    lv_obj_t *obj34;
+    lv_obj_t *obj35;
+    lv_obj_t *obj36;
+    lv_obj_t *obj37;
 } objects_t;
 
 extern objects_t objects;
@@ -167,6 +182,9 @@ void tick_screen_ble_passkey_screen();
 
 void create_screen_calendar_screen();
 void tick_screen_calendar_screen();
+
+void create_screen_music_screen();
+void tick_screen_music_screen();
 
 void tick_screen_by_id(enum ScreensEnum screenId);
 void tick_screen(int screen_index);

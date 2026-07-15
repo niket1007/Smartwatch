@@ -12,18 +12,16 @@ extern "C" {
 }
 
 // WIFI Global Variables
-struct Wifi_Global_Variables {
+struct Global_Variables {
   String ssid;
   String password;
   String wifi_list;
-};
-extern Wifi_Global_Variables wifi_gv; 
-
-struct Bluetooth_Global_Variables {
   bool ble_is_powered_on;
-  bool is_ble_connected;
+  bool is_screen_active;
+  int active_screen_id;
+  uint32_t ble_passkey;
 };
-extern Bluetooth_Global_Variables ble_gv; 
+extern Global_Variables gv; 
 
 struct Task_State_Variables {
   /*
@@ -34,6 +32,15 @@ struct Task_State_Variables {
       Flow: 0 -> 1 -> 2 -> 0
   */
   volatile int wifi_refresh;
+
+  /* 
+    0 -> Nothing
+    1 -> show passkey display
+    2 -> Display Status Paired
+    3-> Display Status Paired Failed
+    4 -> Move to Home Screen
+  */
+  volatile uint32_t show_passkey_display;
 };
 extern Task_State_Variables ts_var;
 
@@ -43,13 +50,7 @@ extern TaskHandle_t task_background_handle;
 extern HWCDC usb_serial;
 extern SemaphoreHandle_t i2c_mutex;
 extern Arduino_GFX *gfx;
-extern uint32_t ble_passkey;
-// 0 -> Nothing; 
-// 1 -> show passkey display; 
-// 2 -> Display Status Paired; 
-// 3-> Display Status Paired Failed;
-// 4 -> Move to Home Screen;
-extern volatile uint32_t show_passkey_display; 
+
 extern uint32_t sleep_count;
 extern Preferences preferences;
 

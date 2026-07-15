@@ -1,6 +1,7 @@
 #include "rtc_datetime_manager.h"
 
 SensorPCF85063 rtc;
+RTC_DateTime current_datetime;
 
 int cal_year = 0;
 int cal_month = 0;
@@ -36,6 +37,7 @@ void fetch_and_sync_time() {
 
   if (is_connected) {
     usb_serial.println("\nWi-Fi Connected!");
+    
     configTime(GMT_OFFSET_SEC, DAYLIGHT_OFFSET_SEC, NTP_SERVER, BACKUP_NTP_SERVER);
     
     struct tm timeinfo;
@@ -54,33 +56,43 @@ void fetch_and_sync_time() {
         usb_serial.println("Hardware RTC Updated!");
       }
     }
-    disconnect_wifi();
   } else {
     usb_serial.println("\nWi-Fi Connection Failed. Relying on existing RTC time.");
   }
+  disconnect_wifi();
+}
+
+bool load_current_datetime() {
+    // If already acquired then wait for 50ms, then also acquired then
+    if (!xSemaphoreTake(i2c_mutex, pdMS_TO_TICKS(50))) {
+        return false;
+    }
+
+    current_datetime = rtc.getDateTime();
+
+    xSemaphoreGive(i2c_mutex);
+
+    return true;
 }
 
 void update_datetime_ui()
 {
-    if (!xSemaphoreTake(i2c_mutex, 0)) {
-        return;
-    }
-
-    RTC_DateTime datetime = rtc.getDateTime();
-
-    xSemaphoreGive(i2c_mutex);
+    if(!load_current_datetime()) return;
 
     // Validate month
-    int month = datetime.getMonth();
+    int month = current_datetime.getMonth();
     if (month < 1 || month > 12) {
         month = 1;
     }
 
     // Validate day of week
-    int day_of_week = get_day_of_week(
-        datetime.getYear(),
-        datetime.getMonth(),
-        datetime.getDay());
+    
+    uint8_t day_of_week = current_datetime.getWeek();
+    
+    get_day_of_week(
+        current_datetime.getYear(),
+        current_datetime.getMonth(),
+        current_datetime.getDay());
 
     if (day_of_week < 0 || day_of_week > 6) {
         day_of_week = 0;
@@ -96,8 +108,8 @@ void update_datetime_ui()
         "Jul","Aug","Sep","Oct","Nov","Dec"
     };
 
-    int day = datetime.getDay();
-    int year = datetime.getYear();
+    int day = current_datetime.getDay();
+    int year = current_datetime.getYear();
 
     char date_str[30];
     snprintf(
@@ -109,7 +121,7 @@ void update_datetime_ui()
         year
     );
 
-    int hour = datetime.getHour();
+    int hour = current_datetime.getHour();
     const char *ampm = "AM";
 
     if (hour >= 12) {
@@ -125,7 +137,7 @@ void update_datetime_ui()
         sizeof(time_str),
         "%02d : %02d",
         hour,
-        datetime.getMinute()
+        current_datetime.getMinute()
     );
 
     if (objects.day_label)
@@ -142,7 +154,7 @@ void update_datetime_ui()
     
     if(objects.calendar_obj) {
         if(cal_year != year || cal_day != day || cal_month != month) {
-            usb_serial.println("Updated the calendar data");
+            // usb_serial.println("Updated the calendar data");
             cal_year = year;
             cal_month = month;
             cal_day = day;

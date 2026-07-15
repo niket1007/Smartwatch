@@ -1,6 +1,8 @@
 #include "Arduino_DriveBus_Library.h"
 #include "XPowersLib.h"
 #include <lvgl.h>
+#include "esp_private/esp_clk.h"
+#include "esp_system.h"
 #include "esp_pm.h"          // Automatic light sleep + dynamic freq scaling BLE
 
 #include "globals.h"
@@ -9,6 +11,7 @@
 #include "manager/battery_manager.h"
 #include "manager/lvgl_manager.h"
 #include "manager/ble_manager.h"
+#include "manager/settings_screen_manager.h"
 
 #define BOOT_BUTTON_PIN 0 // Onboard BOOT button wired to GPIO0
 
@@ -43,17 +46,25 @@ HWCDC usb_serial;
 SemaphoreHandle_t i2c_mutex;
 Preferences preferences;
 
-uint32_t ble_passkey;
-
 volatile int screen_turned_on = 0;
 
 Task_State_Variables ts_var = {
-  0 // wifi_refresh
+  0, // wifi_refresh
+  0 // show_passkey_display
+};
+
+Global_Variables gv = {
+  "",// ssid
+  "", //password
+  "", //wifi_list;
+  false, // ble_is_powered_on
+  true, // is_screen_active
+  HOME_SCREEN // active_screen_id
 };
 
 // ESP Power Management Locks (The Two-Lock Strategy)
 esp_pm_lock_handle_t sleep_lock;
-esp_pm_lock_handle_t speed_lock;
+// esp_pm_lock_handle_t speed_lock;
 
 // Task handles
 TaskHandle_t task_gui_handle = NULL;
@@ -78,7 +89,6 @@ unsigned long previous_millis_battery_to_phone = 0;
 
 // Screen and Button State variables
 volatile bool power_button_pressed = false;
-static bool screen_state = true; 
 uint8_t screen_brightness = 0xff;
 
 // ################# Variable End #################
@@ -92,16 +102,14 @@ void IRAM_ATTR bootButtonISR() {
   unsigned long interrupt_time = millis();
   
   // 200ms software debounce
-  if (interrupt_time - last_interrupt_time > 200) { 
+  if (interrupt_time - last_interrupt_time > 200) {
+
     power_button_pressed = true;
 
     BaseType_t taskWoken = pdFALSE;
   
     if (task_gui_handle != NULL) {
       vTaskNotifyGiveFromISR(task_gui_handle, &taskWoken);
-    }
-    if (task_background_handle != NULL) {
-      vTaskNotifyGiveFromISR(task_background_handle, &taskWoken);
     }
     
     if (taskWoken) {
@@ -126,32 +134,33 @@ void set_screen_brightness(uint8_t brightness_val) {
 }
 
 void turn_off_screen() {
-    if (!screen_state) return;
+    if (!gv.is_screen_active) return;
 
     set_screen_brightness(0x00); 
 
     bus->beginWrite();
-    bus->writeCommand(0x28); // Amoled Display Off
+    bus->writeCommand(0x28);   // Display OFF
+    bus->endWrite();
+
+    vTaskDelay(pdMS_TO_TICKS(20));
+
+    bus->beginWrite();
+    bus->writeCommand(0x10);   // Sleep In
     bus->endWrite();
 
     // Force CS HIGH to stop the display from listening for noise
     pinMode(LCD_CS, OUTPUT);
     digitalWrite(LCD_CS, HIGH);
 
-    screen_state = false;
+    gv.is_screen_active = false;
     screen_turned_on = 0;
-
-    esp_pm_lock_release(speed_lock);
     esp_pm_lock_release(sleep_lock);
 }
 
 void turn_on_screen() {
-    if (screen_state) return;
+    if (gv.is_screen_active) return;
     
     esp_pm_lock_acquire(sleep_lock);
-    esp_pm_lock_acquire(speed_lock);
-
-    if(task_background_handle != NULL) xTaskNotifyGive(task_background_handle);
 
     bus->beginWrite();
     bus->writeCommand(0x11); // Amoled Sleep Out
@@ -164,15 +173,16 @@ void turn_on_screen() {
     bus->endWrite();
     
     set_screen_brightness(screen_brightness);
-    screen_state = true;
+    gv.is_screen_active = true;
     screen_turned_on = 1;
 
+    if(task_background_handle != NULL) xTaskNotifyGive(task_background_handle);
 }
 
 void check_power_button_action() {
   if (power_button_pressed) {
     power_button_pressed = false;
-    if (screen_state) {
+    if (gv.is_screen_active) {
       turn_off_screen();
     } else {
       turn_on_screen();
@@ -188,7 +198,7 @@ bool lvgl_get_touch(int16_t &x, int16_t &y) {
   bool is_touched = false;
 
   // Touch disabled if screen is off
-  if (!screen_state) {
+  if (!gv.is_screen_active) {
     return false;
   }
 
@@ -209,13 +219,19 @@ bool lvgl_get_touch(int16_t &x, int16_t &y) {
   return is_touched;
 }
 
+void run_boot_connectivity_flow() {
+  read_battery_sensor();
+  fetch_and_sync_time();
+}
+
 // ==========================================================
 // Task for Core 0: Handling sensors in the background
 // ==========================================================
 void task_background(void *pvParameters) {
-  vTaskDelay(pdMS_TO_TICKS(1500)); 
+  vTaskDelay(pdMS_TO_TICKS(200)); 
 
-  static bool ble_is_powered_on = false;
+  run_boot_connectivity_flow();  
+
 
   while(1) {
     unsigned long now = millis();
@@ -225,28 +241,31 @@ void task_background(void *pvParameters) {
       scan_and_save_nearby_wifi();
     }
 
-    if (screen_state) { // Only do work if screen is active
-        if (screen_turned_on == 1) {
-          read_battery_sensor();
-          previous_millis_read_battery = now;
-          screen_turned_on = 2;
-        }
-      
-        if (now - previous_millis_read_battery >= battery_sensor_read_interval) {
-          read_battery_sensor();
-          previous_millis_read_battery = now;
-        } 
+    if (current_bat <= 20 && gv.ble_is_powered_on)
+    {
+      ble_manager_deinit();
+    }
+    else if (current_bat >= 25 && !gv.ble_is_powered_on)
+    {
+      ble_manager_init();
     }
 
-    if(current_bat <= 20 && ble_is_powered_on) {
-      ble_manager_deinit();
-      ble_is_powered_on = false;
+    if (screen_turned_on == 1) {
+      read_battery_sensor();
+      previous_millis_read_battery = now;
+      screen_turned_on = 2;
     }
-    else if(current_bat > 20 && !ble_is_powered_on) {
-      ble_manager_init();
-      ble_is_powered_on = true;
+
+    if (current_bat < 10) {
+      store_power_off_time();
     }
-    TickType_t sleep_time = screen_state ? pdMS_TO_TICKS(1000) : pdMS_TO_TICKS(300000);
+
+    if (now - previous_millis_read_battery >= battery_sensor_read_interval) {
+      read_battery_sensor();
+      previous_millis_read_battery = now;
+    }
+
+    TickType_t sleep_time = gv.is_screen_active ? pdMS_TO_TICKS(1000) : pdMS_TO_TICKS(30000);
     ulTaskNotifyTake(pdTRUE, sleep_time);
   }
 }
@@ -256,19 +275,35 @@ void task_background(void *pvParameters) {
 // ==========================================================
 void task_gui(void *pvParameters) {
   usb_serial.println("[System] LVGL engine initialized & running.");
+  
   uint8_t last_brightness_value = 0xFF;
   previous_millis_screen_timeout = millis();
 
-  // Wifi saved connection will change after restart only so need to run it once
-  update_wifi_settings_details();
+  // Updated at the time of boot
+  update_shutdow_approx_label();
   
   while(1) {
+
+    // Process power button hardware interrupt checks
+    check_power_button_action();
 
     if(ts_var.wifi_refresh == 2) {
       update_wifi_dropdown();
     }
 
-    if(screen_state) {
+    if (ts_var.show_passkey_display != 0) {
+      if(!gv.is_screen_active) {
+        usb_serial.println("Screen was off, turned on for ble passkey screen");
+        turn_on_screen();
+      }
+
+      // Screen will never go to sleep mode if paskey is shown
+      previous_millis_screen_timeout = millis();
+
+      update_ble_passkey_display();
+    }
+
+    if(gv.is_screen_active) {
       int bat_percent = get_battery_percentage();
       if(bat_percent >= 70) {
         screen_brightness = 0xb2; // 70% brightness = 255 *0.70 = 178 (0xb2 hexadecimal)
@@ -310,29 +345,11 @@ void task_gui(void *pvParameters) {
         last_brightness_value = screen_brightness;
         
         // If screen is currently on, update it immediately to reflect the new brightness
-        if (screen_state) {
+        if (gv.is_screen_active) {
           set_screen_brightness(screen_brightness);
         }
         usb_serial.printf("Brightness percentage: %d\n", screen_brightness);
       }
-    }
-
-    if (show_passkey_display != 0) {
-      if(!screen_state) {
-        usb_serial.println("Screen was off, turned on for ble passkey screen");
-        turn_on_screen();
-      }
-
-      // Screen will never go to sleep mode if paskey is shown
-      previous_millis_screen_timeout = millis();
-
-      update_ble_passkey_display();
-    }
-
-    // Process power button hardware interrupt checks
-    check_power_button_action();
-
-    if (screen_state) {
       unsigned long now = millis();
 
       if(screen_turned_on == 2) {
@@ -345,7 +362,7 @@ void task_gui(void *pvParameters) {
 
       if (now - previous_millis_screen_timeout >= screen_timeout_interval) {
         previous_millis_screen_timeout = now;
-        if (screen_state) turn_off_screen();
+        if (gv.is_screen_active) turn_off_screen();
       }
 
       if(now - previous_millis_battery >= battery_update_ui_interval) {
@@ -358,10 +375,14 @@ void task_gui(void *pvParameters) {
         update_datetime_ui();
       }
 
-      uint32_t time_till_next = lv_timer_handler();
-      if(time_till_next < 5) time_till_next = 5;
-      if(time_till_next > 20) time_till_next = 20;  
-      vTaskDelay(pdMS_TO_TICKS(time_till_next));
+      if(gv.active_screen_id == SETTINGS_SCREEN) {
+        update_wifi_settings_details();
+      }
+
+      uint32_t wait = lv_timer_handler();
+      if (wait < 5) wait = 5;
+      if (wait > 100) wait = 100;
+      vTaskDelay(pdMS_TO_TICKS(wait));
     }
     else {
       ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
@@ -420,12 +441,9 @@ void setup() {
   
   // Initialize the Two Power Locks
   esp_pm_lock_create(ESP_PM_NO_LIGHT_SLEEP, 0, "sleep_lock", &sleep_lock);
-  esp_pm_lock_create(ESP_PM_CPU_FREQ_MAX, 0, "speed_lock", &speed_lock);
 
   // Acquire immediately since the screen boots ON
   esp_pm_lock_acquire(sleep_lock);
-  esp_pm_lock_acquire(speed_lock);
-  usb_serial.println("[PM] Initial locks acquired.");
 
   i2c_mutex = xSemaphoreCreateMutex();
   usb_serial.println("I2C Mutex initialised");
@@ -458,17 +476,16 @@ void setup() {
   gfx->setCursor(100, 251);
   gfx->printf("Loading System...");
 
-  ble_passkey = 100000 + (esp_random() % 900000);
+  gv.ble_passkey = 100000 + (esp_random() % 900000);
 
   rtc_init();
-  fetch_and_sync_time();
   lvgl_manager_init();
 
   // Create Background Sensor Monitoring Task, pinned to Core 0
   xTaskCreatePinnedToCore(
     task_background,       
     "TaskBackground",      
-    8192,                  
+    12288,                  
     NULL,                  
     1,                     
     &task_background_handle, 

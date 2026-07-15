@@ -6,7 +6,7 @@
 void ble_manager_init();
 
 // Start advertising so your phone can find the watch
-void ble_start_advertising();
+void ble_init_advertising();
 
 // Check if a phone is currently connected
 bool ble_is_connected();

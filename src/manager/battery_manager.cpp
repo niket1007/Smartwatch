@@ -1,8 +1,10 @@
 #include "battery_manager.h"
 
 XPowersAXP2101 power;
+
 static int battery_percentage = 0;
 static bool is_charging = false;
+
 static portMUX_TYPE battery_mux = portMUX_INITIALIZER_UNLOCKED;
 
 const uint32_t COLOR_CHARGING = 0x00FF00;
@@ -35,19 +37,16 @@ void set_battery_charging(bool charging) {
 }
 
 void power_init() {
-    // Wire.begin(IIC_SDA, IIC_SCL);
-    // Wire.setClock(100000); 
-
     usb_serial.print("Initializing AXP2101 PMU...");
     if (power.begin(Wire, AXP2101_SLAVE_ADDRESS, IIC_SDA, IIC_SCL)) {
-    usb_serial.println(" SUCCESS!");
-    power.disableTSPinMeasure();
-    power.enableBattDetection();
-    power.enableBattVoltageMeasure();
-    power.enableVbusVoltageMeasure();
-    power.enableGauge();
+        usb_serial.println(" SUCCESS!");
+        power.disableTSPinMeasure();
+        power.enableBattDetection();
+        power.enableBattVoltageMeasure();
+        power.enableVbusVoltageMeasure();
+        power.enableGauge();
     } else {
-    usb_serial.println(" FAILED! (Chip not found on I2C bus)");
+        usb_serial.println(" FAILED! (Chip not found on I2C bus)");
     }
 }
 
@@ -57,7 +56,7 @@ int read_pmu_battery_percent() {
     usb_serial.print("[PMU Warning] Battery not physically detected! ");
     }
     int percentage = power.getBatteryPercent();
-    usb_serial.println(percentage);
+    // usb_serial.println(percentage);
     return percentage;
 }
 
@@ -70,9 +69,9 @@ void read_battery_sensor() {
       charging_status = power.isCharging();
       xSemaphoreGive(i2c_mutex);
     } else {
-      usb_serial.println("Warning: I2C Mutex Lock Timeout in Task 0!");
+    //   usb_serial.println("Warning: I2C Mutex Lock Timeout in Task 0!");
     }
-    usb_serial.printf("Is Charging: %s\n", charging_status ? "YES" : "NO");
+    // usb_serial.printf("Is Charging: %s\n", charging_status ? "YES" : "NO");
 
     if (calculated_percentage != -1) {
         set_battery_percentage(calculated_percentage);

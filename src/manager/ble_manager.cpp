@@ -10,14 +10,8 @@
 #define CHAR_RX_UUID  "6E400002-B5A3-F393-E0A9-E50E24DCCA9E"  // Gadgetbridge -> watch
 #define CHAR_TX_UUID  "6E400003-B5A3-F393-E0A9-E50E24DCCA9E"  // watch -> Gadgetbridge
 
-Bluetooth_Global_Variables ble_gv = {
-    false, // ble_is_powered_on
-    false // is_ble_connected
-};
-
 static NimBLEServer* pServer = nullptr;
 static NimBLECharacteristic* pTxCharacteristic = nullptr;
-volatile uint32_t show_passkey_display = 0;
 
 // Accumulates incoming bytes until a full line (ending in '\n') is seen -
 // Gadgetbridge can split one message across multiple BLE writes.
@@ -28,17 +22,23 @@ static String rxBuffer = "";
 // ---------------------------------------------------------------------
 class ServerCallbacks : public NimBLEServerCallbacks {
     void onConnect(NimBLEServer* pServer, NimBLEConnInfo& connInfo) override {
-        usb_serial.printf("onconnect: Client connected:\n%s", connInfo.toString().c_str());
-        show_passkey_display = 1;
+        // usb_serial.printf("onconnect: Client connected:\n%s", connInfo.toString().c_str());
+        ts_var.show_passkey_display = 1;
 
         if(task_gui_handle != NULL) xTaskNotifyGive(task_gui_handle);
 
-        pServer->updateConnParams(connInfo.getConnHandle(), 80, 160, 0, 300);
+        pServer->updateConnParams(
+            connInfo.getConnHandle(), 
+            80, // min interval = 80 * 1.25 = 100ms
+            160, // max Interval = 160 * 1.25 = 200ms
+            10, // Latency
+            400 // 400 * 10 = 4000ms [Connection Timeout]
+        );
     }
 
     void onDisconnect(NimBLEServer* pServer, NimBLEConnInfo& connInfo, int reason) override {
-        usb_serial.printf("ondisconnect: Client disconnected (Reason: %d) - start advertising\n", reason);
-        show_passkey_display = 4;
+        // usb_serial.printf("ondisconnect: Client disconnected (Reason: %d) - start advertising\n", reason);
+        ts_var.show_passkey_display = 4;
         NimBLEDevice::startAdvertising();
     }
 
@@ -46,11 +46,11 @@ class ServerCallbacks : public NimBLEServerCallbacks {
         // Check that encryption was successful, if not we disconnect the client
         if (!connInfo.isEncrypted()) {
             NimBLEDevice::getServer()->disconnect(connInfo.getConnHandle());
-            show_passkey_display = 3;
+            ts_var.show_passkey_display = 3;
             return;
         }
-        show_passkey_display = 2;
-        usb_serial.printf("Called onAuthenticationComplete %d", show_passkey_display);
+        ts_var.show_passkey_display = 2;
+        // usb_serial.printf("Called onAuthenticationComplete %d", ts_var.show_passkey_display);
     }
 
 };
@@ -77,11 +77,11 @@ static void handleNotification(const String &payload) {
     String title = extractField(payload, "title");
     String body  = extractField(payload, "body");
 
-    usb_serial.println("---- Notification ----");
-    usb_serial.println("App:   " + app);
-    usb_serial.println("Title: " + title);
-    usb_serial.println("Body:  " + body);
-    usb_serial.println("-----------------------");
+    // usb_serial.println("---- Notification ----");
+    // usb_serial.println("App:   " + app);
+    // usb_serial.println("Title: " + title);
+    // usb_serial.println("Body:  " + body);
+    // usb_serial.println("-----------------------");
 
     // gfx->fillScreen(0x07E0); 
 }
@@ -91,34 +91,35 @@ static void handleNotification(const String &payload) {
 // ---------------------------------------------------------------------
 class CharacteristicCallbacks : public NimBLECharacteristicCallbacks {
     void onRead(NimBLECharacteristic* pCharacteristic, NimBLEConnInfo& connInfo) override {
-        usb_serial.printf("%s : onRead(), value: %s\n",
-                      pCharacteristic->getUUID().toString().c_str(),
-                      pCharacteristic->getValue().c_str());
+        // usb_serial.printf("%s : onRead(), value: %s\n",
+                    //   pCharacteristic->getUUID().toString().c_str(),
+                    //   pCharacteristic->getValue().c_str());
     }
 
     void onWrite(NimBLECharacteristic* pCharacteristic, NimBLEConnInfo& connInfo) override {
         std::string value = pCharacteristic->getValue();
         if (value.length() == 0) {
-            usb_serial.println("BLE: Received empty data");
+            // usb_serial.println("BLE: Received empty data");
             return;
         }
+        // usb_serial.printf("Notification: %s\n", value.c_str());
 
         rxBuffer += value.c_str();
 
         int newlineIndex;
-        while ((newlineIndex = rxBuffer.indexOf('\n')) != -1) {
+        while ((newlineIndex = rxBuffer.indexOf(')\n')) != -1) {
             String line = rxBuffer.substring(0, newlineIndex);
             rxBuffer = rxBuffer.substring(newlineIndex + 1);
             line.trim();
             if (line.length() == 0) continue;
 
-            usb_serial.printf("[RAW] %s\n", line.c_str());
+            // usb_serial.printf("[RAW] %s\n", line.c_str());
 
             if (line.startsWith("GB(")) {
                 handleNotification(line);
             }
             else {
-                usb_serial.println(line);
+                // usb_serial.println(line);
             }
             // EXTENSION POINT - other Gadgetbridge commands (time sync,
             // battery query, etc.) go here as additional else-if branches.
@@ -132,18 +133,18 @@ class CharacteristicCallbacks : public NimBLECharacteristicCallbacks {
 void ble_manager_init() {
     NimBLEDevice::init(DEVICE_NAME);
 
-    usb_serial.printf("Bluetooth passkey: %d", ble_passkey);
+    // usb_serial.printf("Bluetooth passkey: %d", gv.ble_passkey);
     NimBLEDevice::setSecurityAuth(true, true, false);
-    NimBLEDevice::setSecurityPasskey(ble_passkey);
+    NimBLEDevice::setSecurityPasskey(gv.ble_passkey);
     NimBLEDevice::setSecurityIOCap(BLE_HS_IO_DISPLAY_ONLY);
 
     pServer = NimBLEDevice::createServer();   // FIX: assigns the global, not a shadow
     if(pServer == nullptr) {
-        usb_serial.println("Bluetooth not initialised");
+        // usb_serial.println("Bluetooth not initialised");
         return;
     }
     pServer->setCallbacks(new ServerCallbacks());
-    usb_serial.println("BLE: Server Created");
+    // usb_serial.println("BLE: Server Created");
 
     NimBLEService* pService = pServer->createService(SERVICE_UUID);
 
@@ -161,25 +162,25 @@ void ble_manager_init() {
     );
     pRxCharacteristic->setCallbacks(new CharacteristicCallbacks());
 
-    usb_serial.println("BLE: Service Started");
+    // usb_serial.println("BLE: Service Started");
 
-    ble_start_advertising();
+    ble_init_advertising();
 }
 
-void ble_start_advertising() {
+void ble_init_advertising() {
     NimBLEAdvertising* pAdvertising = NimBLEDevice::getAdvertising();
     pAdvertising->setName(DEVICE_NAME);
     pAdvertising->addServiceUUID(SERVICE_UUID);
     pAdvertising->enableScanResponse(true);
     
-    pAdvertising->setMinInterval(800); // 800 * 0.625 = 500ms
-    pAdvertising->setMaxInterval(800); // 800 * 0.625 = 500ms
+    // pAdvertising->setMinInterval(800); // 800 * 0.625 = 500ms
+    // pAdvertising->setMaxInterval(800); // 800 * 0.625 = 500ms
     
     pAdvertising->start();
 
-    usb_serial.println("BLE: Advertising Started as " DEVICE_NAME);
+    // usb_serial.println("BLE: Advertising Started as " DEVICE_NAME);
     
-    ble_gv.ble_is_powered_on = true;
+    gv.ble_is_powered_on = true;
 }
 
 bool ble_is_connected() {
@@ -196,37 +197,37 @@ void ble_manager_deinit() {
     pTxCharacteristic = nullptr;
     
     // 3. Reset state variables
-    show_passkey_display = 0;
+    ts_var.show_passkey_display = 0;
 
-    ble_gv.ble_is_powered_on = false;
+    gv.ble_is_powered_on = false;
     
-    usb_serial.println("BLE: Stack completely shut down to save battery.");
+    // usb_serial.println("BLE: Stack completely shut down to save battery.");
 }
 
 
 void update_ble_passkey_display() {
     char passkey_str[8];
-    snprintf(passkey_str, sizeof(passkey_str), "%d", ble_passkey);
+    snprintf(passkey_str, sizeof(passkey_str), "%d", gv.ble_passkey);
 
-    if(show_passkey_display == 1) {
-        if(active_screen != BLE_PASSKEY_SCREEN) {
-            usb_serial.println("Load BLE Pass key screen");
+    if(ts_var.show_passkey_display == 1) {
+        if(gv.active_screen_id != BLE_PASSKEY_SCREEN) {
+            // usb_serial.println("Load BLE Pass key screen");
             navigate_to_screen(BLE_PASSKEY_SCREEN);
         }
         if (objects.ble_passkey_label) {
             lv_label_set_text(objects.ble_passkey_label, passkey_str);
         }
     }
-    else if (show_passkey_display == 2 || show_passkey_display == 3) {
+    else if (ts_var.show_passkey_display == 2 || ts_var.show_passkey_display == 3) {
         if (objects.ble_passkey_label) {
             lv_label_set_text(objects.ble_passkey_label,
-                               show_passkey_display == 2 ? "Paired!" : "Pairing failed");
+                               ts_var.show_passkey_display == 2 ? "Paired!" : "Pairing failed");
         }
-        show_passkey_display = 4;
+        ts_var.show_passkey_display = 4;
     }
-    else if(show_passkey_display == 4) {
+    else if(ts_var.show_passkey_display == 4) {
+        ts_var.show_passkey_display = 0;
         lv_timer_create([](lv_timer_t *timer) {
-            show_passkey_display = 0; // Reset global state inside the delayed callback
             navigate_to_screen(HOME_SCREEN);    // Transition back to home
             lv_timer_delete(timer);   // Destroy this one-shot timer
         }, 1000, NULL);
