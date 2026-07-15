@@ -2,38 +2,34 @@
 
 // ################# Variables Start #################
 int previous_vertical_screen = 0;
-int total_screens = 5; // Only those screens which has left and right gesture enabled
+int total_screens = 3; // Only those screens which has left and right gesture enabled
 // ################# Variables End #################
 
 
 lv_obj_t* get_screen(int number) {
-    if(number == HOME_SCREEN) {
-        return objects.home_screen;
-    }
-    else if(number == WEATHER_SCREEN) {
-        return objects.weather_screen;
-    }
-    else if(number == NAVIGATION_SCREEN) {
-        return objects.navigation_screen;
-    }
-    else if(number == SETTINGS_SCREEN) {
-        return objects.settings_screen;
-    }
-    else if(number == NOTIFICATION_SCREEN) {
-        return objects.notification_screen;
-    }
-    else if(number == BLE_PASSKEY_SCREEN) {
+
+  switch(number) {
+    case HOME_SCREEN:
+      return objects.home_screen;
+      break;
+    case WEATHER_SCREEN:
+      return objects.weather_screen;
+      break;
+    case SETTINGS_SCREEN:
+      return objects.settings_screen;
+      break;
+    case NOTIFICATION_SCREEN:
+      return objects.notification_screen;
+      break;
+    case BLE_PASSKEY_SCREEN:
       return objects.ble_passkey_screen;
-    }
-    else if(number == CALENDAR_SCREEN) {
+      break;
+    case CALENDAR_SCREEN:
       return objects.calendar_screen;
-    }
-    else if(number == MUSIC_SCREEN) {
-      return objects.music_screen;
-    }
-    else {
-        return objects.home_screen;
-    }
+      break;
+    default:
+      return objects.home_screen;
+  }
 }
 
 static bool transitionRunning = false;

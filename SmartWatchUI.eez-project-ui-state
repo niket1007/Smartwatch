@@ -1,6 +1,6 @@
 {
   "navigation": {
-    "selectedUserPageObject": "[SmartWatchUI.eez-project]:/userPages/4",
+    "selectedUserPageObject": "[SmartWatchUI.eez-project]:/userPages/5",
     "selectedActionObject": "[SmartWatchUI.eez-project]:/actions/0",
     "subnavigationSelectedItems": {
       "variables-tab/sub-navigation/selected-item": "Global"
@@ -194,23 +194,12 @@
               "children": [
                 {
                   "type": "tab",
-                  "id": "#0d7ff186-259b-44fd-a093-299d54369adc",
-                  "name": "Navigation_Screen",
+                  "id": "#e50e1824-c0e6-4f40-add9-a3dbb0b51cd5",
+                  "name": "Calendar_Screen",
                   "component": "editor",
                   "config": {
-                    "objectPath": "[SmartWatchUI.eez-project]:/userPages/4",
+                    "objectPath": "[SmartWatchUI.eez-project]:/userPages/5",
                     "permanent": false
-                  },
-                  "icon": "svg:page"
-                },
-                {
-                  "type": "tab",
-                  "id": "#ffcde3f0-58f4-48c0-b25a-3659b571b015",
-                  "name": "Home_Screen",
-                  "component": "editor",
-                  "config": {
-                    "objectPath": "[SmartWatchUI.eez-project]:/userPages/0",
-                    "permanent": true
                   },
                   "icon": "svg:page"
                 }
@@ -1093,7 +1082,12 @@
       "selectionBack": {
         "0": {
           "0": {
-            "1": {}
+            "0": {
+              "$selected": true
+            },
+            "1": {
+              "$selected": true
+            }
           }
         }
       },
@@ -1140,7 +1134,9 @@
       "selectionBack": {
         "0": {
           "0": {
-            "$selected": true
+            "1": {
+              "1": {}
+            }
           }
         }
       },
@@ -1192,9 +1188,7 @@
       "selectionFront": {},
       "selectionBack": {
         "0": {
-          "0": {
-            "1": {}
-          }
+          "0": {}
         }
       },
       "transform": {
@@ -1215,7 +1209,17 @@
       "selectionFront": {},
       "selectionBack": {
         "0": {
-          "0": {}
+          "0": {
+            "0": {
+              "$selected": true
+            },
+            "1": {
+              "$selected": true
+            },
+            "2": {
+              "$selected": true
+            }
+          }
         }
       },
       "transform": {
@@ -1270,8 +1274,8 @@
   "lvglPart": "MAIN",
   "lvglState": "DEFAULT",
   "lvglExpandedPropertiesGroup": [
-    "TEXT",
-    "BORDER"
+    "BORDER",
+    "BACKGROUND"
   ],
   "showInactiveFlowsInDebugger": true,
   "globalFlowZoom": true,
