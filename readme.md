@@ -5,6 +5,6 @@ Smartwatch
 ESP32-S3 ESP-IDF Smartwatch Project
 
 
+**AI Flow Builder**: https://app.flowstep.ai/
 
-\*\*AI Flow Builder\*\*: https://app.flowstep.ai/
-
+**GadgetBridge Ble Details**: https://www.espruino.com/Gadgetbridge
