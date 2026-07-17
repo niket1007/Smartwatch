@@ -119,3 +119,14 @@ void update_battery_ui()
         }
     }
 }
+
+void send_battery_related_information() {
+    int batt = get_battery_percentage();
+    bool charging_now = is_battery_charging();
+
+    JsonDocument json_doc;
+    json_doc["t"] = "status";
+    json_doc["bat"] = batt;
+    json_doc["chg"] = charging_now ? 1: 0;
+    ble_send_to_phone(json_doc);
+}

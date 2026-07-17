@@ -12,6 +12,9 @@
 #include "manager/lvgl_manager.h"
 #include "manager/ble_manager.h"
 #include "manager/settings_screen_manager.h"
+#include "manager/notification_manager.h"
+#include "manager/weather_manager.h"
+#include "manager/call_screen_manager.h"
 
 #define BOOT_BUTTON_PIN 0 // Onboard BOOT button wired to GPIO0
 
@@ -44,13 +47,17 @@ void Arduino_IIC_Touch_Interrupt(void) {
 // ################# Variable Start #################
 HWCDC usb_serial;
 SemaphoreHandle_t i2c_mutex;
-Preferences preferences;
 
 volatile int screen_turned_on = 0;
 
 Task_State_Variables ts_var = {
-  0, // wifi_refresh
-  0 // show_passkey_display
+  0,      // wifi_refresh
+  0,     // show_passkey_display,
+  0,    // show_call_notif_screen
+  0,   // weather_refresh
+  0,  // bluetooth_battery_weather_init
+  0, // accept_call_signal_init
+  0 // reject_call_signal_init
 };
 
 Global_Variables gv = {
@@ -64,7 +71,6 @@ Global_Variables gv = {
 
 // ESP Power Management Locks (The Two-Lock Strategy)
 esp_pm_lock_handle_t sleep_lock;
-// esp_pm_lock_handle_t speed_lock;
 
 // Task handles
 TaskHandle_t task_gui_handle = NULL;
@@ -74,18 +80,17 @@ uint32_t sleep_count = 0;
 int64_t total_sleep_us = 0;
 
 // Interval variables
-int wifi_interval = 10;
 int battery_update_ui_interval = 5000;
 int datetime_update_ui_interval = 2000;
 int battery_sensor_read_interval = 3000;
 int screen_timeout_interval = 15000;
-int battery_data_to_phone_interval = 10000;
+int battery_notif_phone_interval = 280000;
 unsigned long previous_millis_datetime = 0;
 unsigned long previous_millis_battery = 0;
 unsigned long previous_millis_read_battery = 0;
 unsigned long previous_millis_screen_timeout = 0;
 unsigned long previous_millis_battery_to_phone = 0;
-
+unsigned long previous_millis_battery_notif_phone = 0;
 
 // Screen and Button State variables
 volatile bool power_button_pressed = false;
@@ -241,12 +246,33 @@ void task_background(void *pvParameters) {
       scan_and_save_nearby_wifi();
     }
 
-    if (current_bat <= 20 && gv.ble_is_powered_on)
-    {
+    if(ts_var.weather_refresh == 1) {
+      send_weather_update_command();
+    }
+
+    if(ts_var.accept_call_signal_init == 1) {
+      send_accept_call_signal();
+      ts_var.accept_call_signal_init = 0;
+    }
+
+    if(ts_var.reject_call_signal_init == 1) {
+      send_reject_call_signal();
+      ts_var.reject_call_signal_init = 0;
+    }
+
+    if(ts_var.bluetooth_battery_weather_init == 1) {
+      vTaskDelay(pdMS_TO_TICKS(1000));
+
+      send_battery_related_information();
+      send_weather_update_command();
+      
+      ts_var.bluetooth_battery_weather_init = 0;
+    }
+
+    if (current_bat <= 20 && gv.ble_is_powered_on) {
       ble_manager_deinit();
     }
-    else if (current_bat >= 25 && !gv.ble_is_powered_on)
-    {
+    else if (current_bat >= 25 && !gv.ble_is_powered_on) {
       ble_manager_init();
     }
 
@@ -265,6 +291,11 @@ void task_background(void *pvParameters) {
       previous_millis_read_battery = now;
     }
 
+    if(now - previous_millis_battery_notif_phone >= battery_notif_phone_interval) {
+      send_battery_related_information();
+      previous_millis_battery_notif_phone = now;
+    }
+
     TickType_t sleep_time = gv.is_screen_active ? pdMS_TO_TICKS(1000) : pdMS_TO_TICKS(30000);
     ulTaskNotifyTake(pdTRUE, sleep_time);
   }
@@ -281,6 +312,9 @@ void task_gui(void *pvParameters) {
 
   // Updated at the time of boot
   update_shutdow_approx_label();
+
+  // Update weather screen with default
+  update_weather_screen_ui();
   
   while(1) {
 
@@ -289,6 +323,10 @@ void task_gui(void *pvParameters) {
 
     if(ts_var.wifi_refresh == 2) {
       update_wifi_dropdown();
+    }
+
+    if(ts_var.weather_refresh == 3) {
+      update_weather_screen_ui();
     }
 
     if (ts_var.show_passkey_display != 0) {
@@ -301,6 +339,16 @@ void task_gui(void *pvParameters) {
       previous_millis_screen_timeout = millis();
 
       update_ble_passkey_display();
+    }
+
+    if(ts_var.show_call_notif_screen != 0) {
+      if(!gv.is_screen_active) {
+        turn_on_screen();
+      }
+
+      previous_millis_screen_timeout = millis();
+
+      update_call_screen_ui();
     }
 
     if(gv.is_screen_active) {
@@ -379,6 +427,10 @@ void task_gui(void *pvParameters) {
         update_wifi_settings_details();
       }
 
+      if(gv.active_screen_id == NOTIFICATION_SCREEN) {
+        update_music_tab_ui();
+      }
+
       uint32_t wait = lv_timer_handler();
       if (wait < 5) wait = 5;
       if (wait > 100) wait = 100;
@@ -390,15 +442,15 @@ void task_gui(void *pvParameters) {
   }
 }
 
-static esp_err_t IRAM_ATTR before_light_sleep(int64_t sleep_time_us, void *arg) {
-  return ESP_OK;
-}
+// static esp_err_t IRAM_ATTR before_light_sleep(int64_t sleep_time_us, void *arg) {
+//   return ESP_OK;
+// }
 
-static esp_err_t IRAM_ATTR after_light_sleep(int64_t sleep_time_us, void *arg) {
-  sleep_count++;
-  total_sleep_us += sleep_time_us;
-  return ESP_OK;
-}
+// static esp_err_t IRAM_ATTR after_light_sleep(int64_t sleep_time_us, void *arg) {
+//   sleep_count++;
+//   total_sleep_us += sleep_time_us;
+//   return ESP_OK;
+// }
 
 // ==========================================================
 // MAIN SETUP
@@ -430,14 +482,14 @@ void setup() {
     usb_serial.println("[PM] Automatic light sleep enabled (BLE-safe)");
   }
 
-  esp_pm_sleep_cbs_register_config_t cbs_conf = {
-        .enter_cb = before_light_sleep,
-        .exit_cb  = after_light_sleep,
-    };
-  esp_err_t ret = esp_pm_light_sleep_register_cbs(&cbs_conf);
-  if (ret != ESP_OK) {
-      usb_serial.printf("[PM] Failed to register sleep callbacks: %s\n", esp_err_to_name(ret));
-  }
+  // esp_pm_sleep_cbs_register_config_t cbs_conf = {
+  //       .enter_cb = before_light_sleep,
+  //       .exit_cb  = after_light_sleep,
+  //   };
+  // esp_err_t ret = esp_pm_light_sleep_register_cbs(&cbs_conf);
+  // if (ret != ESP_OK) {
+  //     usb_serial.printf("[PM] Failed to register sleep callbacks: %s\n", esp_err_to_name(ret));
+  // }
   
   // Initialize the Two Power Locks
   esp_pm_lock_create(ESP_PM_NO_LIGHT_SLEEP, 0, "sleep_lock", &sleep_lock);

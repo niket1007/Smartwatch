@@ -27,6 +27,9 @@ lv_obj_t* get_screen(int number) {
     case CALENDAR_SCREEN:
       return objects.calendar_screen;
       break;
+    case CALL_NOTIF_SCREEN:
+      return objects.call_notification_screen;
+      break;
     default:
       return objects.home_screen;
   }
@@ -47,9 +50,9 @@ void navigate_to_screen(int screen)
 
     if (scr == nullptr)
     {
-        // usb_serial.printf("Screen is null %d\n", screen);
-        transitionRunning = false;
-        return;
+      // usb_serial.printf("Screen is null %d\n", screen);
+      transitionRunning = false;
+      return;
     }
     gv.active_screen_id = screen;
     lv_screen_load(scr);
@@ -67,7 +70,7 @@ void navigate_to_screen(int screen)
 
 void action_navigate_gesture(lv_event_t * e) {
 
-  if(get_battery_percentage() >= 20) {
+  if(get_battery_percentage() > 20) {
     int current_screen = (int)(intptr_t)lv_event_get_user_data(e);
 
     lv_dir_t dir = lv_indev_get_gesture_dir(lv_indev_active());

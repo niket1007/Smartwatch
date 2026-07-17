@@ -1,21 +1,15 @@
 #include "wifi_manager.h"
+#include "preferences_manager.h"
 #include "ble_manager.h"
 
 const int WIFI_MAX_ATTEMPTS = 20;
-
-void get_wifi_credentials() {
-    preferences.begin("wifi-config", true);
-    gv.ssid = preferences.getString("SSID", "");
-    gv.password = preferences.getString("PASSWORD", "");
-    preferences.end();
-}
 
 bool connect_to_wifi() {
     int attempts = 0;
 
     usb_serial.println("Initiating Wifi Connection");
 
-    get_wifi_credentials();
+    fetch_wifi_credentials();
     if(gv.ssid.isEmpty() && gv.password.isEmpty()) {
         return false;
     }
@@ -114,10 +108,7 @@ void action_wifi_save_button_clicked(lv_event_t * e) {
     // usb_serial.printf("Saving SSID: [%s]\n", ssid_buffer);
     // usb_serial.printf("Saving Password: [%s]\n", password);
     
-    preferences.begin("wifi-config", false);
-    preferences.putString("SSID", String(ssid_buffer));
-    preferences.putString("PASSWORD", password);
-    preferences.end();
+    store_wifi_credentials(String(ssid_buffer), password);
 
     // usb_serial.println("Credentials saved. Rebooting system to apply changes...");
 

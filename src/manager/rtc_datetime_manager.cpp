@@ -22,16 +22,6 @@ void rtc_init() {
   }
 }
 
-// Global references for day-of-week calculation from `tm` struct
-int get_day_of_week(int year, int month, int day) {
-  struct tm t = {0};
-  t.tm_year = year - 1900;
-  t.tm_mon = month - 1;
-  t.tm_mday = day;
-  mktime(&t);
-  return t.tm_wday; // 0 = Sunday, 1 = Monday, ..., 6 = Saturday
-}
-
 void fetch_and_sync_time() {
   bool is_connected = connect_to_wifi();
 
@@ -88,11 +78,6 @@ void update_datetime_ui()
     // Validate day of week
     
     uint8_t day_of_week = current_datetime.getWeek();
-    
-    get_day_of_week(
-        current_datetime.getYear(),
-        current_datetime.getMonth(),
-        current_datetime.getDay());
 
     if (day_of_week < 0 || day_of_week > 6) {
         day_of_week = 0;

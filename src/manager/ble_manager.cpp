@@ -1,5 +1,8 @@
 #include "ble_manager.h"
 #include "navigation_manager.h"
+#include "notification_manager.h"
+#include "weather_manager.h"
+#include "call_screen_manager.h"
 #include <NimBLEDevice.h>
 
 // ---------------------------------------------------------------------
@@ -58,32 +61,77 @@ class ServerCallbacks : public NimBLEServerCallbacks {
 // ---------------------------------------------------------------------
 // NOTIFICATION PARSING
 // ---------------------------------------------------------------------
-// Bangle.js payloads look like:
-//   GB({t:"notify",id:1,src:"WhatsApp",title:"Alice",body:"Hey there"})
-// Unquoted keys, so not strict JSON - simple string search is enough for now.
+static void handleNotification(String payload) {
+    if (payload.startsWith("GB(") && payload.endsWith(")")) {
+        payload = payload.substring(4, payload.length() - 1);
+    }
+    usb_serial.printf("[RAW] %s\n", payload.c_str());
 
-static String extractField(const String &payload, const String &key) {
-    String pattern = key + ":\"";
-    int start = payload.indexOf(pattern);
-    if (start == -1) return "";
-    start += pattern.length();
-    int end = payload.indexOf("\"", start);
-    if (end == -1) return "";
-    return payload.substring(start, end);
-}
+    JsonDocument json_doc;
+    DeserializationError error = deserializeJson(json_doc, payload);
+    if(error) {
+        usb_serial.print(F("deserializeJson() failed: "));
+        usb_serial.println(error.f_str());
+        return;
+    }
 
-static void handleNotification(const String &payload) {
-    String app   = extractField(payload, "src");
-    String title = extractField(payload, "title");
-    String body  = extractField(payload, "body");
+    if(!json_doc.isNull() ) {
+        String type = json_doc["t"] | "";
+        if(type == "musicinfo") {
+            /*
+                GadgetBridge Payload: 
+                {"t":"musicinfo","artist":"Ali & Shjr & Haider Ali","album":"Heer","track":"Heer","dur":250,"c":-1,"n":-1}
+            */
+            int duration = json_doc["dur"] | 0;
+            update_music_notification_details(
+                String(json_doc["track"]),
+                String(json_doc["artist"]),
+                duration
+            );
+        }
+        else if(type == "call") {
+            /*
+                GadgetBridge Payload
+                {"t":"call","cmd":"incoming","name":"XXXX","number":"XXXXXXXXXX"}
+                {"t":"call","cmd":"end","name":"XXXX","number":"XXXXXXXXXX"}
+                {"t":"call","cmd":"outgoing","name":"XXXX","number":"XXXXXXXXXX"}
+            */
+            usb_serial.println("---- Call Notification ----");
+            usb_serial.println("Type: " + String(json_doc["cmd"]));
+            usb_serial.println("Name:   " + String(json_doc["name"]));
+            usb_serial.println("Number:  " + String(json_doc["number"]));
+            usb_serial.println("-----------------------");
 
-    // usb_serial.println("---- Notification ----");
-    // usb_serial.println("App:   " + app);
-    // usb_serial.println("Title: " + title);
-    // usb_serial.println("Body:  " + body);
-    // usb_serial.println("-----------------------");
+            update_call_notification_details(
+                String(json_doc["cmd"]),
+                String(json_doc["name"]),
+                String(json_doc["number"])
+            );
+        }
+        else if(type == "weather") {
+            /*
+                GadgetBridge Payload
+                {"t":"weather","v":1,"temp":310,"hi":311,"lo":302,"hum":39,
+                "rain":20,"uv":4,"code":803,"txt":"Partly cloudy",
+                "wind":13.68,"wdir":295,"loc":"Gurgaon, Sushant Lok 2"}
+            */
+            float temp = json_doc["temp"].as<float>() - 273.15f;
+            float hi = json_doc["hi"].as<float>() - 273.15f;
+            float low = json_doc["lo"].as<float>() - 273.15f;
+            update_weather_details(
+                String(temp, 2),// temp provided is in Kelvin and C = K - 273.15
+                String(hi, 2),
+                String(low, 2),
+                String(json_doc["hum"]),
+                String(json_doc["rain"]),
+                String(json_doc["wind"]),
+                String(json_doc["txt"]),
+                String(json_doc["loc"])
+            );
+            
+        }
+    }
 
-    // gfx->fillScreen(0x07E0); 
 }
 
 // ---------------------------------------------------------------------
@@ -107,22 +155,15 @@ class CharacteristicCallbacks : public NimBLECharacteristicCallbacks {
         rxBuffer += value.c_str();
 
         int newlineIndex;
-        while ((newlineIndex = rxBuffer.indexOf(')\n')) != -1) {
+        while ((newlineIndex = rxBuffer.indexOf('\n')) != -1) {
             String line = rxBuffer.substring(0, newlineIndex);
             rxBuffer = rxBuffer.substring(newlineIndex + 1);
             line.trim();
             if (line.length() == 0) continue;
 
-            // usb_serial.printf("[RAW] %s\n", line.c_str());
-
             if (line.startsWith("GB(")) {
                 handleNotification(line);
             }
-            else {
-                // usb_serial.println(line);
-            }
-            // EXTENSION POINT - other Gadgetbridge commands (time sync,
-            // battery query, etc.) go here as additional else-if branches.
         }
     }
 };
@@ -185,6 +226,7 @@ void ble_init_advertising() {
 
 bool ble_is_connected() {
     if (pServer == nullptr) return false;
+    if (pTxCharacteristic == nullptr) return false;
     return pServer->getConnectedCount() > 0;
 }
 
@@ -223,6 +265,10 @@ void update_ble_passkey_display() {
             lv_label_set_text(objects.ble_passkey_label,
                                ts_var.show_passkey_display == 2 ? "Paired!" : "Pairing failed");
         }
+
+        if(ts_var.show_passkey_display == 2) {
+            ts_var.bluetooth_battery_weather_init = 1;
+        }
         ts_var.show_passkey_display = 4;
     }
     else if(ts_var.show_passkey_display == 4) {
@@ -232,4 +278,20 @@ void update_ble_passkey_display() {
             lv_timer_delete(timer);   // Destroy this one-shot timer
         }, 1000, NULL);
     }
+}
+
+bool ble_send_to_phone(JsonDocument json) {
+    if(ble_is_connected()) {
+        String stringified;
+        serializeJson(json, stringified);
+        stringified += "\r\n";
+
+        usb_serial.printf("Stringified JSON %s\n", stringified.c_str());
+        
+        pTxCharacteristic->setValue(stringified.c_str());
+        pTxCharacteristic->notify();
+        usb_serial.println("notification sent");
+        return true;
+    }
+    return false;
 }

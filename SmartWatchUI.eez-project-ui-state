@@ -1,6 +1,6 @@
 {
   "navigation": {
-    "selectedUserPageObject": "[SmartWatchUI.eez-project]:/userPages/5",
+    "selectedUserPageObject": "[SmartWatchUI.eez-project]:/userPages/2",
     "selectedActionObject": "[SmartWatchUI.eez-project]:/actions/0",
     "subnavigationSelectedItems": {
       "variables-tab/sub-navigation/selected-item": "Global"
@@ -195,10 +195,10 @@
                 {
                   "type": "tab",
                   "id": "#e50e1824-c0e6-4f40-add9-a3dbb0b51cd5",
-                  "name": "Calendar_Screen",
+                  "name": "Notification_Screen",
                   "component": "editor",
                   "config": {
-                    "objectPath": "[SmartWatchUI.eez-project]:/userPages/5",
+                    "objectPath": "[SmartWatchUI.eez-project]:/userPages/2",
                     "permanent": false
                   },
                   "icon": "svg:page"
@@ -1110,7 +1110,11 @@
       "selectionBack": {
         "0": {
           "0": {
-            "$selected": true
+            "1": {
+              "1": {
+                "$selected": true
+              }
+            }
           },
           "1": {}
         }
@@ -1135,7 +1139,9 @@
         "0": {
           "0": {
             "1": {
-              "1": {}
+              "1": {
+                "2": {}
+              }
             }
           }
         }
@@ -1159,6 +1165,7 @@
       "selectionBack": {
         "0": {
           "0": {
+            "0": {},
             "3": {
               "$selected": true
             },
@@ -1210,14 +1217,13 @@
       "selectionBack": {
         "0": {
           "0": {
-            "0": {
-              "$selected": true
-            },
-            "1": {
-              "$selected": true
-            },
-            "2": {
-              "$selected": true
+            "0": {},
+            "2": {},
+            "3": {},
+            "4": {
+              "1": {
+                "$selected": true
+              }
             }
           }
         }
@@ -1273,10 +1279,7 @@
   "selectedStylePropertyName": "",
   "lvglPart": "MAIN",
   "lvglState": "DEFAULT",
-  "lvglExpandedPropertiesGroup": [
-    "BORDER",
-    "BACKGROUND"
-  ],
+  "lvglExpandedPropertiesGroup": [],
   "showInactiveFlowsInDebugger": true,
   "globalFlowZoom": true,
   "flowZoom": 1,
