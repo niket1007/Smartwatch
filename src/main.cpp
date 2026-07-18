@@ -291,7 +291,8 @@ void task_background(void *pvParameters) {
       previous_millis_read_battery = now;
     }
 
-    if(now - previous_millis_battery_notif_phone >= battery_notif_phone_interval) {
+    if(current_bat >= 25 &&
+      (now - previous_millis_battery_notif_phone >= battery_notif_phone_interval)) {
       send_battery_related_information();
       previous_millis_battery_notif_phone = now;
     }
