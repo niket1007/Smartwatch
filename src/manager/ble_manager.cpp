@@ -240,7 +240,7 @@ void ble_manager_deinit() {
     
     // 3. Reset state variables
     ts_var.show_passkey_display = 0;
-
+    ts_var.show_call_notif_screen = 0;
     gv.ble_is_powered_on = false;
     
     // usb_serial.println("BLE: Stack completely shut down to save battery.");

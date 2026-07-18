@@ -13,6 +13,8 @@ Weather_Details wd_notif = {
     "-----------"
 };
 
+static unsigned long last_refresh_time = 0;
+
 void send_weather_update_command() {
     JsonDocument json_doc;
     json_doc["t"] = "weather";
@@ -42,8 +44,16 @@ void update_weather_details(
 }
 
 void action_weather_refresh_clicked(lv_event_t * e) {
+    unsigned long now = millis();
     if(ts_var.weather_refresh == 0) {
+        last_refresh_time = now;
         usb_serial.println("Refresh weather screen called");
+        ts_var.weather_refresh = 1;
+    }
+    else if(
+        (ts_var.weather_refresh == 1 || ts_var.weather_refresh == 2) && 
+        (now - last_refresh_time > 1000)) {
+        last_refresh_time = now;
         ts_var.weather_refresh = 1;
     }
 }

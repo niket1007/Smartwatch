@@ -261,7 +261,7 @@ void task_background(void *pvParameters) {
     }
 
     if(ts_var.bluetooth_battery_weather_init == 1) {
-      vTaskDelay(pdMS_TO_TICKS(1000));
+      vTaskDelay(pdMS_TO_TICKS(3000)); //wait for 3 sec before transmitting the data
 
       send_battery_related_information();
       send_weather_update_command();
@@ -317,7 +317,7 @@ void task_gui(void *pvParameters) {
   update_weather_screen_ui();
   
   while(1) {
-
+    int bat_percent = get_battery_percentage();
     // Process power button hardware interrupt checks
     check_power_button_action();
 
@@ -352,7 +352,7 @@ void task_gui(void *pvParameters) {
     }
 
     if(gv.is_screen_active) {
-      int bat_percent = get_battery_percentage();
+      
       if(bat_percent >= 70) {
         screen_brightness = 0xb2; // 70% brightness = 255 *0.70 = 178 (0xb2 hexadecimal)
         battery_update_ui_interval = 5000;
