@@ -95,6 +95,7 @@ unsigned long previous_millis_battery_notif_phone = 0;
 // Screen and Button State variables
 volatile bool power_button_pressed = false;
 uint8_t screen_brightness = 0xff;
+uint8_t last_brightness_value = 0xFF;
 
 // ################# Variable End #################
 
@@ -136,6 +137,8 @@ void set_screen_brightness(uint8_t brightness_val) {
       bus->writeC8D8(0x51, brightness_val);
       bus->endWrite();
    #endif
+
+  last_brightness_value = brightness_val;
 }
 
 void turn_off_screen() {
@@ -307,8 +310,7 @@ void task_background(void *pvParameters) {
 // ==========================================================
 void task_gui(void *pvParameters) {
   usb_serial.println("[System] LVGL engine initialized & running.");
-  
-  uint8_t last_brightness_value = 0xFF;
+
   previous_millis_screen_timeout = millis();
 
   // Updated at the time of boot
@@ -321,6 +323,54 @@ void task_gui(void *pvParameters) {
     int bat_percent = get_battery_percentage();
     // Process power button hardware interrupt checks
     check_power_button_action();
+
+    if(bat_percent >= 70) {
+      screen_brightness = 0xb2; // 70% brightness = 255 *0.70 = 178 (0xb2 hexadecimal)
+      battery_update_ui_interval = 5000;
+      datetime_update_ui_interval = 2000;
+      battery_sensor_read_interval = 3000;
+
+      screen_timeout_interval = 15000;
+    }
+    else if(bat_percent >= 40 && bat_percent < 70) {
+      screen_brightness = 0x7F; // 50% brightness = 255 *0.50 = 175 (0x7F hexadecimal)
+      // Intervals doubled (slower)
+      battery_update_ui_interval = 10000; 
+      datetime_update_ui_interval = 4000;
+      battery_sensor_read_interval = 6000;
+
+      screen_timeout_interval = 10000;
+    }
+    else if(bat_percent >=20 && bat_percent < 40) {
+      screen_brightness = 0x66; // 40% brightness = 255 *0.40 = 102 (0x66 hexadecimal)
+      // Intervals tripled (slower)
+      battery_update_ui_interval = 15000; 
+      datetime_update_ui_interval = 6000;
+      battery_sensor_read_interval = 9000;
+
+      screen_timeout_interval = 5000;
+    }
+    else {
+      screen_brightness = 0x51; // 20% brightness = 255 *0.20 = 51 (0x51 hexadecimal)
+      // Intervals tripled (slower)
+      battery_update_ui_interval = 15000;
+      datetime_update_ui_interval = 6000;
+      battery_sensor_read_interval = 9000;
+
+      screen_timeout_interval = 5000;
+    }
+
+    if(gv.is_screen_active) {
+      if (screen_brightness != last_brightness_value) {
+        last_brightness_value = screen_brightness;
+        
+        // If screen is currently on, update it immediately to reflect the new brightness
+        if (gv.is_screen_active) {
+          set_screen_brightness(screen_brightness);
+        }
+        usb_serial.printf("Brightness percentage: %d\n", screen_brightness);
+      }
+    }
 
     if(ts_var.wifi_refresh == 2) {
       update_wifi_dropdown();
@@ -353,52 +403,6 @@ void task_gui(void *pvParameters) {
     }
 
     if(gv.is_screen_active) {
-      
-      if(bat_percent >= 70) {
-        screen_brightness = 0xb2; // 70% brightness = 255 *0.70 = 178 (0xb2 hexadecimal)
-        battery_update_ui_interval = 5000;
-        datetime_update_ui_interval = 2000;
-        battery_sensor_read_interval = 3000;
-
-        screen_timeout_interval = 15000;
-      }
-      else if(bat_percent >= 40 && bat_percent < 70) {
-        screen_brightness = 0x7F; // 50% brightness = 255 *0.50 = 175 (0x7F hexadecimal)
-        // Intervals doubled (slower)
-        battery_update_ui_interval = 10000; 
-        datetime_update_ui_interval = 4000;
-        battery_sensor_read_interval = 6000;
-
-        screen_timeout_interval = 10000;
-      }
-      else if(bat_percent >=20 && bat_percent < 40) {
-        screen_brightness = 0x66; // 40% brightness = 255 *0.40 = 102 (0x66 hexadecimal)
-        // Intervals tripled (slower)
-        battery_update_ui_interval = 15000; 
-        datetime_update_ui_interval = 6000;
-        battery_sensor_read_interval = 9000;
-
-        screen_timeout_interval = 5000;
-      }
-      else {
-        screen_brightness = 0x51; // 20% brightness = 255 *0.20 = 51 (0x51 hexadecimal)
-        // Intervals tripled (slower)
-        battery_update_ui_interval = 15000;
-        datetime_update_ui_interval = 6000;
-        battery_sensor_read_interval = 9000;
-
-        screen_timeout_interval = 5000;
-      }
-    
-      if (screen_brightness != last_brightness_value) {
-        last_brightness_value = screen_brightness;
-        
-        // If screen is currently on, update it immediately to reflect the new brightness
-        if (gv.is_screen_active) {
-          set_screen_brightness(screen_brightness);
-        }
-        usb_serial.printf("Brightness percentage: %d\n", screen_brightness);
-      }
       unsigned long now = millis();
 
       if(screen_turned_on == 2) {
