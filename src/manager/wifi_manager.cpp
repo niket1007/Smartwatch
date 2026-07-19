@@ -77,10 +77,13 @@ void update_wifi_dropdown() {
 void update_wifi_settings_details() {
     if(gv.ssid.isEmpty()) {
         lv_label_set_text(objects.wifi_ssid_name, "No Device");
+        return;
     }
-    else {
+    
+    if(!gv.ssid.equals(lv_label_get_text(objects.wifi_ssid_name))) {
         lv_label_set_text(objects.wifi_ssid_name, gv.ssid.c_str());
     }
+    
 }
 
 void action_wifi_refresh_button_clicked(lv_event_t * e) {

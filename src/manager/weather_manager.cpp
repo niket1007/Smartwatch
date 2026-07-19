@@ -38,7 +38,7 @@ void update_weather_details(
     wd_notif.rain = rain + "%";
     wd_notif.wind = wind + "\nkm/h";
     wd_notif.txt = txt;
-    wd_notif.loc = String(LV_SYMBOL_GPS) + " " + loc;
+    wd_notif.loc = loc;
 
     ts_var.weather_refresh = 3;
 }

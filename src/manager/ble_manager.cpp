@@ -1,8 +1,6 @@
 #include "ble_manager.h"
-#include "navigation_manager.h"
+#include "screen_navigation_manager.h"
 #include "notification_manager.h"
-#include "weather_manager.h"
-#include "call_screen_manager.h"
 #include <NimBLEDevice.h>
 
 // ---------------------------------------------------------------------
@@ -15,6 +13,7 @@
 
 static NimBLEServer* pServer = nullptr;
 static NimBLECharacteristic* pTxCharacteristic = nullptr;
+String connected_device_name = "";
 
 // Accumulates incoming bytes until a full line (ending in '\n') is seen -
 // Gadgetbridge can split one message across multiple BLE writes.
@@ -42,6 +41,7 @@ class ServerCallbacks : public NimBLEServerCallbacks {
     void onDisconnect(NimBLEServer* pServer, NimBLEConnInfo& connInfo, int reason) override {
         // usb_serial.printf("ondisconnect: Client disconnected (Reason: %d) - start advertising\n", reason);
         ts_var.show_passkey_display = 4;
+        gv.ble_is_subscribed = false;
         NimBLEDevice::startAdvertising();
     }
 
@@ -56,94 +56,12 @@ class ServerCallbacks : public NimBLEServerCallbacks {
         // usb_serial.printf("Called onAuthenticationComplete %d", ts_var.show_passkey_display);
     }
 
-};
-
-// ---------------------------------------------------------------------
-// NOTIFICATION PARSING
-// ---------------------------------------------------------------------
-static void handleNotification(String payload) {
-    if (payload.startsWith("GB(") && payload.endsWith(")")) {
-        payload = payload.substring(4, payload.length() - 1);
-    }
-    usb_serial.printf("[RAW] %s\n", payload.c_str());
-
-    JsonDocument json_doc;
-    DeserializationError error = deserializeJson(json_doc, payload);
-    if(error) {
-        usb_serial.print(F("deserializeJson() failed: "));
-        usb_serial.println(error.f_str());
-        return;
-    }
-
-    if(!json_doc.isNull() ) {
-        String type = json_doc["t"] | "";
-        if(type == "musicinfo") {
-            /*
-                GadgetBridge Payload: 
-                {"t":"musicinfo","artist":"Ali & Shjr & Haider Ali","album":"Heer","track":"Heer","dur":250,"c":-1,"n":-1}
-            */
-            int duration = json_doc["dur"] | 0;
-            update_music_notification_details(
-                String(json_doc["track"]),
-                String(json_doc["artist"]),
-                duration
-            );
-        }
-        else if(type == "call") {
-            /*
-                GadgetBridge Payload
-                {"t":"call","cmd":"incoming","name":"XXXX","number":"XXXXXXXXXX"}
-                {"t":"call","cmd":"end","name":"XXXX","number":"XXXXXXXXXX"}
-                {"t":"call","cmd":"outgoing","name":"XXXX","number":"XXXXXXXXXX"}
-            */
-            usb_serial.println("---- Call Notification ----");
-            usb_serial.println("Type: " + String(json_doc["cmd"]));
-            usb_serial.println("Name:   " + String(json_doc["name"]));
-            usb_serial.println("Number:  " + String(json_doc["number"]));
-            usb_serial.println("-----------------------");
-
-            update_call_notification_details(
-                String(json_doc["cmd"]),
-                String(json_doc["name"]),
-                String(json_doc["number"])
-            );
-        }
-        else if(type == "weather") {
-            /*
-                GadgetBridge Payload
-                {"t":"weather","v":1,"temp":310,"hi":311,"lo":302,"hum":39,
-                "rain":20,"uv":4,"code":803,"txt":"Partly cloudy",
-                "wind":13.68,"wdir":295,"loc":"Gurgaon, Sushant Lok 2"}
-            */
-            float temp = json_doc["temp"].as<float>() - 273.15f;
-            float hi = json_doc["hi"].as<float>() - 273.15f;
-            float low = json_doc["lo"].as<float>() - 273.15f;
-            update_weather_details(
-                String(temp, 2),// temp provided is in Kelvin and C = K - 273.15
-                String(hi, 2),
-                String(low, 2),
-                String(json_doc["hum"]),
-                String(json_doc["rain"]),
-                String(json_doc["wind"]),
-                String(json_doc["txt"]),
-                String(json_doc["loc"])
-            );
-            
-        }
-    }
-
-}
+} server_callbacks;
 
 // ---------------------------------------------------------------------
 // RX/TX CHARACTERISTIC CALLBACKS
 // ---------------------------------------------------------------------
 class CharacteristicCallbacks : public NimBLECharacteristicCallbacks {
-    void onRead(NimBLECharacteristic* pCharacteristic, NimBLEConnInfo& connInfo) override {
-        // usb_serial.printf("%s : onRead(), value: %s\n",
-                    //   pCharacteristic->getUUID().toString().c_str(),
-                    //   pCharacteristic->getValue().c_str());
-    }
-
     void onWrite(NimBLECharacteristic* pCharacteristic, NimBLEConnInfo& connInfo) override {
         std::string value = pCharacteristic->getValue();
         if (value.length() == 0) {
@@ -166,7 +84,22 @@ class CharacteristicCallbacks : public NimBLECharacteristicCallbacks {
             }
         }
     }
-};
+
+    void onSubscribe(
+        NimBLECharacteristic* pCharacteristic, NimBLEConnInfo& connInfo, uint16_t subValue) override {
+        usb_serial.printf(
+            "onSubscribe called subValue: %d and is subscribed %d\n", subValue, gv.ble_is_subscribed);
+        
+            if(subValue && !gv.ble_is_subscribed) {
+            gv.ble_is_subscribed = true;
+            ts_var.bluetooth_battery_weather_init = 1;
+            connected_device_name = String(connInfo.getAddress().toString().c_str());
+
+            if(task_background_handle != NULL) xTaskNotifyGive(task_background_handle);
+        }
+
+    }
+} characterstics_callbacks;
 
 // ---------------------------------------------------------------------
 // INIT / ADVERTISING
@@ -184,7 +117,7 @@ void ble_manager_init() {
         // usb_serial.println("Bluetooth not initialised");
         return;
     }
-    pServer->setCallbacks(new ServerCallbacks());
+    pServer->setCallbacks(&server_callbacks);
     // usb_serial.println("BLE: Server Created");
 
     NimBLEService* pService = pServer->createService(SERVICE_UUID);
@@ -195,13 +128,14 @@ void ble_manager_init() {
         CHAR_TX_UUID,
         NIMBLE_PROPERTY::NOTIFY
     );
+    pTxCharacteristic->setCallbacks(&characterstics_callbacks);
 
     // RX (Gadgetbridge -> watch): notifications, weather, etc.
     NimBLECharacteristic* pRxCharacteristic = pService->createCharacteristic(
         CHAR_RX_UUID,
         NIMBLE_PROPERTY::WRITE | NIMBLE_PROPERTY::WRITE_NR
     );
-    pRxCharacteristic->setCallbacks(new CharacteristicCallbacks());
+    pRxCharacteristic->setCallbacks(&characterstics_callbacks);
 
     // usb_serial.println("BLE: Service Started");
 
@@ -266,9 +200,9 @@ void update_ble_passkey_display() {
                                ts_var.show_passkey_display == 2 ? "Paired!" : "Pairing failed");
         }
 
-        if(ts_var.show_passkey_display == 2) {
-            ts_var.bluetooth_battery_weather_init = 1;
-        }
+        // if(ts_var.show_passkey_display == 2) {
+        //     ts_var.bluetooth_battery_weather_init = 1;
+        // }
         ts_var.show_passkey_display = 4;
     }
     else if(ts_var.show_passkey_display == 4) {
@@ -294,4 +228,24 @@ bool ble_send_to_phone(JsonDocument json) {
         return true;
     }
     return false;
+}
+
+void update_bluetooth_settings_ui() {
+    bool is_connected = ble_is_connected();
+
+    if(!is_connected) {
+        lv_label_set_text(objects.ble_device_name, "------------------");
+        if(lv_obj_has_state(objects.ble_user_switch, LV_STATE_CHECKED)) {
+            lv_obj_remove_state(objects.ble_user_switch, LV_STATE_CHECKED);
+        }
+    }
+    else {
+        if(!connected_device_name.isEmpty()) {
+            lv_label_set_text(objects.ble_device_name, connected_device_name.c_str());
+        } 
+        if(!lv_obj_has_state(objects.ble_user_switch, LV_STATE_CHECKED)) {
+            lv_obj_add_state(objects.ble_user_switch, LV_STATE_CHECKED);
+        }
+    }
+
 }

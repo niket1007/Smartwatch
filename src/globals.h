@@ -18,6 +18,7 @@ struct Global_Variables {
   String password;
   String wifi_list;
   bool ble_is_powered_on;
+  bool ble_is_subscribed;
   bool is_screen_active;
   int active_screen_id;
   uint32_t ble_passkey;
@@ -80,7 +81,19 @@ struct Task_State_Variables {
     1 -> Send the reject call signal
     Flow: 0 -> 1 -> 0
   */
-  volatile int reject_call_signal_init; 
+  volatile int reject_call_signal_init;
+
+  /*
+    false: nothing/no music update
+    true: music update
+  */
+  volatile bool is_music_event_received;
+
+  /*
+    false: nothing/no nav update
+    true: nav update
+  */
+  volatile bool is_nav_event_received;
 };
 extern Task_State_Variables ts_var;
 

@@ -1,6 +1,6 @@
 #include "call_screen_manager.h"
 #include "ble_manager.h"
-#include "navigation_manager.h"
+#include "screen_navigation_manager.h"
 
 CallNotification call_notif = {
     "",

@@ -1,4 +1,4 @@
-#include "navigation_manager.h"
+#include "screen_navigation_manager.h"
 
 // ################# Variables Start #################
 int previous_vertical_screen = 0;

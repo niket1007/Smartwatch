@@ -6,7 +6,7 @@
 #include "esp_pm.h"          // Automatic light sleep + dynamic freq scaling BLE
 
 #include "globals.h"
-#include "manager/navigation_manager.h"
+#include "manager/screen_navigation_manager.h"
 #include "manager/rtc_datetime_manager.h"
 #include "manager/battery_manager.h"
 #include "manager/lvgl_manager.h"
@@ -57,19 +57,22 @@ Task_State_Variables ts_var = {
   0,   // weather_refresh
   0,  // bluetooth_battery_weather_init
   0, // accept_call_signal_init
-  0 // reject_call_signal_init
+  0, // reject_call_signal_init
+  false, // is_music_event_received
+  false // is_nav_event_received
 };
 
 Global_Variables gv = {
-  "",// ssid
-  "", //password
-  "", //wifi_list;
-  false, // ble_is_powered_on
+  "",        // ssid
+  "",       //password
+  "",      //wifi_list;
+  false,  // ble_is_powered_on
+  false, // ble_is_subscribed
   true, // is_screen_active
   HOME_SCREEN // active_screen_id
 };
 
-// ESP Power Management Locks (The Two-Lock Strategy)
+// ESP Power Management Locks
 esp_pm_lock_handle_t sleep_lock;
 
 // Task handles
@@ -264,9 +267,9 @@ void task_background(void *pvParameters) {
     }
 
     if(ts_var.bluetooth_battery_weather_init == 1) {
-      vTaskDelay(pdMS_TO_TICKS(3000)); //wait for 3 sec before transmitting the data
-
+      vTaskDelay(pdMS_TO_TICKS(1000)); 
       send_battery_related_information();
+      vTaskDelay(pdMS_TO_TICKS(200));
       send_weather_update_command();
       
       ts_var.bluetooth_battery_weather_init = 0;
@@ -321,8 +324,6 @@ void task_gui(void *pvParameters) {
   
   while(1) {
     int bat_percent = get_battery_percentage();
-    // Process power button hardware interrupt checks
-    check_power_button_action();
 
     if(bat_percent >= 70) {
       screen_brightness = 0xb2; // 70% brightness = 255 *0.70 = 178 (0xb2 hexadecimal)
@@ -371,6 +372,9 @@ void task_gui(void *pvParameters) {
         usb_serial.printf("Brightness percentage: %d\n", screen_brightness);
       }
     }
+
+    // Process power button hardware interrupt checks
+    check_power_button_action();
 
     if(ts_var.wifi_refresh == 2) {
       update_wifi_dropdown();
@@ -428,12 +432,22 @@ void task_gui(void *pvParameters) {
         update_datetime_ui();
       }
 
-      if(gv.active_screen_id == SETTINGS_SCREEN) {
+      if(gv.active_screen_id == SETTINGS_SCREEN
+            && lv_tabview_get_tab_active(objects.settings_tabview) == 0) {
         update_wifi_settings_details();
+        update_bluetooth_settings_ui();
       }
 
       if(gv.active_screen_id == NOTIFICATION_SCREEN) {
-        update_music_tab_ui();
+        if(lv_tabview_get_tab_active(objects.notification_tab) == 1 
+              && ts_var.is_music_event_received) {
+          update_music_tab_ui();
+        }
+
+        if(lv_tabview_get_tab_active(objects.notification_tab) == 2 
+              && ts_var.is_nav_event_received) {
+          update_navigation_tab_ui();
+        }
       }
 
       uint32_t wait = lv_timer_handler();
@@ -477,7 +491,7 @@ void setup() {
   esp_pm_config_t pm_config = {
     .max_freq_mhz = 240,   // matches board's normal running clock
     .min_freq_mhz = 40,    // XTAL-derived floor - safe default for automatic light sleep on ESP32-S3
-    .light_sleep_enable = true
+    .light_sleep_enable = false
   };
   esp_err_t pm_ret = esp_pm_configure(&pm_config);
   if (pm_ret != ESP_OK) {
@@ -526,7 +540,7 @@ void setup() {
   if (!gfx->begin()) {
     usb_serial.println("Screen init failed!");
   }
-  gfx->fillScreen(0x0000);
+  gfx->fillScreen(RGB565_BLACK);
 
   gfx->setTextSize(2);
   gfx->setTextColor(0xFFFF);

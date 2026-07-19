@@ -15,3 +15,4 @@ bool ble_is_connected();
 void ble_manager_deinit();
 
 void update_ble_passkey_display();
+void update_bluetooth_settings_ui();

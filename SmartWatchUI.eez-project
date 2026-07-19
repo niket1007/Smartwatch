@@ -2113,7 +2113,7 @@
                           },
                           "group": "",
                           "groupIndex": 0,
-                          "text": "Track Name",
+                          "text": "Music",
                           "textType": "literal",
                           "longMode": "SCROLL",
                           "recolor": false
@@ -2166,7 +2166,7 @@
                           },
                           "group": "",
                           "groupIndex": 0,
-                          "text": "Artist Names",
+                          "text": "----------",
                           "textType": "literal",
                           "longMode": "SCROLL",
                           "recolor": false
@@ -2175,9 +2175,9 @@
                           "objID": "50d6f7c9-4c81-4bea-950a-a79ffac1e92d",
                           "type": "LVGLContainerWidget",
                           "left": -3,
-                          "top": 229,
+                          "top": 329,
                           "width": 336,
-                          "height": 155,
+                          "height": 55,
                           "customInputs": [],
                           "customOutputs": [],
                           "style": {
@@ -2196,63 +2196,12 @@
                           "heightUnit": "px",
                           "children": [
                             {
-                              "objID": "78a701bb-794e-4c9f-fa29-f087e0fdba20",
-                              "type": "LVGLLabelWidget",
-                              "left": 17,
-                              "top": 19,
-                              "width": 150,
-                              "height": 41,
-                              "customInputs": [],
-                              "customOutputs": [],
-                              "style": {
-                                "objID": "a003adfe-410c-4409-c58d-3f08e5a4108c",
-                                "useStyle": "default",
-                                "conditionalStyles": [],
-                                "childStyles": []
-                              },
-                              "timeline": [],
-                              "eventHandlers": [],
-                              "leftUnit": "px",
-                              "topUnit": "px",
-                              "widthUnit": "px",
-                              "heightUnit": "px",
-                              "children": [],
-                              "widgetFlags": "CLICK_FOCUSABLE|GESTURE_BUBBLE|PRESS_LOCK|SCROLLABLE|SCROLL_CHAIN_HOR|SCROLL_CHAIN_VER|SCROLL_ELASTIC|SCROLL_MOMENTUM|SCROLL_WITH_ARROW|SNAPPABLE",
-                              "hiddenFlagType": "literal",
-                              "clickableFlagType": "literal",
-                              "flagScrollbarMode": "",
-                              "flagScrollDirection": "",
-                              "scrollSnapX": "",
-                              "scrollSnapY": "",
-                              "checkedStateType": "literal",
-                              "disabledStateType": "literal",
-                              "states": "",
-                              "localStyles": {
-                                "objID": "b65a9c54-e4b9-4ac1-f841-fd3778fad2c2",
-                                "definition": {
-                                  "MAIN": {
-                                    "DEFAULT": {
-                                      "text_font": "MONTSERRAT_30",
-                                      "text_color": "#FFFFFF",
-                                      "text_opa": 255
-                                    }
-                                  }
-                                }
-                              },
-                              "group": "",
-                              "groupIndex": 0,
-                              "text": "Duration",
-                              "textType": "literal",
-                              "longMode": "WRAP",
-                              "recolor": false
-                            },
-                            {
                               "objID": "c5b1462f-2289-43e4-fbbf-fa35ddd55fcc",
                               "type": "LVGLLabelWidget",
-                              "left": 150,
-                              "top": 18,
+                              "left": 82,
+                              "top": 7,
                               "width": 168,
-                              "height": 41,
+                              "height": 38,
                               "customInputs": [],
                               "customOutputs": [],
                               "style": {
@@ -2287,14 +2236,14 @@
                                       "text_font": "MONTSERRAT_30",
                                       "text_color": "#FFFFFF",
                                       "text_opa": 255,
-                                      "text_align": "RIGHT"
+                                      "text_align": "CENTER"
                                     }
                                   }
                                 }
                               },
                               "group": "",
                               "groupIndex": 0,
-                              "text": "5M 4S",
+                              "text": "--M --S",
                               "textType": "literal",
                               "longMode": "WRAP",
                               "recolor": false
@@ -2374,7 +2323,7 @@
                           "objID": "976076f0-c9ad-43cd-ea95-5992dbebf84d",
                           "type": "LVGLLabelWidget",
                           "left": 32,
-                          "top": 110,
+                          "top": 169,
                           "width": 266,
                           "height": 52,
                           "customInputs": [],
@@ -2547,7 +2496,7 @@
                               },
                               "group": "",
                               "groupIndex": 0,
-                              "text": "----",
+                              "text": "--",
                               "textType": "literal",
                               "longMode": "WRAP",
                               "recolor": false
@@ -2972,7 +2921,7 @@
                               },
                               "timeline": [],
                               "eventHandlers": [],
-                              "identifier": "ble_device_name_1",
+                              "identifier": "ble_device_name",
                               "leftUnit": "px",
                               "topUnit": "px",
                               "widthUnit": "px",

@@ -1,7 +1,8 @@
 {
   "navigation": {
     "selectedUserPageObject": "[SmartWatchUI.eez-project]:/userPages/2",
-    "selectedActionObject": "[SmartWatchUI.eez-project]:/actions/0",
+    "selectedActionObject": "[SmartWatchUI.eez-project]:/actions/-1",
+    "selectedFontObject": "[SmartWatchUI.eez-project]:/fonts/-1",
     "subnavigationSelectedItems": {
       "variables-tab/sub-navigation/selected-item": "Global"
     }
@@ -24,6 +25,7 @@
           },
           {
             "type": "border",
+            "selected": 1,
             "size": 240,
             "location": "right",
             "children": [
@@ -685,7 +687,8 @@
                   "component": "editor",
                   "enableClose": false
                 }
-              ]
+              ],
+              "active": true
             }
           ]
         }
@@ -1056,10 +1059,10 @@
       "selectionBack": {
         "0": {
           "0": {
-            "2": {},
-            "4": {
+            "2": {
               "$selected": true
-            }
+            },
+            "4": {}
           }
         }
       },
@@ -1112,8 +1115,9 @@
           "0": {
             "1": {
               "1": {
-                "$selected": true
-              }
+                "4": {}
+              },
+              "$selected": true
             }
           },
           "1": {}
@@ -1122,9 +1126,9 @@
       "transform": {
         "translate": {
           "x": -205,
-          "y": -251
+          "y": -351
         },
-        "scale": 1
+        "scale": 1.25
       },
       "timeline": {
         "isEditorActive": false,
@@ -1139,8 +1143,13 @@
         "0": {
           "0": {
             "1": {
+              "0": {},
               "1": {
+                "1": {},
                 "2": {}
+              },
+              "2": {
+                "1": {}
               }
             }
           }
@@ -1149,9 +1158,9 @@
       "transform": {
         "translate": {
           "x": -205,
-          "y": -251
+          "y": -352.9568752288818
         },
-        "scale": 1
+        "scale": 1.25
       },
       "timeline": {
         "isEditorActive": false,
@@ -1166,23 +1175,23 @@
         "0": {
           "0": {
             "0": {},
-            "3": {
-              "$selected": true
-            },
             "4": {},
             "5": {},
             "6": {},
             "7": {},
-            "8": {}
+            "8": {},
+            "9": {
+              "0": {}
+            }
           }
         }
       },
       "transform": {
         "translate": {
-          "x": -205,
-          "y": -251
+          "x": -256.25,
+          "y": -313.75
         },
-        "scale": 1
+        "scale": 1.25
       },
       "timeline": {
         "isEditorActive": false,
@@ -1233,7 +1242,7 @@
           "x": -205,
           "y": -251
         },
-        "scale": 1
+        "scale": 1.25
       },
       "timeline": {
         "isEditorActive": false,
@@ -1279,10 +1288,12 @@
   "selectedStylePropertyName": "",
   "lvglPart": "MAIN",
   "lvglState": "DEFAULT",
-  "lvglExpandedPropertiesGroup": [],
+  "lvglExpandedPropertiesGroup": [
+    "TEXT"
+  ],
   "showInactiveFlowsInDebugger": true,
   "globalFlowZoom": true,
-  "flowZoom": 1,
+  "flowZoom": 1.25,
   "implementationLanguage": "C",
-  "openDialogDefaultPath": "C:\\Github_repos\\Smartwatch\\src\\ui"
+  "openDialogDefaultPath": "C:\\Github_repos\\Smartwatch\\icons\\icomoon\\fonts\\icomoon.ttf"
 }
