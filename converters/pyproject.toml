@@ -1,0 +1,12 @@
+[project]
+name = "svg-to-c-converter"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.14"
+dependencies = [
+    "pillow>=12.3.0",
+    "reportlab>=5.0.0",
+    "rlpycairo>=0.4.0",
+    "svglib>=2.0.2",
+]
