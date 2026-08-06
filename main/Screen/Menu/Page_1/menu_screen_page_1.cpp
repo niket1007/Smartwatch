@@ -72,23 +72,30 @@ esp_err_t MenuScreenPage1::draw()
     return ESP_OK;
 }
 
-void MenuScreenPage1::identify_tap()
+esp_err_t MenuScreenPage1::identify_tap()
 {
     uint16_t tap_x = touch_manager.get_single_tap_x();
     uint16_t tap_y = touch_manager.get_single_tap_y();
 
     if (icon_containers[0].contains(tap_x, tap_y))
     {
-        ESP_LOGI(TAG, "Notification clicked");
+        // Notification Screen Id = 4
+        ESP_RETURN_ON_ERROR(
+            screen_manager.change_screen(4),
+            TAG, "Failed to switch to Notification screen");
     }
     else if (icon_containers[1].contains(tap_x, tap_y))
     {
-        ESP_LOGI(TAG, "Weather clicked");
+        // Weather Screen Id = 5
+        ESP_RETURN_ON_ERROR(
+            screen_manager.change_screen(5),
+            TAG, "Failed to switch to Weather screen");
     }
     else if (icon_containers[2].contains(tap_x, tap_y))
     {
         ESP_LOGI(TAG, "Calendar clicked");
     }
+    return ESP_OK;
 }
 
 esp_err_t MenuScreenPage1::handle_events(uint32_t events)
@@ -96,7 +103,7 @@ esp_err_t MenuScreenPage1::handle_events(uint32_t events)
     ESP_LOGI(TAG, "handle_events called");
     if (events & SINGLE_TAP_EVENT)
     {
-        identify_tap();
+        return identify_tap();
     }
     return ESP_OK;
 }

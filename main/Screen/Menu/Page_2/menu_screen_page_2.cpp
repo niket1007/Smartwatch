@@ -50,11 +50,11 @@ esp_err_t MenuScreenPage2::draw()
     // Navigation Container Content
     {    
         ESP_RETURN_ON_ERROR(
-            graphics.draw_icon(75, 220, &icon_nav_default, WHITE_COLOR),
+            graphics.draw_icon(70, 220, &icon_nav_default, WHITE_COLOR),
             TAG, "Failed to draw navigation icon");
         
         ESP_RETURN_ON_ERROR(
-            graphics.draw_text(180, 280, "Navigation", freesans_40, WHITE_COLOR, BLACK_COLOR),
+            graphics.draw_text(160, 280, "Navigation", freesans_40, WHITE_COLOR, BLACK_COLOR),
             TAG, "Failed to draw navigation text");
     }
 
@@ -65,7 +65,7 @@ esp_err_t MenuScreenPage2::draw()
             TAG, "Failed to draw music icon");
         
         ESP_RETURN_ON_ERROR(
-            graphics.draw_text(180, 400, "Music", freesans_40, WHITE_COLOR, BLACK_COLOR),
+            graphics.draw_text(160, 400, "Music", freesans_40, WHITE_COLOR, BLACK_COLOR),
             TAG, "Failed to draw music text");
     }
 
@@ -79,15 +79,15 @@ void MenuScreenPage2::identify_tap()
 
     if (icon_containers[0].contains(tap_x, tap_y))
     {
-        ESP_LOGI(TAG, "Notification clicked");
+        ESP_LOGI(TAG, "Alarm clicked");
     }
     else if (icon_containers[1].contains(tap_x, tap_y))
     {
-        ESP_LOGI(TAG, "Weather clicked");
+        ESP_LOGI(TAG, "Navigation clicked");
     }
     else if (icon_containers[2].contains(tap_x, tap_y))
     {
-        ESP_LOGI(TAG, "Calendar clicked");
+        ESP_LOGI(TAG, "Music clicked");
     }
 }
 

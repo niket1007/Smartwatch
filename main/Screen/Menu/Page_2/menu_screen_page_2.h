@@ -7,7 +7,7 @@
 #include "Screen/screen.h"
 #include "Graphics/Icons/generated/icon.h"
 #include "Graphics/Icons/generated/icon_globals.h"
-#include "Screen/Menu/rect.h"
+#include "Screen/rect.h"
 
 class MenuScreenPage2 : public Screen
 {
@@ -21,8 +21,6 @@ private:
     void identify_tap();
 
 public:
-    int screen_id = 2;
-
     esp_err_t on_enter() override;
     esp_err_t on_exit() override;
 

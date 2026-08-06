@@ -8,25 +8,13 @@
 #include "Graphics/Icons/generated/icon.h"
 #include "Graphics/Icons/generated/icon_globals.h"
 
-class HomeScreen : public Screen
+class NotificationScreen : public Screen
 {
-private:
-    icon_t old_icon = icon_battery_default;
-    icon_t get_icon(bool charging, int percent);
-
-    char old_day_str[16] = "";
-    char old_date_str[32] = "";
-    char old_time_str[16] = "";
-
 public:
     
     esp_err_t on_enter();
     esp_err_t on_exit();
 
     esp_err_t draw() override;
-    esp_err_t draw_battery_icon();
-    esp_err_t draw_battery_label();
-    esp_err_t draw_datetime_labels();
-
     esp_err_t handle_events(uint32_t events) override;
 };

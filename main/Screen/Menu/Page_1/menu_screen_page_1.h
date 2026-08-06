@@ -7,7 +7,7 @@
 #include "Screen/screen.h"
 #include "Graphics/Icons/generated/icon.h"
 #include "Graphics/Icons/generated/icon_globals.h"
-#include "Screen/Menu/rect.h"
+#include "Screen/rect.h"
 
 class MenuScreenPage1 : public Screen
 {
@@ -18,11 +18,9 @@ private:
         {60, 330, 300, 100}   // Calendar
     };
 
-    void identify_tap();
+    esp_err_t identify_tap();
 
 public:
-    int screen_id = 2;
-
     esp_err_t on_enter() override;
     esp_err_t on_exit() override;
 
