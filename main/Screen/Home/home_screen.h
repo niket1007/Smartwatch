@@ -19,9 +19,7 @@ private:
     char old_time_str[16] = "";
 
 public:
-    int screen_id = 1;
-    
-    esp_err_t on_enter();
+        esp_err_t on_enter();
     esp_err_t on_exit();
 
     esp_err_t draw() override;

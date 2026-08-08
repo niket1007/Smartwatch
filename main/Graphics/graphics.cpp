@@ -32,9 +32,9 @@ esp_err_t Graphics::draw_pixel(
     std::fill_n(buf, size * size, color);
 
     ESP_RETURN_ON_ERROR(
-        display_driver.draw(x, y, x + size, y + size,buf), 
+        display_driver.draw(x, y, x + size, y + size, buf),
         TAG, "Failed to draw pixel");
-    
+
     return ESP_OK;
 }
 
@@ -578,39 +578,41 @@ esp_err_t Graphics::draw_icon(
 esp_err_t Graphics::draw_alpha_bitmap(
     int16_t x, int16_t y, uint16_t width, uint16_t height, const uint8_t *bitmap, uint16_t color, uint16_t bg_color)
 {
-    if (bitmap == nullptr) return ESP_ERR_INVALID_ARG;
+    if (bitmap == nullptr)
+        return ESP_ERR_INVALID_ARG;
 
     int16_t x0 = std::max<int16_t>(0, x);
     int16_t y0 = std::max<int16_t>(0, y);
-    int16_t x1 = std::min<int16_t>(LCD_WIDTH,  x + width);
+    int16_t x1 = std::min<int16_t>(LCD_WIDTH, x + width);
     int16_t y1 = std::min<int16_t>(LCD_HEIGHT, y + height);
 
-    if (x0 >= x1 || y0 >= y1) return ESP_OK;
+    if (x0 >= x1 || y0 >= y1)
+        return ESP_OK;
 
     // Calculate SH8601 Even-Aligned Boundaries to prevent DMA crashes
-    int16_t aligned_x0 = (x0 / 2) * 2;                 // Round down to even
-    int16_t aligned_y0 = (y0 / 2) * 2;                 
-    int16_t aligned_x1 = ((x1 + 1) / 2) * 2;           // Round up to even
+    int16_t aligned_x0 = (x0 / 2) * 2; // Round down to even
+    int16_t aligned_y0 = (y0 / 2) * 2;
+    int16_t aligned_x1 = ((x1 + 1) / 2) * 2; // Round up to even
     int16_t aligned_y1 = ((y1 + 1) / 2) * 2;
 
     const uint16_t aligned_width = aligned_x1 - aligned_x0;
     const uint16_t aligned_height = aligned_y1 - aligned_y0;
 
     const uint16_t src_r = (color >> 11) & 0x1F;
-    const uint16_t src_g = (color >> 5)  & 0x3F;
+    const uint16_t src_g = (color >> 5) & 0x3F;
     const uint16_t src_b = color & 0x1F;
 
     const uint16_t bg_r = (bg_color >> 11) & 0x1F;
-    const uint16_t bg_g = (bg_color >> 5)  & 0x3F;
+    const uint16_t bg_g = (bg_color >> 5) & 0x3F;
     const uint16_t bg_b = bg_color & 0x1F;
 
-    const uint16_t draw_width  = x1 - x0;
+    const uint16_t draw_width = x1 - x0;
     const uint16_t draw_height = y1 - y0;
 
     static uint16_t *glyph_buffers[2] = {nullptr, nullptr};
     static uint8_t buf_idx = 0;
 
-    if(!glyph_buffers[0])
+    if (!glyph_buffers[0])
     {
         // Allocate buffer large enough for aligned bounds
         glyph_buffers[0] = (uint16_t *)heap_caps_malloc(100 * 100 * sizeof(uint16_t), MALLOC_CAP_DMA | MALLOC_CAP_INTERNAL);
@@ -620,28 +622,29 @@ esp_err_t Graphics::draw_alpha_bitmap(
     buf_idx = (buf_idx + 1) % 2;
     uint16_t *current_buffer = glyph_buffers[buf_idx];
 
-    //Pre-fill the aligned buffer with the background color to prevent artifacting
-    for (int i = 0; i < aligned_width * aligned_height; i++) {
-        current_buffer[i] = bg_color; 
+    // Pre-fill the aligned buffer with the background color to prevent artifacting
+    for (int i = 0; i < aligned_width * aligned_height; i++)
+    {
+        current_buffer[i] = bg_color;
     }
 
-    //Map the font bitmap onto the aligned buffer
+    // Map the font bitmap onto the aligned buffer
     for (int16_t row = 0; row < draw_height; row++)
     {
         int16_t src_row = row + (y0 - y);
         int16_t dest_row = row + (y0 - aligned_y0); // Calculate offset inside aligned buffer
-        
+
         for (int16_t col = 0; col < draw_width; col++)
         {
             int16_t src_col = col + (x0 - x);
             int16_t dest_col = col + (x0 - aligned_x0); // Calculate offset inside aligned buffer
-            
+
             uint32_t bit_index = src_row * width + src_col;
             uint32_t byte_index = bit_index / 2;
-            
-            uint8_t shift = (bit_index % 2 == 0) ? 4 : 0; 
+
+            uint8_t shift = (bit_index % 2 == 0) ? 4 : 0;
             uint8_t alpha_4bpp = (bitmap[byte_index] >> shift) & 0x0F;
-            
+
             uint8_t alpha = (alpha_4bpp * 255) / 15;
 
             if (alpha > 0)
@@ -650,25 +653,27 @@ esp_err_t Graphics::draw_alpha_bitmap(
                 uint16_t r = (bg_r * (255 - alpha) + src_r * alpha) / 255;
                 uint16_t g = (bg_g * (255 - alpha) + src_g * alpha) / 255;
                 uint16_t b = (bg_b * (255 - alpha) + src_b * alpha) / 255;
-                
+
                 current_buffer[dest_row * aligned_width + dest_col] = (r << 11) | (g << 5) | b;
             }
         }
     }
 
-    //Send the strictly hardware-aligned boundaries and the padded buffer
+    // Send the strictly hardware-aligned boundaries and the padded buffer
     return display_driver.draw(aligned_x0, aligned_y0, aligned_x1, aligned_y1, current_buffer);
 }
 
 esp_err_t Graphics::draw_char(
     int16_t x, int16_t baseline_y, char c, const font_t &font, uint16_t color, uint16_t bg_color, uint16_t *advance)
 {
-    if (advance == nullptr || !font.bitmap || !font.glyphs) return ESP_ERR_INVALID_ARG;
+    if (advance == nullptr || !font.bitmap || !font.glyphs)
+        return ESP_ERR_INVALID_ARG;
 
     *advance = 0;
     uint32_t ch = static_cast<uint8_t>(c);
 
-    if (ch < font.first_char || ch > font.last_char) return ESP_ERR_NOT_FOUND;
+    if (ch < font.first_char || ch > font.last_char)
+        return ESP_ERR_NOT_FOUND;
 
     const glyph_t *glyph = &font.glyphs[(ch - font.first_char) + 1];
 
@@ -677,7 +682,7 @@ esp_err_t Graphics::draw_char(
         ESP_RETURN_ON_ERROR(
             draw_alpha_bitmap(
                 x + glyph->x_offset,
-                baseline_y - glyph->y_offset - glyph->height, 
+                baseline_y - glyph->y_offset - glyph->height,
                 glyph->width,
                 glyph->height,
                 font.bitmap + glyph->bitmap_offset,
@@ -705,7 +710,7 @@ esp_err_t Graphics::draw_text(
     int16_t cursor_y = y;
 
     while (*text)
-    {  
+    {
         char ch = *text++;
 
         switch (ch)

@@ -38,12 +38,13 @@ HEADER = """\
 extern const font_t {font_name};
 """
 
+
 def write_global_font_header(out_dir: Path, names: list[str]):
     string = ""
     for name in names:
         name = name.replace("-", "_")
         string += '#include "{}.h"\n'.format(name)
-    (out_dir/'font_globals.h').write_text(string)
+    (out_dir / "font_globals.h").write_text(string)
 
 
 def extract_array(text: str, name: str) -> str:
@@ -68,29 +69,29 @@ def extract_array(text: str, name: str) -> str:
     if depth:
         raise RuntimeError(f"{name}: unmatched braces")
 
-    return text[pos + 1:i - 1]
+    return text[pos + 1 : i - 1]
+
 
 def convert(name, txt, out_dir):
     bm = extract_array(txt, "glyph_bitmap[]")
     if len(bm.strip()) == 0:
         raise RuntimeError("Bitmap empty")
-    
-    gd = extract_array(txt, "glyph_dsc[]")
 
-    
+    gd = extract_array(txt, "glyph_dsc[]")
 
     lh = int(re.search(r"\.line_height\s*=\s*(\d+)", txt).group(1))
 
     cm = re.search(r"\.range_start\s*=\s*(\d+).*?\.range_length\s*=\s*(\d+)", txt, re.S)
-    first, last = (32,126) if not cm else (
-        int(cm.group(1)),
-        int(cm.group(1))+int(cm.group(2))-1
+    first, last = (
+        (32, 126)
+        if not cm
+        else (int(cm.group(1)), int(cm.group(1)) + int(cm.group(2)) - 1)
     )
 
     if first > last:
         raise RuntimeError("Invalid unicode range")
 
-    glyphs=[]
+    glyphs = []
     for e in re.finditer(
         r"\.bitmap_index\s*=\s*(\d+).*?"
         r"\.adv_w\s*=\s*(\d+).*?"
@@ -98,22 +99,26 @@ def convert(name, txt, out_dir):
         r"\.box_h\s*=\s*(\d+).*?"
         r"\.ofs_x\s*=\s*(-?\d+).*?"
         r"\.ofs_y\s*=\s*(-?\d+)",
-        gd,re.S):
-        glyphs.append((
-            e.group(1),
-            e.group(3),
-            e.group(4),
-            e.group(5),
-            e.group(6),
-            str(int(e.group(2))//16)
-        ))
+        gd,
+        re.S,
+    ):
+        glyphs.append(
+            (
+                e.group(1),
+                e.group(3),
+                e.group(4),
+                e.group(5),
+                e.group(6),
+                str(int(e.group(2)) // 16),
+            )
+        )
 
     if not glyphs:
         raise RuntimeError("No glyphs parsed")
 
-    (out_dir/f"{name}.h").write_text(HEADER.format(font_name=name))
+    (out_dir / f"{name}.h").write_text(HEADER.format(font_name=name))
 
-    lines=[
+    lines = [
         """
 /****************************************************
  * AUTO GENERATED
@@ -126,36 +131,39 @@ def convert(name, txt, out_dir):
         bm,
         "};",
         "",
-        "static const glyph_t glyphs[]={"
+        "static const glyph_t glyphs[]={",
     ]
     for g in glyphs:
         lines.append("    {%s,%s,%s,%s,%s,%s}," % g)
 
     lines += [
-        "};","",
+        "};",
+        "",
         f"const font_t {name}={{",
         "    .bitmap=bitmap,",
         "    .glyphs=glyphs,",
         f"    .first_char={first},",
         f"    .last_char={last},",
         f"    .line_height={lh}",
-        "};"
+        "};",
     ]
-    (out_dir/f"{name}.c").write_text("\n".join(lines))
+    (out_dir / f"{name}.c").write_text("\n".join(lines))
+
 
 def main():
-    input_dir=Path("../main/Graphics/Fonts/ttf_and_c")
-    output=Path("../main/Graphics/Fonts/generated")
-    output.mkdir(parents=True,exist_ok=True)
+    input_dir = Path("../main/Graphics/Fonts/ttf_and_c")
+    output = Path("../main/Graphics/Fonts/generated")
+    output.mkdir(parents=True, exist_ok=True)
 
-    (output/f"font.h").write_text(FONT_HEADER)
+    (output / f"font.h").write_text(FONT_HEADER)
     font_names = []
     for font in sorted(input_dir.glob("*.txt")):
         name = font.stem
         name = name.replace("-", "_")
         font_names.append(name)
-        convert(font.stem,font.read_text(errors="ignore"),output)
+        convert(font.stem, font.read_text(errors="ignore"), output)
     write_global_font_header(output, font_names)
 
-if __name__=="__main__":
+
+if __name__ == "__main__":
     main()

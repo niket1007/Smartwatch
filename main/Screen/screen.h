@@ -8,7 +8,6 @@ class Screen
 {
 public:
     virtual ~Screen() = default;
-    int screen_id;
 
     virtual esp_err_t on_enter() = 0;
     virtual esp_err_t on_exit() = 0;

@@ -57,10 +57,9 @@
 |            |                   |                   |                   |                                        |
 */
 
-
-
 // @brief Each chip resource is different,please refer to the table above
-typedef enum __XPowersPowerChannel {
+typedef enum __XPowersPowerChannel
+{
 
     XPOWERS_DCDC1,
     XPOWERS_DCDC2,
@@ -94,7 +93,8 @@ typedef enum __XPowersPowerChannel {
 } XPowersPowerChannel_t;
 
 // @brief Chip type
-typedef enum __XPowersChipModel {
+typedef enum __XPowersChipModel
+{
     XPOWERS_AXP173,
     XPOWERS_AXP192,
     XPOWERS_AXP202,
@@ -103,7 +103,6 @@ typedef enum __XPowersChipModel {
     XPOWERS_UNDEFINED,
 } XPowersChipModel_t;
 
-
 /**
  * @brief  Compatible with subclasses of the Meshtastic-devic project
  */
@@ -111,18 +110,18 @@ class HasBatteryLevel
 {
 public:
     /**
-    * @brief  Get battery percentage
-    * @retval 0~100% , -1 no battery is connected
-    */
+     * @brief  Get battery percentage
+     * @retval 0~100% , -1 no battery is connected
+     */
     virtual int getBatteryPercent()
     {
         return -1;
     }
 
     /**
-    * @brief  Get battery Voltage
-    * @retval Voltage unit: millivolt , 0 is no battery is connected
-    */
+     * @brief  Get battery Voltage
+     * @retval Voltage unit: millivolt , 0 is no battery is connected
+     */
     virtual uint16_t getBattVoltage()
     {
         return 0;
@@ -147,9 +146,9 @@ public:
     }
 
     /**
-    * @brief Query whether it is currently in charging state
-    * @retval true to charge,false to not charge
-    */
+     * @brief Query whether it is currently in charging state
+     * @retval true to charge,false to not charge
+     */
     virtual bool isCharging()
     {
         return false;
@@ -160,7 +159,6 @@ public:
 class XPowersLibInterface : public HasBatteryLevel
 {
 public:
-
     XPowersLibInterface() : __chipModel(XPOWERS_UNDEFINED), __protectedMask(0) {};
 
     virtual ~XPowersLibInterface() {}
@@ -179,14 +177,12 @@ public:
      */
     virtual void deinit() = 0;
 
-
     /**
      * @brief  Set the PMU sleep flag,
      *         need to manually close the power channel after setting
      * @retval true success false failed
      */
     virtual bool enableSleep() = 0;
-
 
     /**
      * @brief  Set shutdown, calling shutdown will turn off all power channels,
@@ -195,7 +191,6 @@ public:
      */
     virtual void shutdown() = 0;
 
-
     /**
      * @brief Get PMU satatus register
      * @note
@@ -203,18 +198,17 @@ public:
      */
     virtual uint16_t status() = 0;
 
-
     /**
      * @brief Query chip ID
      * @retval  Chip ID
      */
     virtual uint8_t getChipID() = 0;
 
-    //Status function
+    // Status function
     /**
-    * @brief Query whether it is currently in charging state
-    * @retval true to charge,false to not charge
-    */
+     * @brief Query whether it is currently in charging state
+     * @retval true to charge,false to not charge
+     */
     // virtual bool isCharging() = 0;
 
     /**
@@ -235,7 +229,7 @@ public:
      */
     virtual bool isDischarge() = 0;
 
-    //Power Channel Control
+    // Power Channel Control
 
     /**
      * @brief  Turn on the power channel
@@ -292,7 +286,6 @@ public:
      */
     virtual bool getProtectedChannel(uint8_t channel);
 
-
     /**
      * @brief  Query whether the PMU input parameter channel is valid
      * @param  channel: Parameters See XPowersPowerChannel_t enumeration
@@ -300,27 +293,25 @@ public:
      */
     virtual bool isChannelAvailable(uint8_t channel);
 
-
-    //battery
+    // battery
     /**
-    * @brief  Get battery Voltage
-    * @retval Voltage unit: millivolt , 0 is no battery is connected
-    */
+     * @brief  Get battery Voltage
+     * @retval Voltage unit: millivolt , 0 is no battery is connected
+     */
     // virtual uint16_t getBattVoltage() = 0;
 
     /**
-    * @brief  Get battery percentage
-    * @retval 0~100% , -1 no battery is connected
-    */
+     * @brief  Get battery percentage
+     * @retval 0~100% , -1 no battery is connected
+     */
     // virtual int getBatteryPercent(void);
 
     // Vbus
     /**
-    * @brief  Get PMU VBUS/USB Voltage
-    * @retval Voltage unit: millivolt , 0 is no vbus is connected
-    */
+     * @brief  Get PMU VBUS/USB Voltage
+     * @retval Voltage unit: millivolt , 0 is no vbus is connected
+     */
     virtual uint16_t getVbusVoltage();
-
 
     /**
      * @brief  Set VBUS Current Input Limit.
@@ -331,18 +322,17 @@ public:
     virtual bool setVbusCurrentLimit(uint8_t opt) = 0;
 
     /**
-    * @brief  Get VBUS Current Input Limit.
-    * @retval View the related chip type xpowers_axpxxx_vbus_cur_limit_t enumeration
-    *              parameters in "XPowersParams.hpp"
-    */
+     * @brief  Get VBUS Current Input Limit.
+     * @retval View the related chip type xpowers_axpxxx_vbus_cur_limit_t enumeration
+     *              parameters in "XPowersParams.hpp"
+     */
     virtual uint8_t getVbusCurrentLimit(void) = 0;
-
 
     // SYS
     /**
-    * @brief  Get PMU SYS main Voltage
-    * @retval Voltage unit: millivolt
-    */
+     * @brief  Get PMU SYS main Voltage
+     * @retval Voltage unit: millivolt
+     */
     virtual uint16_t getSystemVoltage() = 0;
 
     /**
@@ -389,8 +379,7 @@ public:
      */
     virtual uint8_t getChargerConstantCurr() = 0;
 
-
-    //!PMU Interrupt control
+    //! PMU Interrupt control
     /*
      *  Example of interrupt usage
      *  if (pmuInterrupt) {
@@ -414,13 +403,11 @@ public:
      *  }
      * * * */
 
-
     /**
-    * @brief  Get the interrupt controller mask value.
-    * @retval   Mask value corresponds to xpowers_axpxxx_irq_t ,
-    */
+     * @brief  Get the interrupt controller mask value.
+     * @retval   Mask value corresponds to xpowers_axpxxx_irq_t ,
+     */
     virtual uint64_t getIrqStatus() = 0;
-
 
     /**
      * @brief  Clear interrupt controller state.
@@ -515,8 +502,7 @@ public:
      */
     virtual bool isBatChagerStartIrq() = 0;
 
-
-    //Data collection function
+    // Data collection function
 
     /**
      * @brief  Enable battery detection function,the default is on
@@ -592,21 +578,19 @@ public:
 
     // Charge indicator function
     /**
-    * @brief  Set charging led mode
-    * @param  opt: View the related chip type xpowers_chg_led_mode_t enumeration
-    *              parameters in "XPowersParams.hpp"
-    */
+     * @brief  Set charging led mode
+     * @param  opt: View the related chip type xpowers_chg_led_mode_t enumeration
+     *              parameters in "XPowersParams.hpp"
+     */
     virtual void setChargingLedMode(uint8_t mode) = 0;
-
-
 
     // PMU PEKEY settings
     /**
-    * @brief  Set PEKEY press power on time
-    * @param  opt: View the related chip type xpowers_press_on_time_t enumeration
-    *              parameters in "XPowersParams.hpp"
-    * @retval true success false failed
-    */
+     * @brief  Set PEKEY press power on time
+     * @param  opt: View the related chip type xpowers_press_on_time_t enumeration
+     *              parameters in "XPowersParams.hpp"
+     * @retval true success false failed
+     */
     virtual bool setPowerKeyPressOnTime(uint8_t opt) = 0;
 
     /**
@@ -641,7 +625,6 @@ public:
     }
 
 protected:
-
     void setChipModel(uint8_t m)
     {
         __chipModel = m;
@@ -649,6 +632,4 @@ protected:
 
     uint8_t __chipModel;
     uint32_t __protectedMask;
-
 };
-

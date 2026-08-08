@@ -37,16 +37,18 @@ esp_err_t TouchManager::init()
     tp_io_config.scl_speed_hz = 400000;
 
     esp_err_t err = esp_lcd_new_panel_io_i2c(i2c_manager.i2c_bus_handle, &tp_io_config, &tp_io_handle);
-    if (err != ESP_OK) {
+    if (err != ESP_OK)
+    {
         return err;
     }
-    
+
     err = esp_lcd_touch_new_i2c_ft5x06(
         tp_io_handle,
         &tp_cfg,
         &touch_out_handle);
 
-    if (err != ESP_OK) {
+    if (err != ESP_OK)
+    {
         esp_lcd_panel_io_del(tp_io_handle);
         return err;
     }
@@ -65,10 +67,13 @@ TouchGesture TouchManager::process_touch()
 
     if (abs_delta_x >= SWIPE_MIN_DISTANCE && abs_delta_x > abs_delta_y)
     {
-        if (delta_x > 0) {
+        if (delta_x > 0)
+        {
             ESP_LOGI(TAG, "Gesture Detected: SWIPE RIGHT");
             return TouchGesture::SWIPE_RIGHT;
-        } else {
+        }
+        else
+        {
             ESP_LOGI(TAG, "Gesture Detected: SWIPE LEFT");
             return TouchGesture::SWIPE_LEFT;
         }
@@ -95,14 +100,16 @@ esp_err_t TouchManager::read_touch_data()
         if (gesture == TouchGesture::SWIPE_LEFT)
         {
             ESP_LOGI(TAG, "Left swipe gesture");
-            if (gui_task_handle != nullptr) {
+            if (gui_task_handle != nullptr)
+            {
                 xTaskNotify(gui_task_handle, SWIPE_LEFT_EVENT, eSetBits);
             }
         }
         else if (gesture == TouchGesture::SWIPE_RIGHT)
         {
             ESP_LOGI(TAG, "Right swipe gesture");
-            if (gui_task_handle != nullptr) {
+            if (gui_task_handle != nullptr)
+            {
                 xTaskNotify(gui_task_handle, SWIPE_RIGHT_EVENT, eSetBits);
             }
         }
@@ -111,7 +118,8 @@ esp_err_t TouchManager::read_touch_data()
             tap_x_ = start_x_;
             tap_y_ = start_y_;
             ESP_LOGI(TAG, "Single Tap at (%d, %d)", tap_x_, tap_y_);
-            if (gui_task_handle != nullptr) {
+            if (gui_task_handle != nullptr)
+            {
                 xTaskNotify(gui_task_handle, SINGLE_TAP_EVENT, eSetBits);
             }
         }

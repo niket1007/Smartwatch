@@ -105,7 +105,7 @@ esp_err_t DisplayDriver::clear(uint16_t color)
                 panel_handle_, 0, y,
                 LCD_WIDTH, std::min(y + DMA_BUFFER_LINES, LCD_HEIGHT), dma_buffer_),
             TAG, "Failed to draw bitmap");
-            
+
         // FIX 1: Wait for this specific chunk to finish BEFORE queueing the next one.
         // This keeps the DMA queue from overflowing and keeps the semaphore in sync.
         xSemaphoreTake(flush_sem_, portMAX_DELAY);
@@ -161,16 +161,17 @@ esp_err_t DisplayDriver::draw(
         x_end > LCD_WIDTH || y_end > LCD_HEIGHT)
     {
         // ESP_LOGE(TAG, "Draw region outbounds"); // Consider commenting this out so it doesn't spam your console
-        
+
         // FIX 2: Always give the mutex back before returning early
-        xSemaphoreGive(draw_mutex_); 
+        xSemaphoreGive(draw_mutex_);
         return ESP_ERR_INVALID_ARG;
     }
 
     esp_err_t err = esp_lcd_panel_draw_bitmap(
         panel_handle_, x_start, y_start, x_end, y_end, color_data);
 
-    if (err != ESP_OK) {
+    if (err != ESP_OK)
+    {
         // FIX 2b: Prevent deadlock if the SPI driver itself throws an error
         xSemaphoreGive(draw_mutex_);
         return err;

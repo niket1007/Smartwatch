@@ -22,21 +22,21 @@
 
 #include "esp_lcd_sh8601.h"
 
-#define TEST_LCD_HOST               SPI2_HOST
-#define TEST_LCD_H_RES              (410)
-#define TEST_LCD_V_RES              (502)
-#define TEST_LCD_BIT_PER_PIXEL      (16)
+#define TEST_LCD_HOST SPI2_HOST
+#define TEST_LCD_H_RES (410)
+#define TEST_LCD_V_RES (502)
+#define TEST_LCD_BIT_PER_PIXEL (16)
 
-#define TEST_PIN_NUM_LCD_CS         (GPIO_NUM_12)
-#define TEST_PIN_NUM_LCD_PCLK       (GPIO_NUM_11)
-#define TEST_PIN_NUM_LCD_DATA0      (GPIO_NUM_4)
-#define TEST_PIN_NUM_LCD_DATA1      (GPIO_NUM_5)
-#define TEST_PIN_NUM_LCD_DATA2      (GPIO_NUM_6)
-#define TEST_PIN_NUM_LCD_DATA3      (GPIO_NUM_7)
-#define TEST_PIN_NUM_LCD_RST        (GPIO_NUM_8)
-#define TEST_PIN_NUM_LCD_DC         (GPIO_NUM_NC)
+#define TEST_PIN_NUM_LCD_CS (GPIO_NUM_12)
+#define TEST_PIN_NUM_LCD_PCLK (GPIO_NUM_11)
+#define TEST_PIN_NUM_LCD_DATA0 (GPIO_NUM_4)
+#define TEST_PIN_NUM_LCD_DATA1 (GPIO_NUM_5)
+#define TEST_PIN_NUM_LCD_DATA2 (GPIO_NUM_6)
+#define TEST_PIN_NUM_LCD_DATA3 (GPIO_NUM_7)
+#define TEST_PIN_NUM_LCD_RST (GPIO_NUM_8)
+#define TEST_PIN_NUM_LCD_DC (GPIO_NUM_NC)
 
-#define TEST_DELAY_TIME_MS          (3000)
+#define TEST_DELAY_TIME_MS (3000)
 
 static char *TAG = "sh8601_test";
 static SemaphoreHandle_t refresh_finish = NULL;
@@ -73,9 +73,12 @@ static void test_draw_bitmap(esp_lcd_panel_handle_t panel_handle)
     uint8_t *color = (uint8_t *)heap_caps_calloc(1, row_line * TEST_LCD_H_RES * byte_per_pixel, MALLOC_CAP_DMA);
     TEST_ASSERT_NOT_NULL(color);
 
-    for (int j = 0; j < TEST_LCD_BIT_PER_PIXEL; j++) {
-        for (int i = 0; i < row_line * TEST_LCD_H_RES; i++) {
-            for (int k = 0; k < byte_per_pixel; k++) {
+    for (int j = 0; j < TEST_LCD_BIT_PER_PIXEL; j++)
+    {
+        for (int i = 0; i < row_line * TEST_LCD_H_RES; i++)
+        {
+            for (int k = 0; k < byte_per_pixel; k++)
+            {
                 color[i * byte_per_pixel + k] = (SPI_SWAP_DATA_TX(BIT(j), TEST_LCD_BIT_PER_PIXEL) >> (k * 8)) & 0xff;
             }
         }
@@ -125,11 +128,11 @@ TEST_CASE("test sh8601 to draw color bar with QSPI interface", "[sh8601][qspi]")
 {
     ESP_LOGI(TAG, "Initialize SPI bus");
     const spi_bus_config_t buscfg = SH8601_PANEL_BUS_QSPI_CONFIG(TEST_PIN_NUM_LCD_PCLK,
-                                                                TEST_PIN_NUM_LCD_DATA0,
-                                                                TEST_PIN_NUM_LCD_DATA1,
-                                                                TEST_PIN_NUM_LCD_DATA2,
-                                                                TEST_PIN_NUM_LCD_DATA3,
-                                                                TEST_LCD_H_RES * TEST_LCD_V_RES * TEST_LCD_BIT_PER_PIXEL / 8);
+                                                                 TEST_PIN_NUM_LCD_DATA0,
+                                                                 TEST_PIN_NUM_LCD_DATA1,
+                                                                 TEST_PIN_NUM_LCD_DATA2,
+                                                                 TEST_PIN_NUM_LCD_DATA3,
+                                                                 TEST_LCD_H_RES * TEST_LCD_V_RES * TEST_LCD_BIT_PER_PIXEL / 8);
     TEST_ESP_OK(spi_bus_initialize(TEST_LCD_HOST, &buscfg, SPI_DMA_CH_AUTO));
 
     ESP_LOGI(TAG, "Install panel IO");
@@ -166,7 +169,7 @@ TEST_CASE("test sh8601 to draw color bar with QSPI interface", "[sh8601][qspi]")
 }
 
 // Some resources are lazy allocated in the LCD driver, the threadhold is left for that case
-#define TEST_MEMORY_LEAK_THRESHOLD  (300)
+#define TEST_MEMORY_LEAK_THRESHOLD (300)
 
 static size_t before_free_8bit;
 static size_t before_free_32bit;

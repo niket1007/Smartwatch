@@ -28,68 +28,62 @@
  *
  */
 
-
 #pragma once
 
 #if defined(ARDUINO)
 #include <Wire.h>
 #endif
 
-
-
 #ifdef _BV
 #undef _BV
 #endif
-#define _BV(b)                          (1ULL << (uint64_t)(b))
-
+#define _BV(b) (1ULL << (uint64_t)(b))
 
 #ifndef constrain
-#define constrain(amt,low,high) ((amt)<(low)?(low):((amt)>(high)?(high):(amt)))
+#define constrain(amt, low, high) ((amt) < (low) ? (low) : ((amt) > (high) ? (high) : (amt)))
 #endif
 
-
-
-#define XPOWERS_ATTR_NOT_IMPLEMENTED    __attribute__((error("Not implemented")))
-#define IS_BIT_SET(val,mask)            (((val)&(mask)) == (mask))
+#define XPOWERS_ATTR_NOT_IMPLEMENTED __attribute__((error("Not implemented")))
+#define IS_BIT_SET(val, mask) (((val) & (mask)) == (mask))
 
 #if !defined(ARDUINO)
 #ifdef linux
 #include <stdio.h>
 #include <string.h>
 #include <errno.h>
-#define log_e(__info,...)          printf("error :"  __info,##__VA_ARGS__)
-#define log_i(__info,...)          printf("info  :"  __info,##__VA_ARGS__)
-#define log_d(__info,...)          printf("debug :"  __info,##__VA_ARGS__)
+#define log_e(__info, ...) printf("error :" __info, ##__VA_ARGS__)
+#define log_i(__info, ...) printf("info  :" __info, ##__VA_ARGS__)
+#define log_d(__info, ...) printf("debug :" __info, ##__VA_ARGS__)
 #else
 #define log_e(...)
 #define log_i(...)
 #define log_d(...)
 #endif
 
-#define LOW                 0x0
-#define HIGH                0x1
+#define LOW 0x0
+#define HIGH 0x1
 
-//GPIO FUNCTIONS
-#define INPUT               0x01
-#define OUTPUT              0x03
-#define PULLUP              0x04
-#define INPUT_PULLUP        0x05
-#define PULLDOWN            0x08
-#define INPUT_PULLDOWN      0x09
+// GPIO FUNCTIONS
+#define INPUT 0x01
+#define OUTPUT 0x03
+#define PULLUP 0x04
+#define INPUT_PULLUP 0x05
+#define PULLDOWN 0x08
+#define INPUT_PULLDOWN 0x09
 
-#define RISING              0x01
-#define FALLING             0x02
+#define RISING 0x01
+#define FALLING 0x02
 #endif
 
 #ifndef ESP32
 #ifndef log_e
-#define log_e(...)          Serial.printf(__VA_ARGS__)
+#define log_e(...) Serial.printf(__VA_ARGS__)
 #endif
 #ifndef log_i
-#define log_i(...)          Serial.printf(__VA_ARGS__)
+#define log_i(...) Serial.printf(__VA_ARGS__)
 #endif
 #ifndef log_d
-#define log_d(...)          Serial.printf(__VA_ARGS__)
+#define log_d(...) Serial.printf(__VA_ARGS__)
 #endif
 #endif
 
@@ -100,11 +94,11 @@ class XPowersCommon
 {
 
 public:
-
 #if defined(ARDUINO)
     bool begin(TwoWire &w, uint8_t addr, int sda, int scl)
     {
-        if (__has_init)return thisChip().initImpl();
+        if (__has_init)
+            return thisChip().initImpl();
         __has_init = true;
         __sda = sda;
         __scl = scl;
@@ -124,7 +118,8 @@ public:
 
     bool begin(uint8_t addr, iic_fptr_t readRegCallback, iic_fptr_t writeRegCallback)
     {
-        if (__has_init)return thisChip().initImpl();
+        if (__has_init)
+            return thisChip().initImpl();
         __has_init = true;
         thisReadRegCallback = readRegCallback;
         thisWriteRegCallback = writeRegCallback;
@@ -135,17 +130,21 @@ public:
     int readRegister(uint8_t reg)
     {
         uint8_t val = 0;
-        if (thisReadRegCallback) {
-            if (thisReadRegCallback(__addr, reg, &val, 1) != 0) {
+        if (thisReadRegCallback)
+        {
+            if (thisReadRegCallback(__addr, reg, &val, 1) != 0)
+            {
                 return 0;
             }
             return val;
         }
 #if defined(ARDUINO)
-        if (__wire) {
+        if (__wire)
+        {
             __wire->beginTransmission(__addr);
             __wire->write(reg);
-            if (__wire->endTransmission() != 0) {
+            if (__wire->endTransmission() != 0)
+            {
                 return -1;
             }
             __wire->requestFrom(__addr, 1U);
@@ -157,11 +156,13 @@ public:
 
     int writeRegister(uint8_t reg, uint8_t val)
     {
-        if (thisWriteRegCallback) {
+        if (thisWriteRegCallback)
+        {
             return thisWriteRegCallback(__addr, reg, &val, 1);
         }
 #if defined(ARDUINO)
-        if (__wire) {
+        if (__wire)
+        {
             __wire->beginTransmission(__addr);
             __wire->write(reg);
             __wire->write(val);
@@ -173,14 +174,17 @@ public:
 
     int readRegister(uint8_t reg, uint8_t *buf, uint8_t lenght)
     {
-        if (thisReadRegCallback) {
+        if (thisReadRegCallback)
+        {
             return thisReadRegCallback(__addr, reg, buf, lenght);
         }
 #if defined(ARDUINO)
-        if (__wire) {
+        if (__wire)
+        {
             __wire->beginTransmission(__addr);
             __wire->write(reg);
-            if (__wire->endTransmission() != 0) {
+            if (__wire->endTransmission() != 0)
+            {
                 return -1;
             }
             __wire->requestFrom(__addr, lenght);
@@ -192,11 +196,13 @@ public:
 
     int writeRegister(uint8_t reg, uint8_t *buf, uint8_t lenght)
     {
-        if (thisWriteRegCallback) {
+        if (thisWriteRegCallback)
+        {
             return thisWriteRegCallback(__addr, reg, buf, lenght);
         }
 #if defined(ARDUINO)
-        if (__wire) {
+        if (__wire)
+        {
             __wire->beginTransmission(__addr);
             __wire->write(reg);
             __wire->write(buf, lenght);
@@ -206,29 +212,31 @@ public:
         return -1;
     }
 
-
     bool inline clrRegisterBit(uint8_t registers, uint8_t bit)
     {
         int val = readRegister(registers);
-        if (val == -1) {
+        if (val == -1)
+        {
             return false;
         }
-        return  writeRegister(registers, (val & (~_BV(bit)))) == 0;
+        return writeRegister(registers, (val & (~_BV(bit)))) == 0;
     }
 
     bool inline setRegisterBit(uint8_t registers, uint8_t bit)
     {
         int val = readRegister(registers);
-        if (val == -1) {
+        if (val == -1)
+        {
             return false;
         }
-        return  writeRegister(registers, (val | (_BV(bit)))) == 0;
+        return writeRegister(registers, (val | (_BV(bit)))) == 0;
     }
 
     bool inline getRegisterBit(uint8_t registers, uint8_t bit)
     {
         int val = readRegister(registers);
-        if (val == -1) {
+        if (val == -1)
+        {
             return false;
         }
         return val & _BV(bit);
@@ -238,7 +246,8 @@ public:
     {
         int h8 = readRegister(highReg);
         int l4 = readRegister(lowReg);
-        if (h8 == -1 || l4 == -1)return 0;
+        if (h8 == -1 || l4 == -1)
+            return 0;
         return (h8 << 4) | (l4 & 0x0F);
     }
 
@@ -246,7 +255,8 @@ public:
     {
         int h8 = readRegister(highReg);
         int l5 = readRegister(lowReg);
-        if (h8 == -1 || l5 == -1)return 0;
+        if (h8 == -1 || l5 == -1)
+            return 0;
         return (h8 << 5) | (l5 & 0x1F);
     }
 
@@ -254,7 +264,8 @@ public:
     {
         int h6 = readRegister(highReg);
         int l8 = readRegister(lowReg);
-        if (h6 == -1 || l8 == -1)return 0;
+        if (h6 == -1 || l8 == -1)
+            return 0;
         return ((h6 & 0x3F) << 8) | l8;
     }
 
@@ -262,7 +273,8 @@ public:
     {
         int h5 = readRegister(highReg);
         int l8 = readRegister(lowReg);
-        if (h5 == -1 || l8 == -1)return 0;
+        if (h5 == -1 || l8 == -1)
+            return 0;
         return ((h5 & 0x1F) << 8) | l8;
     }
 
@@ -270,13 +282,14 @@ public:
      * CRTP Helper
      */
 protected:
-
     bool begin()
     {
 #if defined(ARDUINO)
-        if (__has_init) return thisChip().initImpl();
+        if (__has_init)
+            return thisChip().initImpl();
         __has_init = true;
-        if (__wire) {
+        if (__wire)
+        {
             log_i("SDA:%d SCL:%d", __sda, __scl);
 #if defined(ARDUINO_ARCH_RP2040) || defined(ARDUINO_ARCH_STM32)
             __wire->end();
@@ -287,23 +300,23 @@ protected:
             __wire->begin(__sda, __scl);
 #endif
         }
-#endif  /*ARDUINO*/
+#endif /*ARDUINO*/
         return thisChip().initImpl();
     }
 
     void end()
     {
 #if defined(ARDUINO)
-        if (__wire) {
+        if (__wire)
+        {
 #if defined(ESP_IDF_VERSION)
-#if ESP_IDF_VERSION > ESP_IDF_VERSION_VAL(4,4,0)
+#if ESP_IDF_VERSION > ESP_IDF_VERSION_VAL(4, 4, 0)
             __wire->end();
-#endif  /*ESP_IDF_VERSION*/
-#endif  /*ESP_IDF_VERSION*/
+#endif /*ESP_IDF_VERSION*/
+#endif /*ESP_IDF_VERSION*/
         }
 #endif /*ARDUINO*/
     }
-
 
     inline const chipType &thisChip() const
     {
@@ -316,13 +329,13 @@ protected:
     }
 
 protected:
-    bool        __has_init              = false;
+    bool __has_init = false;
 #if defined(ARDUINO)
-    TwoWire     *__wire                 = NULL;
+    TwoWire *__wire = NULL;
 #endif
-    int         __sda                   = -1;
-    int         __scl                   = -1;
-    uint8_t     __addr                  = 0xFF;
-    iic_fptr_t  thisReadRegCallback     = NULL;
-    iic_fptr_t  thisWriteRegCallback    = NULL;
+    int __sda = -1;
+    int __scl = -1;
+    uint8_t __addr = 0xFF;
+    iic_fptr_t thisReadRegCallback = NULL;
+    iic_fptr_t thisWriteRegCallback = NULL;
 };

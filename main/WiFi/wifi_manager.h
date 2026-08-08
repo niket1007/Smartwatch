@@ -10,13 +10,13 @@
 class WiFiManager
 {
 private:
-    const std::string SSID = "";
-    const std::string PASSWORD = "";
+    const std::string SSID = "Amit 1st Floor";
+    const std::string PASSWORD = "12345689";
 
     esp_event_handler_instance_t wifi_event_instance_ = nullptr;
     esp_event_handler_instance_t ip_event_instance_ = nullptr;
     esp_netif_t *sta_netif_ = nullptr;
-    
+
     bool is_system_inited_ = false;
     bool stopped_ = false;
 

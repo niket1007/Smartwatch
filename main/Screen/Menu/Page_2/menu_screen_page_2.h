@@ -7,22 +7,20 @@
 #include "Screen/screen.h"
 #include "Graphics/Icons/generated/icon.h"
 #include "Graphics/Icons/generated/icon_globals.h"
-#include "Screen/Menu/rect.h"
+#include "Screen/rect.h"
 
 class MenuScreenPage2 : public Screen
 {
 private:
     static constexpr Rect icon_containers[3] = {
-        {60, 90, 300, 100},   // Alarm
-        {60, 210, 300, 100},  // Navigation
-        {60, 330, 300, 100}   // Music
+        {60, 90, 300, 100},  // Alarm
+        {60, 210, 300, 100}, // Navigation
+        {60, 330, 300, 100}  // Music
     };
 
     void identify_tap();
 
 public:
-    int screen_id = 2;
-
     esp_err_t on_enter() override;
     esp_err_t on_exit() override;
 

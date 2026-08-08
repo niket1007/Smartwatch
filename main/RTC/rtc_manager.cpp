@@ -85,27 +85,27 @@ esp_err_t RTCManager::get_PCF85063_rtc()
 {
     if (i2c_manager.rtc_dev_handle == NULL)
         return ESP_FAIL;
-    
+
     uint8_t reg_addr = 0x04;
     uint8_t data[7];
     struct tm timeinfo;
 
     esp_err_t err = i2c_master_transmit_receive(
         i2c_manager.rtc_dev_handle, &reg_addr, 1, data, sizeof(data), -1);
-    
-    if(err != ESP_OK) 
+
+    if (err != ESP_OK)
     {
         ESP_LOGE(TAG, "Failed to get time from PCF85063 rtc");
         return err;
     }
 
-    timeinfo.tm_sec  = bcd2dec(data[0] & 0x7F);
-    timeinfo.tm_min  = bcd2dec(data[1] & 0x7F);
+    timeinfo.tm_sec = bcd2dec(data[0] & 0x7F);
+    timeinfo.tm_min = bcd2dec(data[1] & 0x7F);
     timeinfo.tm_hour = bcd2dec(data[2] & 0x3F);
     timeinfo.tm_mday = bcd2dec(data[3] & 0x3F);
     timeinfo.tm_wday = bcd2dec(data[4] & 0x07);
     // PCF85063 stores months as 1-12, tm_mon expects 0-11
-    timeinfo.tm_mon  = bcd2dec(data[5] & 0x1F) - 1; 
+    timeinfo.tm_mon = bcd2dec(data[5] & 0x1F) - 1;
     timeinfo.tm_year = bcd2dec(data[6]) + 100;
 
     // Set the internal system time
