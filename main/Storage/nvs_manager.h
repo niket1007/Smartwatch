@@ -6,12 +6,12 @@
 
 class NVSManager
 {
-    private:
-        bool is_init_ = false;
+private:
+    bool is_init_ = false;
 
-    public:
-        esp_err_t init();
-        esp_err_t deinit();
+public:
+    esp_err_t init();
+    esp_err_t deinit();
 
-        bool is_initialised() const;
+    bool is_initialised() const;
 };

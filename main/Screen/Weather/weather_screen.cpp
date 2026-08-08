@@ -9,10 +9,6 @@ esp_err_t WeatherScreen::on_enter()
     ESP_LOGI(TAG, "on_enter called");
 
     ESP_RETURN_ON_ERROR(
-        graphics.fill_rect(50, 40, 310, 420, BLACK_COLOR),
-        TAG, "Failed to reset screen");
-
-    ESP_RETURN_ON_ERROR(
         draw(), TAG, "Failed to draw");
 
     return ESP_OK;
@@ -28,8 +24,7 @@ esp_err_t WeatherScreen::draw_rain_block()
 {
     ESP_RETURN_ON_ERROR(
         graphics.fill_rect(80, 330, 250, 110, BLACK_COLOR),
-        TAG, "Failed to fill the rect"
-    );
+        TAG, "Failed to fill the rect");
 
     ESP_RETURN_ON_ERROR(
         graphics.draw_icon(80, 350, &icon_rain_chance, WHITE_COLOR),
@@ -47,8 +42,7 @@ esp_err_t WeatherScreen::draw_wind_block()
 {
     ESP_RETURN_ON_ERROR(
         graphics.fill_rect(80, 330, 250, 110, BLACK_COLOR),
-        TAG, "Failed to fill the rect"
-    );
+        TAG, "Failed to fill the rect");
 
     ESP_RETURN_ON_ERROR(
         graphics.draw_icon(80, 350, &icon_wind, WHITE_COLOR),

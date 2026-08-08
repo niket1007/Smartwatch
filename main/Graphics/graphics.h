@@ -47,12 +47,12 @@ private:
         uint16_t color);
 
     esp_err_t draw_alpha_bitmap(
-        int16_t x, 
-        int16_t y, 
-        uint16_t width, 
-        uint16_t height, 
-        const uint8_t *bitmap, 
-        uint16_t color, 
+        int16_t x,
+        int16_t y,
+        uint16_t width,
+        uint16_t height,
+        const uint8_t *bitmap,
+        uint16_t color,
         uint16_t bg_color);
 
 public:
@@ -101,7 +101,7 @@ public:
     esp_err_t draw_round_rect(
         int16_t x,
         int16_t y,
-        int16_t widht,
+        int16_t width,
         int16_t height,
         int16_t r,
         uint16_t color,
@@ -110,7 +110,7 @@ public:
     esp_err_t fill_round_rect(
         int16_t x,
         int16_t y,
-        int16_t widht,
+        int16_t width,
         int16_t height,
         int16_t r,
         uint16_t color);
@@ -122,19 +122,19 @@ public:
         uint16_t color);
 
     esp_err_t draw_char(
-        int16_t x, 
-        int16_t baseline_y, 
-        char c, 
-        const font_t &font, 
-        uint16_t color, 
-        uint16_t bg_color, 
+        int16_t x,
+        int16_t baseline_y,
+        char c,
+        const font_t &font,
+        uint16_t color,
+        uint16_t bg_color,
         uint16_t *advance);
 
     esp_err_t draw_text(
-        int16_t x, 
-        int16_t y, 
-        const char *text, 
-        const font_t &font, 
-        uint16_t color, 
+        int16_t x,
+        int16_t y,
+        const char *text,
+        const font_t &font,
+        uint16_t color,
         uint16_t bg_color);
 };

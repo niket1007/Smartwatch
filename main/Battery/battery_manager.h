@@ -7,31 +7,33 @@
 #include "esp_err.h"
 #include "esp_log.h"
 
-class BatteryManager {
-    private:
-        static int pmu_register_read(
-            uint8_t devAddr, 
-            uint8_t regAddr, 
-            uint8_t *data, 
-            uint8_t len);
+class BatteryManager
+{
+private:
+    static int pmu_register_read(
+        uint8_t devAddr,
+        uint8_t regAddr,
+        uint8_t *data,
+        uint8_t len);
 
-        static int pmu_register_write_byte(
-            uint8_t devAddr, 
-            uint8_t regAddr, 
-            uint8_t *data, 
-            uint8_t len);
-        
-        XPowersPMU PMU;
-        
-        int old_battery_percentage_ = 0;
-        int battery_percentage_ = 0;
+    static int pmu_register_write_byte(
+        uint8_t devAddr,
+        uint8_t regAddr,
+        uint8_t *data,
+        uint8_t len);
 
-        bool old_is_charging_ = false;
-        bool is_charging_ = false;
-    public:
-        esp_err_t init();
-        esp_err_t refresh();
+    XPowersPMU PMU;
 
-        int get_battery_percentage();
-        bool is_charging();
+    int old_battery_percentage_ = 0;
+    int battery_percentage_ = 0;
+
+    bool old_is_charging_ = false;
+    bool is_charging_ = false;
+
+public:
+    esp_err_t init();
+    esp_err_t refresh();
+
+    int get_battery_percentage();
+    bool is_charging();
 };

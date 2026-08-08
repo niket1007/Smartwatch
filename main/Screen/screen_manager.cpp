@@ -1,4 +1,5 @@
 #include "screen_manager.h"
+#include "Common/globals.h"
 #include "Common/constants.h"
 
 #include "Home/home_screen.h"
@@ -6,6 +7,10 @@
 #include "Menu/Page_2/menu_screen_page_2.h"
 #include "Notification/notification_screen.h"
 #include "Weather/weather_screen.h"
+
+#include "Screen/Notification/Notif_Type_Screens/notif_call_screen.h"
+#include "Screen/Notification/Notif_Type_Screens/notif_message_screen.h"
+#include "Screen/Notification/Notif_Type_Screens/notif_other_screen.h"
 
 static constexpr const char *TAG = "SCREEN_MANAGER";
 
@@ -44,9 +49,27 @@ Screen *ScreenManager::get_screen_instance_(int screen_id)
     case 5:
         return new WeatherScreen();
         break;
+    case 41:
+        return new NotifCallScreen();
+        break;
+    case 42:
+        return new NotifMessageScreen();
+        break;
+    case 43:
+        return new NotifOtherScreen();
+        break;
     default:
         return new HomeScreen();
     }
+}
+
+esp_err_t ScreenManager::reset()
+{
+    // Reset the screen
+    ESP_RETURN_ON_ERROR(
+        graphics.fill_rect(50, 40, 310, 420, BLACK_COLOR),
+        TAG, "Failed to reset screen");
+    return ESP_OK;
 }
 
 esp_err_t ScreenManager::change_screen(int new_screen_id)
@@ -58,6 +81,8 @@ esp_err_t ScreenManager::change_screen(int new_screen_id)
     // vTaskDelay(pdMS_TO_TICKS(50));
     current_screen = get_screen_instance_(new_screen_id);
     current_screen_id = new_screen_id;
+
+    reset();
 
     ESP_RETURN_ON_ERROR(
         current_screen->on_enter(), TAG, "Failed to enter new screen");

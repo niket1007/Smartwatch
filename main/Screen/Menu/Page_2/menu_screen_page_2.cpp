@@ -10,10 +10,6 @@ esp_err_t MenuScreenPage2::on_enter()
     ESP_LOGI(TAG, "on_enter called");
 
     ESP_RETURN_ON_ERROR(
-        graphics.fill_rect(50, 40, 310, 420, BLACK_COLOR),
-        TAG, "Failed to reset screen");
-    
-    ESP_RETURN_ON_ERROR(
         draw(), TAG, "Failed to draw");
 
     return ESP_OK;
@@ -27,11 +23,12 @@ esp_err_t MenuScreenPage2::on_exit()
 
 esp_err_t MenuScreenPage2::draw()
 {
-    for (const auto& container : icon_containers) {
+    for (const auto &container : icon_containers)
+    {
         ESP_RETURN_ON_ERROR(
             graphics.draw_round_rect(
-                container.x1, container.y1, 
-                container.width, container.height, 
+                container.x1, container.y1,
+                container.width, container.height,
                 30, WHITE_COLOR),
             TAG, "Failed to draw container box");
     }
@@ -41,18 +38,18 @@ esp_err_t MenuScreenPage2::draw()
         ESP_RETURN_ON_ERROR(
             graphics.draw_icon(75, 100, &icon_alarm, WHITE_COLOR),
             TAG, "Failed to draw alarm icon");
-        
+
         ESP_RETURN_ON_ERROR(
             graphics.draw_text(160, 160, "Alarm", freesans_40, WHITE_COLOR, BLACK_COLOR),
             TAG, "Failed to draw alarm text");
     }
 
     // Navigation Container Content
-    {    
+    {
         ESP_RETURN_ON_ERROR(
             graphics.draw_icon(70, 220, &icon_nav_default, WHITE_COLOR),
             TAG, "Failed to draw navigation icon");
-        
+
         ESP_RETURN_ON_ERROR(
             graphics.draw_text(160, 280, "Navigation", freesans_40, WHITE_COLOR, BLACK_COLOR),
             TAG, "Failed to draw navigation text");
@@ -63,7 +60,7 @@ esp_err_t MenuScreenPage2::draw()
         ESP_RETURN_ON_ERROR(
             graphics.draw_icon(75, 340, &icon_music, WHITE_COLOR),
             TAG, "Failed to draw music icon");
-        
+
         ESP_RETURN_ON_ERROR(
             graphics.draw_text(160, 400, "Music", freesans_40, WHITE_COLOR, BLACK_COLOR),
             TAG, "Failed to draw music text");

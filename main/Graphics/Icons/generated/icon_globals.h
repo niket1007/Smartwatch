@@ -16,6 +16,7 @@
 #include "bluetooth_disabled.h"
 #include "bubble2.h"
 #include "calendar.h"
+#include "clock_square.h"
 #include "connection.h"
 #include "finish.h"
 #include "humidity.h"

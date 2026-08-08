@@ -13,7 +13,8 @@
 #include "esp_pm.h"
 #include "esp_timer.h"
 #include "esp_sleep.h"
-extern "C" {
+extern "C"
+{
 #include "esp_private/esp_clk.h"
 }
 #include "Common/globals.h"
@@ -87,7 +88,7 @@ void background_task_func(void *pvParameters)
         // ESP_LOGI(TAG,
         //          "Wakeup cause: %d",
         //          esp_sleep_get_wakeup_cause());
-        // ESP_LOGI(TAG, 
+        // ESP_LOGI(TAG,
         //     "Sleep Enter Count: %d; Sleep Exit Count: %d;",sleep_enter_count, sleep_exit_count);
         // ESP_LOGI(TAG, "CPU 40Hz Count: %d", cpu_40hz_count);
     }
@@ -188,7 +189,7 @@ void time_sync_task_func(void *pvParameters)
 static void button_single_click_event_cb(void *arg, void *data)
 {
     ESP_LOGI(TAG, "Button single click!");
-    if(display_driver.is_sleep)
+    if (display_driver.is_sleep)
     {
         display_driver.wake();
     }
@@ -208,7 +209,8 @@ static int on_sleep_enter(int64_t sleep_time_us, void *arg)
 static int on_sleep_exit(int64_t slept_time_us, void *arg)
 {
     sleep_exit_count++;
-    if (esp_clk_cpu_freq() == 40000000) {
+    if (esp_clk_cpu_freq() == 40000000)
+    {
         cpu_40hz_count++;
     }
     return 0;

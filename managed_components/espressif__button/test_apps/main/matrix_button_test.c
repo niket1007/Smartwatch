@@ -18,15 +18,18 @@ static void button_event_cb(void *arg, void *data)
 {
     button_event_t event = iot_button_get_event(arg);
     ESP_LOGI(TAG, "BUTTON[%d] %s", (int)data, iot_button_get_event_str(event));
-    if (BUTTON_PRESS_REPEAT == event || BUTTON_PRESS_REPEAT_DONE == event) {
+    if (BUTTON_PRESS_REPEAT == event || BUTTON_PRESS_REPEAT_DONE == event)
+    {
         ESP_LOGI(TAG, "\tREPEAT[%d]", iot_button_get_repeat(arg));
     }
 
-    if (BUTTON_PRESS_UP == event || BUTTON_LONG_PRESS_HOLD == event || BUTTON_LONG_PRESS_UP == event) {
-        ESP_LOGI(TAG, "\tPressed Time[%"PRIu32"]", iot_button_get_pressed_time(arg));
+    if (BUTTON_PRESS_UP == event || BUTTON_LONG_PRESS_HOLD == event || BUTTON_LONG_PRESS_UP == event)
+    {
+        ESP_LOGI(TAG, "\tPressed Time[%" PRIu32 "]", iot_button_get_pressed_time(arg));
     }
 
-    if (BUTTON_MULTIPLE_CLICK == event) {
+    if (BUTTON_MULTIPLE_CLICK == event)
+    {
         ESP_LOGI(TAG, "\tMULTIPLE[%d]", (int)data);
     }
 }
@@ -46,8 +49,10 @@ TEST_CASE("matrix keyboard button test", "[button][matrix key]")
     esp_err_t ret = iot_button_new_matrix_device(&btn_cfg, &matrix_cfg, btns, &btn_num);
     TEST_ASSERT(ret == ESP_OK);
 
-    for (int i = 0; i < 4; i++) {
-        for (int j = 0; j < 4; j++) {
+    for (int i = 0; i < 4; i++)
+    {
+        for (int j = 0; j < 4; j++)
+        {
             int index = i * 4 + j;
             TEST_ASSERT_NOT_NULL(btns[index]);
             iot_button_register_cb(btns[index], BUTTON_PRESS_DOWN, NULL, button_event_cb, (void *)index);
@@ -63,12 +68,15 @@ TEST_CASE("matrix keyboard button test", "[button][matrix key]")
         }
     }
 
-    while (1) {
+    while (1)
+    {
         vTaskDelay(pdMS_TO_TICKS(1000));
     }
 
-    for (int i = 0; i < 4; i++) {
-        for (int j = 0; j < 4; j++) {
+    for (int i = 0; i < 4; i++)
+    {
+        for (int j = 0; j < 4; j++)
+        {
             iot_button_delete(btns[i * 4 + j]);
         }
     }

@@ -6,22 +6,22 @@
 #define LCD_HEIGHT 502
 
 // ---------------------- Color -----------------
-constexpr  int BLACK_COLOR = 0x0000;
-constexpr  int GREEN_COLOR = 0x001F;
-constexpr  int WHITE_COLOR = 0xFFFF;
+constexpr int BLACK_COLOR = 0x0000;
+constexpr int GREEN_COLOR = 0x001F;
+constexpr int WHITE_COLOR = 0xFFFF;
 
 // ---------------------- Event -----------------
 // BATTERY
-constexpr  uint32_t BAT_PERCENT_CHG_EVENT = 1U << 0;
-constexpr  uint32_t BAT_CHARGE_CHG_EVENT = 1U << 1;
+constexpr uint32_t BAT_PERCENT_CHG_EVENT = 1U << 0;
+constexpr uint32_t BAT_CHARGE_CHG_EVENT = 1U << 1;
 
-//SCREEN ON
+// SCREEN ON
 constexpr uint32_t SCREEN_ON_EVENT = 1U << 2;
 constexpr uint32_t UPDATE_TIME_EVENT = 1U << 3;
 
 // WIFI
 constexpr uint32_t WIFI_CONNECTED_EVENT = 1U << 0;
-constexpr uint32_t WIFI_FAILED_EVENT    = 1U << 1;
+constexpr uint32_t WIFI_FAILED_EVENT = 1U << 1;
 
 // SCREEN OFF
 constexpr uint32_t SCREEN_OFF_EVENT = 1U << 4;

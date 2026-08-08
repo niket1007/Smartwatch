@@ -13,9 +13,9 @@ class MenuScreenPage1 : public Screen
 {
 private:
     static constexpr Rect icon_containers[3] = {
-        {60, 90, 300, 100},   // Notification
-        {60, 210, 300, 100},  // Weather
-        {60, 330, 300, 100}   // Calendar
+        {60, 90, 300, 100},  // Notification
+        {60, 210, 300, 100}, // Weather
+        {60, 330, 300, 100}  // Calendar
     };
 
     esp_err_t identify_tap();

@@ -10,7 +10,6 @@
 #ifndef __XPOWERSLIB_H__
 #define __XPOWERSLIB_H__
 
-
 #if defined(XPOWERS_CHIP_AXP192)
 #include "XPowersAXP192.tpp"
 typedef XPowersAXP192 XPowersPMU;
@@ -26,11 +25,5 @@ typedef XPowersAXP2101 XPowersPMU;
 #include "XPowersAXP2101.tpp"
 #include "PowersSY6970.tpp"
 #endif
-
-
-
-
-
-
 
 #endif /*__XPOWERSLIB_H__*/

@@ -25,7 +25,7 @@ class DisplayDriver
 {
 private:
     static constexpr int DMA_BUFFER_LINES = 10;
-    uint16_t* dma_buffer_ = nullptr;
+    uint16_t *dma_buffer_ = nullptr;
 
     esp_lcd_panel_handle_t panel_handle_ = nullptr;
     uint8_t brightness_value_ = 255;
@@ -37,7 +37,7 @@ private:
 
 public:
     bool is_sleep = false;
-    
+
     esp_lcd_panel_io_handle_t io_handle_ = nullptr;
 
     DisplayDriver() = default;
@@ -56,10 +56,10 @@ public:
         int16_t x_end,
         int16_t y_end,
         const uint16_t *color_data);
-    
+
     esp_err_t sleep();
     esp_err_t wake();
-    
+
     esp_err_t reset_screen_timeout_timer(int64_t timer = 0);
     int64_t get_screen_timeout_timer();
 };
