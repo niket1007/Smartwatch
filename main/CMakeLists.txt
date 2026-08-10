@@ -49,6 +49,11 @@ file(GLOB_RECURSE TOUCH_SRCS
     ${TOUCH_DIR}/*.cpp
 )
 
+set(BLE_DIR ./Bluetooth)
+file(GLOB_RECURSE BLE_SRCS
+    ${BLE_DIR}/*.cpp
+)
+
 
 #------------------------------------------------------------------------------
 # Component
@@ -67,6 +72,7 @@ idf_component_register(
         ${WIFI_SRCS}
         ${RTC_SRCS}
         ${TOUCH_SRCS}
+        ${BLE_SRCS}
 
     INCLUDE_DIRS 
         "."
@@ -80,4 +86,5 @@ idf_component_register(
         ${WIFI_DIR}
         ${RTC_DIR}
         ${TOUCH_DIR}
+        ${BLE_DIR}
 )

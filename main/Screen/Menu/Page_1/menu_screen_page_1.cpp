@@ -3,7 +3,7 @@
 #include "Graphics/Fonts/generated/font_globals.h"
 #include "menu_screen_page_1.h"
 
-static constexpr const char *TAG = "MENU_SCREEN_PAGE_1";
+static constexpr char *TAG = "MENU_SCREEN_PAGE_1";
 
 esp_err_t MenuScreenPage1::on_enter()
 {
@@ -29,41 +29,36 @@ esp_err_t MenuScreenPage1::draw()
             graphics.draw_round_rect(
                 container.x1, container.y1,
                 container.width, container.height,
-                30, WHITE_COLOR),
+                30, WHITE_COLOR, 4U),
             TAG, "Failed to draw container box");
     }
 
     // Notification Container Content
     {
         ESP_RETURN_ON_ERROR(
-            graphics.draw_icon(75, 100, &icon_notifications, WHITE_COLOR),
+            graphics.draw_icon(80, 95, &icon_notification, WHITE_COLOR),
             TAG, "Failed to draw notification icon");
-
-        ESP_RETURN_ON_ERROR(
-            graphics.draw_text(160, 160, "Notification", freesans_40, WHITE_COLOR, BLACK_COLOR),
-            TAG, "Failed to draw notification text");
     }
 
     // Weather Container Content
     {
         ESP_RETURN_ON_ERROR(
-            graphics.draw_icon(75, 220, &icon_weather, WHITE_COLOR),
+            graphics.draw_icon(250, 95, &icon_weather, WHITE_COLOR),
             TAG, "Failed to draw weather icon");
-
-        ESP_RETURN_ON_ERROR(
-            graphics.draw_text(180, 280, "Weather", freesans_40, WHITE_COLOR, BLACK_COLOR),
-            TAG, "Failed to draw weather text");
     }
 
     // Calendar Container Content
     {
         ESP_RETURN_ON_ERROR(
-            graphics.draw_icon(75, 340, &icon_calendar, WHITE_COLOR),
+            graphics.draw_icon(80, 275, &icon_calendar, WHITE_COLOR),
             TAG, "Failed to draw calendar icon");
+    }
 
+    // Navigation Container Content
+    {
         ESP_RETURN_ON_ERROR(
-            graphics.draw_text(180, 400, "Calendar", freesans_40, WHITE_COLOR, BLACK_COLOR),
-            TAG, "Failed to draw calendar text");
+            graphics.draw_icon(250, 275, &icon_navigation, WHITE_COLOR),
+            TAG, "Failed to draw navigation icon");
     }
 
     return ESP_OK;

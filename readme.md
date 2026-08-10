@@ -94,7 +94,7 @@
     ```
 
 - **Icons**
-  1. Go to [google fonts](https://fonts.google.com/icons) and download svg file
+  1. Go to [Figma](https://www.figma.com/design/9fLX7xC7nFDrpWQDLoFpeR/IconSet?node-id=101-3002&t=q5NevkQGi0K0dfgN-0) and download svg file
   2. Place the svg file inside Graphics/Icons/svg
   3. Run icon_conveter.py file in converter folder
 
@@ -110,3 +110,6 @@
 
   3. Place the dowloaded c file inside Graphics/Fonts/ttf_and_c and change extension from .c to .txt
   4. Run font_extractor.py file in converter folder
+
+- **GadgetBridge**
+    1. Bluetooth Payload Detail: https://www.espruino.com/Gadgetbridge

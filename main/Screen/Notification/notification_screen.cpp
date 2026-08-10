@@ -5,7 +5,7 @@
 #include "Common/globals.h"
 #include <cstring>
 
-static constexpr const char *TAG = "NOTIFICATION_SCREEN";
+static constexpr char *TAG = "NOTIFICATION_SCREEN";
 
 esp_err_t NotificationScreen::on_enter()
 {

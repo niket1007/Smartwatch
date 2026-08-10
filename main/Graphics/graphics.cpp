@@ -4,7 +4,7 @@
 
 #include <inttypes.h> // Required for PRIu32
 
-static constexpr const char *TAG = "Graphics";
+static constexpr char *TAG = "Graphics";
 
 constexpr uint16_t MIN_PIXEL_SIZE = 2;
 constexpr uint16_t MAX_PIXEL_SIZE = 5;
@@ -385,19 +385,23 @@ esp_err_t Graphics::draw_round_rect(
 
     // Draw 4 Lines
     ESP_RETURN_ON_ERROR(
-        draw_line(x + r, y, (x + width - 1) - r, y, color),
+        draw_line(x + r, y, 
+            (x + width - 1) - r, y, color, border_width),
         TAG, "Failed to draw top line (round_rectangle)");
 
     ESP_RETURN_ON_ERROR(
-        draw_line(x + r, y + height - 1, (x + width - 1) - r, (y + height - 1), color),
+        draw_line(x + r, y + height - 1, 
+            (x + width - 1) - r, (y + height - 1), color, border_width),
         TAG, "Failed to draw bottom line (round_rectangle)");
 
     ESP_RETURN_ON_ERROR(
-        draw_line(x, y + r, x, (y + height - 1) - r, color),
+        draw_line(x, y + r, x, 
+            (y + height - 1) - r, color, border_width),
         TAG, "Failed to draw left line (round_rectangle)");
 
     ESP_RETURN_ON_ERROR(
-        draw_line((x + width - 1), y + r, (x + width - 1), (y + height - 1) - r, color),
+        draw_line((x + width - 1), y + r, 
+            (x + width - 1), (y + height - 1) - r, color, border_width),
         TAG, "Failed to draw right line (round_rectangle)");
 
     // Draw 4 arc

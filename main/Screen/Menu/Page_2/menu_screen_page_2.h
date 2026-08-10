@@ -13,9 +13,9 @@ class MenuScreenPage2 : public Screen
 {
 private:
     static constexpr Rect icon_containers[3] = {
-        {60, 90, 300, 100},  // Alarm
-        {60, 210, 300, 100}, // Navigation
-        {60, 330, 300, 100}  // Music
+        {70, 90, 115, 115},  // Alarm
+        {240, 90, 115, 115}, // Music
+        {70, 270, 115, 115},  // Settings
     };
 
     void identify_tap();

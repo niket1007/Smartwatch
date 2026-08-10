@@ -27,6 +27,7 @@ private:
 
     esp_err_t draw_rain_block();
     esp_err_t draw_wind_block();
+    esp_err_t reset_rain_wind_block();
 
     bool toggle_rain_wind = true;
 

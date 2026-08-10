@@ -6,7 +6,7 @@
 #include <sys/time.h>
 #include <cstring>
 
-static constexpr const char *TAG = "HOME_SCREEN";
+static constexpr char *TAG = "HOME_SCREEN";
 
 esp_err_t HomeScreen::on_enter()
 {
@@ -77,7 +77,7 @@ esp_err_t HomeScreen::draw_battery_icon()
             TAG, "Failed to re-draw battery symbol rect");
 
         ESP_RETURN_ON_ERROR(
-            graphics.draw_icon(80, 360, &icon, is_charging ? GREEN_COLOR : WHITE_COLOR),
+            graphics.draw_icon(80, 350, &icon, is_charging ? GREEN_COLOR : WHITE_COLOR),
             TAG, "Failed to re-draw battery symbol");
     }
     return ESP_OK;

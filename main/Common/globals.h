@@ -10,6 +10,7 @@
 #include "RTC/rtc_manager.h"
 #include "Touch/touch_manager.h"
 #include "Screen/screen_manager.h"
+#include "Bluetooth/bluetooth_manager.h"
 
 extern DisplayDriver display_driver;
 extern Graphics graphics;
@@ -20,6 +21,7 @@ extern WiFiManager wifi_manager;
 extern RTCManager rtc_manager;
 extern TouchManager touch_manager;
 extern ScreenManager screen_manager;
+extern BluetoothManager bluetooth_manager;
 
 extern TaskHandle_t gui_task_handle;
 extern TaskHandle_t background_task_handle;

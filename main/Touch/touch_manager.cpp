@@ -1,7 +1,7 @@
 #include "touch_manager.h"
 #include "Common/globals.h"
 
-static constexpr const char *TAG = "TOUCH_MANAGER";
+static constexpr char *TAG = "TOUCH_MANAGER";
 
 esp_err_t TouchManager::init()
 {

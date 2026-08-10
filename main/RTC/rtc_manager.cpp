@@ -3,7 +3,7 @@
 #include "esp_sntp.h"
 #include "Common/globals.h"
 
-static constexpr const char *TAG = "RTC_MANAGER";
+static constexpr char *TAG = "RTC_MANAGER";
 
 uint8_t RTCManager::dec2bcd(uint8_t val)
 {

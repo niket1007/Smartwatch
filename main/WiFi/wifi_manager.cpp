@@ -5,7 +5,7 @@
 #include "nvs_flash.h"
 #include "esp_wifi.h"
 
-static constexpr const char *TAG = "WIFI_MANAGER";
+static constexpr char *TAG = "WIFI_MANAGER";
 
 void WiFiManager::event_handler(
     void *arg, esp_event_base_t event_base, int32_t event_id, void *event_data)

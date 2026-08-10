@@ -3,7 +3,7 @@
 #include "Graphics/Fonts/generated/font_globals.h"
 #include "menu_screen_page_2.h"
 
-static constexpr const char *TAG = "MENU_SCREEN_PAGE_2";
+static constexpr char *TAG = "MENU_SCREEN_PAGE_2";
 
 esp_err_t MenuScreenPage2::on_enter()
 {
@@ -29,41 +29,29 @@ esp_err_t MenuScreenPage2::draw()
             graphics.draw_round_rect(
                 container.x1, container.y1,
                 container.width, container.height,
-                30, WHITE_COLOR),
+                30, WHITE_COLOR, 4U),
             TAG, "Failed to draw container box");
     }
 
     // Alarm Container Content
     {
         ESP_RETURN_ON_ERROR(
-            graphics.draw_icon(75, 100, &icon_alarm, WHITE_COLOR),
+            graphics.draw_icon(80, 95, &icon_alarm, WHITE_COLOR),
             TAG, "Failed to draw alarm icon");
-
-        ESP_RETURN_ON_ERROR(
-            graphics.draw_text(160, 160, "Alarm", freesans_40, WHITE_COLOR, BLACK_COLOR),
-            TAG, "Failed to draw alarm text");
-    }
-
-    // Navigation Container Content
-    {
-        ESP_RETURN_ON_ERROR(
-            graphics.draw_icon(70, 220, &icon_nav_default, WHITE_COLOR),
-            TAG, "Failed to draw navigation icon");
-
-        ESP_RETURN_ON_ERROR(
-            graphics.draw_text(160, 280, "Navigation", freesans_40, WHITE_COLOR, BLACK_COLOR),
-            TAG, "Failed to draw navigation text");
     }
 
     // Music Container Content
     {
         ESP_RETURN_ON_ERROR(
-            graphics.draw_icon(75, 340, &icon_music, WHITE_COLOR),
+            graphics.draw_icon(250, 95, &icon_music, WHITE_COLOR),
             TAG, "Failed to draw music icon");
+    }
 
+    // Settings Container Content
+    {
         ESP_RETURN_ON_ERROR(
-            graphics.draw_text(160, 400, "Music", freesans_40, WHITE_COLOR, BLACK_COLOR),
-            TAG, "Failed to draw music text");
+            graphics.draw_icon(80, 275, &icon_settings, WHITE_COLOR),
+            TAG, "Failed to draw setting icon");
     }
 
     return ESP_OK;
@@ -80,11 +68,14 @@ void MenuScreenPage2::identify_tap()
     }
     else if (icon_containers[1].contains(tap_x, tap_y))
     {
-        ESP_LOGI(TAG, "Navigation clicked");
+        ESP_LOGI(TAG, "Music clicked");
     }
     else if (icon_containers[2].contains(tap_x, tap_y))
     {
-        ESP_LOGI(TAG, "Music clicked");
+        ESP_LOGI(TAG, "Setting clicked");
+
+        // For testing
+        screen_manager.change_screen(6);
     }
 }
 

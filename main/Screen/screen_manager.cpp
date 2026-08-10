@@ -7,12 +7,13 @@
 #include "Menu/Page_2/menu_screen_page_2.h"
 #include "Notification/notification_screen.h"
 #include "Weather/weather_screen.h"
+#include "Bluetooth/passkey_screen.h"
 
 #include "Screen/Notification/Notif_Type_Screens/notif_call_screen.h"
 #include "Screen/Notification/Notif_Type_Screens/notif_message_screen.h"
 #include "Screen/Notification/Notif_Type_Screens/notif_other_screen.h"
 
-static constexpr const char *TAG = "SCREEN_MANAGER";
+static constexpr char *TAG = "SCREEN_MANAGER";
 
 esp_err_t ScreenManager::init()
 {
@@ -46,9 +47,6 @@ Screen *ScreenManager::get_screen_instance_(int screen_id)
     case 4:
         return new NotificationScreen();
         break;
-    case 5:
-        return new WeatherScreen();
-        break;
     case 41:
         return new NotifCallScreen();
         break;
@@ -57,6 +55,12 @@ Screen *ScreenManager::get_screen_instance_(int screen_id)
         break;
     case 43:
         return new NotifOtherScreen();
+        break;
+    case 5:
+        return new WeatherScreen();
+        break;
+    case 6:
+        return new PassKeyScreen();
         break;
     default:
         return new HomeScreen();
