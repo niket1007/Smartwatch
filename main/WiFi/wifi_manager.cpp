@@ -47,7 +47,6 @@ esp_err_t WiFiManager::init()
     stopped_ = false;
     retry_num = 0;
 
-    // Safe one-time system initializations
     if (!is_system_inited_)
     {
         if (!nvs_manager.is_initialised())
@@ -103,31 +102,91 @@ esp_err_t WiFiManager::init()
     ESP_LOGI(TAG, "Wi-Fi initialization finished successfully.");
     return ESP_OK;
 }
-
 esp_err_t WiFiManager::deinit()
 {
     stopped_ = true;
 
-    esp_wifi_stop();
-    esp_wifi_deinit();
-
-    // Unregister handlers
-    if (ip_event_instance_)
+    // Stop Wi-Fi before removing the driver
+    esp_err_t err = esp_wifi_stop();
+    if (err != ESP_OK && err != ESP_ERR_WIFI_NOT_INIT)
     {
-        esp_event_handler_instance_unregister(IP_EVENT, IP_EVENT_STA_GOT_IP, ip_event_instance_);
-        ip_event_instance_ = nullptr;
+        ESP_LOGE(
+            TAG,
+            "Failed to stop Wi-Fi: %s",
+            esp_err_to_name(err));
+        return err;
     }
+
+    // Unregister Wi-Fi event handler
     if (wifi_event_instance_)
     {
-        esp_event_handler_instance_unregister(WIFI_EVENT, ESP_EVENT_ANY_ID, wifi_event_instance_);
+        err = esp_event_handler_instance_unregister(
+            WIFI_EVENT,
+            ESP_EVENT_ANY_ID,
+            wifi_event_instance_);
+
+        if (err != ESP_OK)
+        {
+            ESP_LOGE(
+                TAG,
+                "Failed to unregister Wi-Fi event handler: %s",
+                esp_err_to_name(err));
+            return err;
+        }
+
         wifi_event_instance_ = nullptr;
     }
 
+    // Unregister IP event handler
+    if (ip_event_instance_)
+    {
+        err = esp_event_handler_instance_unregister(
+            IP_EVENT,
+            IP_EVENT_STA_GOT_IP,
+            ip_event_instance_);
+
+        if (err != ESP_OK)
+        {
+            ESP_LOGE(
+                TAG,
+                "Failed to unregister IP event handler: %s",
+                esp_err_to_name(err));
+            return err;
+        }
+
+        ip_event_instance_ = nullptr;
+    }
+
+    // Deinitialize Wi-Fi driver
+    err = esp_wifi_deinit();
+    if (err != ESP_OK && err != ESP_ERR_WIFI_NOT_INIT)
+    {
+        ESP_LOGE(
+            TAG,
+            "Failed to deinit Wi-Fi: %s",
+            esp_err_to_name(err));
+        return err;
+    }
+
+    // Destroy Wi-Fi STA network interface
     if (sta_netif_)
     {
         esp_netif_destroy_default_wifi(sta_netif_);
         sta_netif_ = nullptr;
     }
+
+    // Delete default event loop in init()
+    err = esp_event_loop_delete_default();
+    if (err != ESP_OK)
+    {
+        ESP_LOGE(
+            TAG,
+            "Failed to delete default event loop: %s",
+            esp_err_to_name(err));
+        return err;
+    }
+
+    is_system_inited_ = false;
 
     ESP_LOGI(TAG, "Wi-Fi deinitialized and powered off.");
     return ESP_OK;
