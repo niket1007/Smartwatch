@@ -54,6 +54,10 @@ file(GLOB_RECURSE BLE_SRCS
     ${BLE_DIR}/*.cpp
 )
 
+set(PS_DIR ./Power_Saver)
+file(GLOB_RECURSE PS_SRCS
+    ${PS_DIR}/*.cpp
+)
 
 #------------------------------------------------------------------------------
 # Component
@@ -73,6 +77,7 @@ idf_component_register(
         ${RTC_SRCS}
         ${TOUCH_SRCS}
         ${BLE_SRCS}
+        ${PS_SRCS}
 
     INCLUDE_DIRS 
         "."
@@ -87,4 +92,5 @@ idf_component_register(
         ${RTC_DIR}
         ${TOUCH_DIR}
         ${BLE_DIR}
+        ${PS_DIR}
 )

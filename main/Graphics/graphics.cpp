@@ -41,7 +41,6 @@ esp_err_t Graphics::draw_pixel(
 esp_err_t Graphics::fill_rect(
     int16_t x, int16_t y, uint16_t width, uint16_t height, uint16_t color)
 {
-    ESP_LOGI(TAG, "fill_rect invoked");
 
     if (
         x < 0 || x >= LCD_WIDTH ||
@@ -74,8 +73,6 @@ esp_err_t Graphics::draw_line(
 {
     // Generalized Bresenham line algorithm (Alois Zingl)
     // Handles all 8 octants using integer arithmetic.
-
-    // ESP_LOGI(TAG, "draw_line invoked");
 
     if (x1 < 0 || x1 >= LCD_WIDTH ||
         y1 < 0 || y1 >= LCD_HEIGHT ||
@@ -128,7 +125,6 @@ esp_err_t Graphics::draw_line(
 esp_err_t Graphics::draw_rect(
     int16_t x, int16_t y, uint16_t width, uint16_t height, uint16_t color, uint16_t border_width)
 {
-    ESP_LOGI(TAG, "draw_rect invoked");
 
     if (
         x < 0 || x >= LCD_WIDTH ||
@@ -209,7 +205,6 @@ esp_err_t Graphics::plot_circle_octants(
 esp_err_t Graphics::draw_circle(
     int16_t x, int16_t y, uint16_t radius, uint16_t color, uint16_t border_width)
 {
-    ESP_LOGI(TAG, "draw_circle invoked");
     if (
         x < 0 || x >= LCD_WIDTH ||
         y < 0 || y >= LCD_HEIGHT ||
@@ -276,7 +271,6 @@ esp_err_t Graphics::fill_circle_spans(
 esp_err_t Graphics::fill_circle(
     int16_t x, int16_t y, uint16_t radius, uint16_t color)
 {
-    ESP_LOGI(TAG, "fill_circle invoked");
     if (
         x < 0 || x >= LCD_WIDTH ||
         y < 0 || y >= LCD_HEIGHT ||
@@ -359,7 +353,6 @@ esp_err_t Graphics::draw_round_rect(
     int16_t x, int16_t y, int16_t width, int16_t height,
     int16_t r, uint16_t color, uint16_t border_width)
 {
-    ESP_LOGI(TAG, "draw_round_rect invoked");
 
     if (r < 0 || r > std::min(width, height) / 2)
     {
@@ -385,23 +378,23 @@ esp_err_t Graphics::draw_round_rect(
 
     // Draw 4 Lines
     ESP_RETURN_ON_ERROR(
-        draw_line(x + r, y, 
-            (x + width - 1) - r, y, color, border_width),
+        draw_line(x + r, y,
+                  (x + width - 1) - r, y, color, border_width),
         TAG, "Failed to draw top line (round_rectangle)");
 
     ESP_RETURN_ON_ERROR(
-        draw_line(x + r, y + height - 1, 
-            (x + width - 1) - r, (y + height - 1), color, border_width),
+        draw_line(x + r, y + height - 1,
+                  (x + width - 1) - r, (y + height - 1), color, border_width),
         TAG, "Failed to draw bottom line (round_rectangle)");
 
     ESP_RETURN_ON_ERROR(
-        draw_line(x, y + r, x, 
-            (y + height - 1) - r, color, border_width),
+        draw_line(x, y + r, x,
+                  (y + height - 1) - r, color, border_width),
         TAG, "Failed to draw left line (round_rectangle)");
 
     ESP_RETURN_ON_ERROR(
-        draw_line((x + width - 1), y + r, 
-            (x + width - 1), (y + height - 1) - r, color, border_width),
+        draw_line((x + width - 1), y + r,
+                  (x + width - 1), (y + height - 1) - r, color, border_width),
         TAG, "Failed to draw right line (round_rectangle)");
 
     // Draw 4 arc
@@ -484,7 +477,6 @@ esp_err_t Graphics::fill_round_rect(
     int16_t x, int16_t y, int16_t width, int16_t height,
     int16_t r, uint16_t color)
 {
-    ESP_LOGI(TAG, "fill_round_rect invoked");
 
     if (r < 0 || r > std::min(width, height) / 2)
     {
@@ -707,8 +699,6 @@ esp_err_t Graphics::draw_text(
     {
         return ESP_ERR_INVALID_ARG;
     }
-
-    ESP_LOGI(TAG, "Text: %s", text);
 
     int16_t cursor_x = x;
     int16_t cursor_y = y;

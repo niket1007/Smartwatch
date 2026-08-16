@@ -36,7 +36,7 @@ esp_err_t MenuScreenPage2::draw()
     // Alarm Container Content
     {
         ESP_RETURN_ON_ERROR(
-            graphics.draw_icon(80, 95, &icon_alarm, WHITE_COLOR),
+            graphics.draw_icon(60, 95, &icon_alarm, WHITE_COLOR),
             TAG, "Failed to draw alarm icon");
     }
 
@@ -50,14 +50,14 @@ esp_err_t MenuScreenPage2::draw()
     // Settings Container Content
     {
         ESP_RETURN_ON_ERROR(
-            graphics.draw_icon(80, 275, &icon_settings, WHITE_COLOR),
+            graphics.draw_icon(60, 305, &icon_settings, WHITE_COLOR),
             TAG, "Failed to draw setting icon");
     }
 
     return ESP_OK;
 }
 
-void MenuScreenPage2::identify_tap()
+esp_err_t MenuScreenPage2::identify_tap()
 {
     uint16_t tap_x = touch_manager.get_single_tap_x();
     uint16_t tap_y = touch_manager.get_single_tap_y();
@@ -72,11 +72,12 @@ void MenuScreenPage2::identify_tap()
     }
     else if (icon_containers[2].contains(tap_x, tap_y))
     {
-        ESP_LOGI(TAG, "Setting clicked");
-
-        // For testing
-        screen_manager.change_screen(6);
+        // Settings Screen Id = 10
+        ESP_RETURN_ON_ERROR(
+            screen_manager.change_screen(10),
+            TAG, "Failed to switch to Settings screen");
     }
+    return ESP_OK;
 }
 
 esp_err_t MenuScreenPage2::handle_events(uint32_t events)
@@ -84,7 +85,7 @@ esp_err_t MenuScreenPage2::handle_events(uint32_t events)
     ESP_LOGI(TAG, "handle_events called");
     if (events & SINGLE_TAP_EVENT)
     {
-        identify_tap();
+        return identify_tap();
     }
     return ESP_OK;
 }

@@ -224,8 +224,9 @@ esp_err_t DisplayDriver::wake()
         esp_lcd_panel_disp_off(panel_handle_, false),
         TAG, "Failed display on");
 
+    uint32_t brightness = power_saver_manager.get_brightness_percentage();
     ESP_RETURN_ON_ERROR(
-        set_brightness(70), TAG, "Failed to set brightness to 70%%");
+        set_brightness(brightness), TAG, "Failed to set brightness");
 
     is_sleep = false;
 

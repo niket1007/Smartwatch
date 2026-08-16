@@ -36,7 +36,7 @@ esp_err_t MenuScreenPage1::draw()
     // Notification Container Content
     {
         ESP_RETURN_ON_ERROR(
-            graphics.draw_icon(80, 95, &icon_notification, WHITE_COLOR),
+            graphics.draw_icon(60, 95, &icon_notification, WHITE_COLOR),
             TAG, "Failed to draw notification icon");
     }
 
@@ -50,14 +50,14 @@ esp_err_t MenuScreenPage1::draw()
     // Calendar Container Content
     {
         ESP_RETURN_ON_ERROR(
-            graphics.draw_icon(80, 275, &icon_calendar, WHITE_COLOR),
+            graphics.draw_icon(60, 305, &icon_calendar, WHITE_COLOR),
             TAG, "Failed to draw calendar icon");
     }
 
     // Navigation Container Content
     {
         ESP_RETURN_ON_ERROR(
-            graphics.draw_icon(250, 275, &icon_navigation, WHITE_COLOR),
+            graphics.draw_icon(250, 305, &icon_navigation, WHITE_COLOR),
             TAG, "Failed to draw navigation icon");
     }
 

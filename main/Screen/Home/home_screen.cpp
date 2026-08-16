@@ -73,7 +73,7 @@ esp_err_t HomeScreen::draw_battery_icon()
     {
         old_icon = icon;
         ESP_RETURN_ON_ERROR(
-            graphics.fill_rect(80, 360, 80, 80, BLACK_COLOR),
+            graphics.fill_rect(80, 360, 100, 80, BLACK_COLOR),
             TAG, "Failed to re-draw battery symbol rect");
 
         ESP_RETURN_ON_ERROR(

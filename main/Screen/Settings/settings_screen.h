@@ -9,15 +9,15 @@
 #include "Graphics/Icons/generated/icon_globals.h"
 #include "Screen/rect.h"
 
-class MenuScreenPage1 : public Screen
+class SettingsScreen : public Screen
 {
 private:
 
     static constexpr Rect icon_containers[4] = {
-        {50, 90, 115, 115},  // Notification
-        {240, 90, 115, 115}, // Weather
-        {50, 300, 115, 115},  // Calendar
-        {240, 300, 115, 115} // Navigation
+        {50, 90, 115, 115},  // Bluetooth
+        {240, 90, 115, 115}, // Wifi
+        {50, 300, 115, 115},  // Brightness
+        {240, 300, 115, 115} // Info
     };
 
     esp_err_t identify_tap();
