@@ -28,8 +28,12 @@ private:
     esp_err_t draw_rain_block();
     esp_err_t draw_wind_block();
     esp_err_t reset_rain_wind_block();
-
     bool toggle_rain_wind = true;
+
+    esp_err_t draw_temperature();
+    esp_err_t draw_condition();
+    esp_err_t draw_location();
+    esp_err_t draw_icon();
 
 public:
     esp_err_t on_enter();
@@ -37,6 +41,4 @@ public:
 
     esp_err_t draw() override;
     esp_err_t handle_events(uint32_t events) override;
-
-    esp_err_t set_weather_data(WeatherData weather_data);
 };

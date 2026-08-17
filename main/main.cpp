@@ -234,6 +234,8 @@ extern "C" void app_main(void)
 
     ESP_ERROR_CHECK(screen_manager.init());
 
+    ESP_ERROR_CHECK(power_saver_manager.init());
+
     int retry_count = 0;
     bool is_touch_init = false;
     while (retry_count <= 3)
@@ -310,7 +312,7 @@ extern "C" void app_main(void)
     esp_pm_config_t pm_config = {
         .max_freq_mhz = 240,
         .min_freq_mhz = 40,
-        .light_sleep_enable = true,
+        .light_sleep_enable = false,
     };
 
     // esp_pm_sleep_cbs_register_config_t cb_config = {

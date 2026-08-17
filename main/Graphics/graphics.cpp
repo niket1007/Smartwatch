@@ -734,3 +734,43 @@ esp_err_t Graphics::draw_text(
 
     return ESP_OK;
 }
+
+int Graphics::get_text_width(
+    const char *text,
+    const font_t &font)
+{
+    if (text == nullptr ||
+        font.bitmap == nullptr ||
+        font.glyphs == nullptr)
+    {
+        return 0;
+    }
+
+    int width = 0;
+
+    while (*text)
+    {
+        char c = *text++;
+
+        // This function is intended for a single line
+        if (c == '\r' || c == '\n')
+        {
+            return 0;
+        }
+
+        uint32_t codepoint = static_cast<uint8_t>(c);
+
+        if (codepoint < font.first_char ||
+            codepoint > font.last_char)
+        {
+            return 0;
+        }
+
+        const glyph_t *glyph =
+            &font.glyphs[(codepoint - font.first_char) + 1];
+
+        width += glyph->advance;
+    }
+
+    return width;
+}

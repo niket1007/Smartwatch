@@ -92,9 +92,19 @@ esp_err_t ScreenManager::reset()
 {
     // Reset the screen
     ESP_RETURN_ON_ERROR(
-        graphics.fill_rect(50, 40, 310, 420, BLACK_COLOR),
+        graphics.fill_rect(
+            reset_screen_x, 
+            reset_screen_y, 
+            reset_screen_width, 
+            reset_screen_height, 
+            BLACK_COLOR),
         TAG, "Failed to reset screen");
     return ESP_OK;
+}
+
+int ScreenManager::get_reset_screen_mid()
+{
+    return (reset_screen_width / 2) + reset_screen_x;
 }
 
 esp_err_t ScreenManager::change_screen(int new_screen_id)

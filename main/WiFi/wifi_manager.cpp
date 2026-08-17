@@ -191,3 +191,8 @@ esp_err_t WiFiManager::deinit()
     ESP_LOGI(TAG, "Wi-Fi deinitialized and powered off.");
     return ESP_OK;
 }
+
+std::string WiFiManager::get_ssid()
+{
+    return SSID;
+}
