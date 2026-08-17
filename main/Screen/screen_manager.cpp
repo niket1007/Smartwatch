@@ -7,6 +7,7 @@
 #include "Menu/Page_2/menu_screen_page_2.h"
 #include "Notification/notification_screen.h"
 #include "Weather/weather_screen.h"
+#include "Screen/Info/info_screen.h"
 
 #include "Screen/Notification/Notif_Type_Screens/notif_call_screen.h"
 #include "Screen/Notification/Notif_Type_Screens/notif_message_screen.h"
@@ -17,7 +18,6 @@
 #include "Screen/Settings/Brightness/brightness_screen.h"
 #include "Screen/Settings/Bluetooth/bluetooth_screen.h"
 #include "Screen/Settings/WiFi/wifi_screen.h"
-#include "Screen/Settings/Info/info_screen.h"
 
 static constexpr char *TAG = "SCREEN_MANAGER";
 
@@ -65,9 +65,10 @@ Screen *ScreenManager::get_screen_instance_(int screen_id)
     case 5:
         return new WeatherScreen();
         break;
-    case 6:
-        return new PassKeyScreen();
-        break;
+    //case 6: Calendar
+    //case 7: Navigation
+    //case 8: Alarm
+    //case 9: Music
     case 10:
         return new SettingsScreen();
         break;
@@ -80,8 +81,11 @@ Screen *ScreenManager::get_screen_instance_(int screen_id)
     case 103:
         return new BrightnessScreen();
         break;
-    case 104:
+    case 11:
         return new InfoScreen();
+        break;
+    case 12:
+        return new PassKeyScreen();
         break;
     default:
         return new HomeScreen();

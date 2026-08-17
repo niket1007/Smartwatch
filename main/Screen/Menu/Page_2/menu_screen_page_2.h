@@ -12,10 +12,11 @@
 class MenuScreenPage2 : public Screen
 {
 private:
-    static constexpr Rect icon_containers[3] = {
-        {50, 90, 115, 115},  // Alarm
-        {240, 90, 115, 115}, // Music
+    static constexpr Rect icon_containers[4] = {
+        {50, 90, 115, 115},     // Alarm
+        {240, 90, 115, 115},   // Music
         {50, 300, 115, 115},  // Settings
+        {240, 300, 115, 115} // Info
     };
 
     esp_err_t identify_tap();

@@ -54,6 +54,13 @@ esp_err_t MenuScreenPage2::draw()
             TAG, "Failed to draw setting icon");
     }
 
+    // Info Container Content
+    {
+        ESP_RETURN_ON_ERROR(
+            graphics.draw_icon(250, 305, &icon_information, WHITE_COLOR),
+            TAG, "Failed to draw info icon");
+    }
+
     return ESP_OK;
 }
 
@@ -76,6 +83,13 @@ esp_err_t MenuScreenPage2::identify_tap()
         ESP_RETURN_ON_ERROR(
             screen_manager.change_screen(10),
             TAG, "Failed to switch to Settings screen");
+    }
+    else if (icon_containers[3].contains(tap_x, tap_y))
+    {
+        // Info Screen Id = 11
+        ESP_RETURN_ON_ERROR(
+            screen_manager.change_screen(11),
+            TAG, "Failed to switch to Info screen");
     }
     return ESP_OK;
 }

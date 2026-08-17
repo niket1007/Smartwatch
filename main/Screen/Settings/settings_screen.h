@@ -13,11 +13,10 @@ class SettingsScreen : public Screen
 {
 private:
 
-    static constexpr Rect icon_containers[4] = {
+    static constexpr Rect icon_containers[3] = {
         {50, 90, 115, 115},  // Bluetooth
         {240, 90, 115, 115}, // Wifi
-        {50, 300, 115, 115},  // Brightness
-        {240, 300, 115, 115} // Info
+        {50, 300, 115, 115}  // Brightness
     };
 
     esp_err_t identify_tap();
