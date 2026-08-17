@@ -16,6 +16,7 @@
 #include "calendar.h"
 #include "clock_square.h"
 #include "connection.h"
+#include "disc.h"
 #include "humidity.h"
 #include "information.h"
 #include "keep_left.h"
