@@ -16,7 +16,7 @@ static const sh8601_lcd_init_cmd_t lcd_init_cmds[] = {
     {0x51, (uint8_t[]){0xFF}, 1, 0},
 };
 
-static constexpr char *TAG = "Display_Driver";
+static constexpr const char *TAG = "Display_Driver";
 
 IRAM_ATTR static bool on_color_trans_done_cb(esp_lcd_panel_io_handle_t panel_io, esp_lcd_panel_io_event_data_t *edata, void *user_ctx)
 {

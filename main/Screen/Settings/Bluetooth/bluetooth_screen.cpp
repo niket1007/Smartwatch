@@ -5,7 +5,7 @@
 #include "Common/globals.h"
 #include <cstring>
 
-static constexpr char *TAG = "BLUETOOTH_SCREEN";
+static constexpr const char *TAG = "BLUETOOTH_SCREEN";
 
 esp_err_t BluetoothScreen::on_enter()
 {

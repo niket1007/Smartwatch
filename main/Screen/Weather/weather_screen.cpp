@@ -2,7 +2,7 @@
 #include "Screen/screen_manager.h"
 #include "Common/globals.h"
 
-static constexpr char *TAG = "WEATHER_SCREEN";
+static constexpr const char *TAG = "WEATHER_SCREEN";
 
 esp_err_t WeatherScreen::on_enter()
 {

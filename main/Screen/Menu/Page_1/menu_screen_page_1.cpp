@@ -3,7 +3,7 @@
 #include "Graphics/Fonts/generated/font_globals.h"
 #include "menu_screen_page_1.h"
 
-static constexpr char *TAG = "MENU_SCREEN_PAGE_1";
+static constexpr const char *TAG = "MENU_SCREEN_PAGE_1";
 
 esp_err_t MenuScreenPage1::on_enter()
 {

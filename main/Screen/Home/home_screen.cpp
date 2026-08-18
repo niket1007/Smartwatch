@@ -6,7 +6,7 @@
 #include <sys/time.h>
 #include <cstring>
 
-static constexpr char *TAG = "HOME_SCREEN";
+static constexpr const char *TAG = "HOME_SCREEN";
 
 esp_err_t HomeScreen::on_enter()
 {

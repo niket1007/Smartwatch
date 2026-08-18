@@ -5,7 +5,7 @@
 #include "Common/globals.h"
 #include <cstring>
 
-static constexpr char *TAG = "MUSIC_SCREEN";
+static constexpr const char *TAG = "MUSIC_SCREEN";
 
 esp_err_t MusicScreen::on_enter()
 {

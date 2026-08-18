@@ -16,6 +16,7 @@
 #include "Screen/Notification/Notif_Type_Screens/notif_message_screen.h"
 #include "Screen/Notification/Notif_Type_Screens/notif_other_screen.h"
 #include "Screen/Notification/Ble_Type_Screens/passkey_screen.h"
+#include "Screen/Notification/Ble_Type_Screens/call_screen.h"
 
 #include "Screen/Settings/settings_screen.h"
 #include "Screen/Settings/Brightness/brightness_screen.h"

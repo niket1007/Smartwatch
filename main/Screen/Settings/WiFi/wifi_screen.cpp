@@ -5,7 +5,7 @@
 #include "Common/globals.h"
 #include <cstring>
 
-static constexpr char *TAG = "WIFI_SCREEN";
+static constexpr const char *TAG = "WIFI_SCREEN";
 
 esp_err_t WIFIScreen::on_enter()
 {

@@ -2,7 +2,7 @@
 #include "nvs_flash.h"
 #include "nvs.h"
 
-static constexpr char *TAG = "NVS_MANAGER";
+static constexpr const char *TAG = "NVS_MANAGER";
 
 esp_err_t NVSManager::init()
 {

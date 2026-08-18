@@ -4,7 +4,7 @@
 
 #include <inttypes.h> // Required for PRIu32
 
-static constexpr char *TAG = "Graphics";
+static constexpr const char *TAG = "Graphics";
 
 constexpr uint16_t MIN_PIXEL_SIZE = 2;
 constexpr uint16_t MAX_PIXEL_SIZE = 5;

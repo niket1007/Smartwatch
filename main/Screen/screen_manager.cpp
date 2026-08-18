@@ -2,7 +2,7 @@
 #include "Common/globals.h"
 #include "Common/constants.h"
 
-static constexpr char *TAG = "SCREEN_MANAGER";
+static constexpr const char *TAG = "SCREEN_MANAGER";
 
 esp_err_t ScreenManager::init()
 {
@@ -71,6 +71,9 @@ Screen *ScreenManager::get_screen_instance_(int screen_id)
         break;
     case 12:
         return new PassKeyScreen();
+        break;
+    case 13:
+        return new CallScreen();
         break;
     default:
         return new HomeScreen();

@@ -4,7 +4,7 @@
 #include "Graphics/Icons/generated/icon_globals.h"
 #include "Graphics/Fonts/generated/font_globals.h"
 
-static constexpr char *TAG = "PASSKEY_SCREEN";
+static constexpr const char *TAG = "PASSKEY_SCREEN";
 
 esp_err_t PassKeyScreen::on_enter()
 {

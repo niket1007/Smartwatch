@@ -3,7 +3,7 @@
 #include "Graphics/Fonts/generated/font_globals.h"
 #include "menu_screen_page_2.h"
 
-static constexpr char *TAG = "MENU_SCREEN_PAGE_2";
+static constexpr const char *TAG = "MENU_SCREEN_PAGE_2";
 
 esp_err_t MenuScreenPage2::on_enter()
 {
@@ -72,6 +72,10 @@ esp_err_t MenuScreenPage2::identify_tap()
     if (icon_containers[0].contains(tap_x, tap_y))
     {
         ESP_LOGI(TAG, "Alarm clicked");
+        // Test
+        ESP_RETURN_ON_ERROR(
+            screen_manager.change_screen(13),
+            TAG, "Failed to switch to Call screen");
     }
     else if (icon_containers[1].contains(tap_x, tap_y))
     {

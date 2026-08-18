@@ -5,7 +5,7 @@
 #include "Common/globals.h"
 #include <cstring>
 
-static constexpr char *TAG = "BRIGHTNESS_SCREEN";
+static constexpr const char *TAG = "BRIGHTNESS_SCREEN";
 
 esp_err_t BrightnessScreen::on_enter()
 {

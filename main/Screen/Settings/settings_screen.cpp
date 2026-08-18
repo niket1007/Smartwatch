@@ -3,7 +3,7 @@
 #include "Graphics/Fonts/generated/font_globals.h"
 #include "settings_screen.h"
 
-static constexpr char *TAG = "SETTINGS_SCREEN";
+static constexpr const char *TAG = "SETTINGS_SCREEN";
 
 esp_err_t SettingsScreen::on_enter()
 {
