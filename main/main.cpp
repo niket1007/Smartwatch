@@ -192,7 +192,6 @@ void time_sync_task_func(void *pvParameters)
 
 static void button_single_click_event_cb(void *arg, void *data)
 {
-    ESP_LOGI(TAG, "Button single click!");
     if (display_driver.is_sleep)
     {
         display_driver.wake();

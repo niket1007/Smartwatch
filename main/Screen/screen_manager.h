@@ -2,6 +2,27 @@
 
 #include "Screen/screen.h"
 
+// Screen Imports
+
+#include "Home/home_screen.h"
+#include "Menu/Page_1/menu_screen_page_1.h"
+#include "Menu/Page_2/menu_screen_page_2.h"
+#include "Notification/notification_screen.h"
+#include "Weather/weather_screen.h"
+#include "Screen/Info/info_screen.h"
+#include "Screen/Music/music_screen.h"
+
+#include "Screen/Notification/Notif_Type_Screens/notif_call_screen.h"
+#include "Screen/Notification/Notif_Type_Screens/notif_message_screen.h"
+#include "Screen/Notification/Notif_Type_Screens/notif_other_screen.h"
+#include "Screen/Notification/Ble_Type_Screens/passkey_screen.h"
+
+#include "Screen/Settings/settings_screen.h"
+#include "Screen/Settings/Brightness/brightness_screen.h"
+#include "Screen/Settings/Bluetooth/bluetooth_screen.h"
+#include "Screen/Settings/WiFi/wifi_screen.h"
+
+
 class ScreenManager
 {
 private:

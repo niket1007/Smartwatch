@@ -37,7 +37,14 @@ esp_err_t WeatherScreen::draw_rain_block()
         graphics.draw_icon(70, 350, &icon_weather_rain, WHITE_COLOR),
         TAG, "Failed to draw rain icon");
 
-    std::string rain = std::to_string(old_weather_data.rain) + "0.00%";
+    int rain_percentage = weather_data.get_rain_percentage();
+    std::string rain = std::to_string(rain_percentage) + "%";
+
+    if (rain_percentage >= 0 && rain_percentage < 10)
+    {
+        rain = "0" + rain;
+    }
+
     ESP_RETURN_ON_ERROR(
         graphics.draw_text(200, 410, rain.c_str(), freesans_40, WHITE_COLOR, BLACK_COLOR),
         TAG, "Failed to draw rain text");
@@ -53,7 +60,14 @@ esp_err_t WeatherScreen::draw_wind_block()
         graphics.draw_icon(70, 350, &icon_weather_wind, WHITE_COLOR),
         TAG, "Failed to draw wind icon");
 
-    std::string wind = std::to_string(old_weather_data.wind) + "0 km/h";
+    const int wind_speed = weather_data.get_wind_speed();
+    std::string wind = std::to_string(wind_speed) + " km/h";
+
+    if (wind_speed >= 0 && wind_speed < 10)
+    {
+        wind = "0" + wind;
+    }
+
     ESP_RETURN_ON_ERROR(
         graphics.draw_text(200, 410, wind.c_str(), freesans_40, WHITE_COLOR, BLACK_COLOR),
         TAG, "Failed to draw wind text");
@@ -63,11 +77,15 @@ esp_err_t WeatherScreen::draw_wind_block()
 
 esp_err_t WeatherScreen::draw_temperature()
 {
-    std::string temp = std::to_string(old_weather_data.temp) + "0C";
+    const int temperature = weather_data.get_temp();
+    std::string temp = std::to_string(temperature) + " C";
+    if (temperature >= 0 && temperature < 10)
+    {
+        temp = "0" + temp;
+    }
 
     int text_width = graphics.get_text_width(temp.c_str(), freesans_80);
-    // The screen manager clears the area
-    // Therefore the center of the drawable area half of that
+
     const int TEXT_AREA_CENTER_X = screen_manager.get_reset_screen_mid();
     int x = TEXT_AREA_CENTER_X - (text_width / 2);
 
@@ -78,15 +96,15 @@ esp_err_t WeatherScreen::draw_temperature()
     ESP_RETURN_ON_ERROR(
         graphics.draw_text(x, 250, temp.c_str(), freesans_80, WHITE_COLOR, BLACK_COLOR),
         TAG, "Failed to draw temperature text");
-    
+
     return ESP_OK;
 }
 
 esp_err_t WeatherScreen::draw_condition()
 {
-    int text_width = graphics.get_text_width(old_weather_data.text.c_str(), freesans_40);
-    // The screen manager clears the area
-    // Therefore the center of the drawable area half of that
+    const std::string condition_text = weather_data.get_condition_text();
+    int text_width = graphics.get_text_width(condition_text.c_str(), freesans_40);
+
     const int TEXT_AREA_CENTER_X = screen_manager.get_reset_screen_mid();
     int x = TEXT_AREA_CENTER_X - (text_width / 2);
 
@@ -96,18 +114,18 @@ esp_err_t WeatherScreen::draw_condition()
 
     ESP_RETURN_ON_ERROR(
         graphics.draw_text(
-            x, 170, old_weather_data.text.c_str(), 
+            x, 170, condition_text.c_str(),
             freesans_40, WHITE_COLOR, BLACK_COLOR),
         TAG, "Failed to draw condition text");
-    
+
     return ESP_OK;
 }
 
 esp_err_t WeatherScreen::draw_location()
 {
-    int text_width = graphics.get_text_width(old_weather_data.loc.c_str(), freesans_40);
-    // The screen manager clears the area
-    // Therefore the center of the drawable area half of that
+    const std::string location = weather_data.get_location();
+    int text_width = graphics.get_text_width(location.c_str(), freesans_40);
+
     const int TEXT_AREA_CENTER_X = screen_manager.get_reset_screen_mid();
     int x = TEXT_AREA_CENTER_X - (text_width / 2);
 
@@ -116,9 +134,11 @@ esp_err_t WeatherScreen::draw_location()
         TAG, "Failed to fill location block");
 
     ESP_RETURN_ON_ERROR(
-        graphics.draw_text(x, 300, old_weather_data.loc.c_str(), freesans_40, WHITE_COLOR, BLACK_COLOR),
+        graphics.draw_text(
+            x, 300, location.c_str(),
+            freesans_40, WHITE_COLOR, BLACK_COLOR),
         TAG, "Failed to draw location text");
-    
+
     return ESP_OK;
 }
 
@@ -148,7 +168,6 @@ esp_err_t WeatherScreen::draw()
 
     ESP_RETURN_ON_ERROR(
         draw_location(), TAG, "Failed to draw location");
-
 
     ESP_RETURN_ON_ERROR(
         graphics.draw_round_rect(60, 330, 290, 130, 30, WHITE_COLOR),

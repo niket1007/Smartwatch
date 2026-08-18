@@ -39,10 +39,7 @@ esp_err_t WIFIScreen::draw()
 
         int text_width = graphics.get_text_width(ssid.c_str(), freesans_40);
 
-        // The screen manager clears the area
-        // Therefore the center of the drawable area half of that
         const int TEXT_AREA_CENTER_X = screen_manager.get_reset_screen_mid();
-
         int x = TEXT_AREA_CENTER_X - (text_width / 2);
 
         ESP_LOGI(TAG, "Text Width: %d, X: %d", text_width, x);

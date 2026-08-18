@@ -75,7 +75,10 @@ esp_err_t MenuScreenPage2::identify_tap()
     }
     else if (icon_containers[1].contains(tap_x, tap_y))
     {
-        ESP_LOGI(TAG, "Music clicked");
+        // Music Screen Id = 9
+        ESP_RETURN_ON_ERROR(
+            screen_manager.change_screen(9),
+            TAG, "Failed to switch to Music screen");
     }
     else if (icon_containers[2].contains(tap_x, tap_y))
     {

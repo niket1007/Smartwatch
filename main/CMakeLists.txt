@@ -2,6 +2,11 @@
 # Source directories
 #------------------------------------------------------------------------------
 
+set(COM_DIR ./Common)
+file(GLOB_RECURSE COM_SRCS
+    ${COM_DIR}/*.cpp
+)
+
 set(DISPLAY_DIR ./Display)
 file(GLOB_RECURSE DISPLAY_SRCS
     ${DISPLAY_DIR}/*.cpp
@@ -66,7 +71,7 @@ file(GLOB_RECURSE PS_SRCS
 idf_component_register(
     SRCS 
         "main.cpp"
-        "Common/globals.cpp"
+        ${COM_SRCS}
         ${DISPLAY_SRCS}
         ${GRAPHICS_SRCS}
         ${SCREEN_SRCS}
@@ -81,8 +86,8 @@ idf_component_register(
 
     INCLUDE_DIRS 
         "."
+        ${COM_DIR}
         ${DISPLAY_DIR}
-        "Common"
         ${GRAPHICS_DIR}
         ${SCREEN_DIR}
         ${BATTERY_DIR}

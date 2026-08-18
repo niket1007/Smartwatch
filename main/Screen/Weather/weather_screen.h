@@ -7,29 +7,19 @@
 #include "Screen/screen.h"
 #include "Graphics/Icons/generated/icon.h"
 #include "Graphics/Icons/generated/icon_globals.h"
-
-struct WeatherData
-{
-    int temp;
-    int rain;
-    int wind;
-    int current_code;
-    std::string text;
-    std::string loc;
-};
+#include "Common/Custom_Data/weather_data.h"
 
 class WeatherScreen : public Screen
 {
 private:
-    icon_t get_icon(std::string);
-    WeatherData old_weather_data = {
-        0, 0, 0, 100, "Weather", "Location"};
+    bool toggle_rain_wind = true;
 
+    icon_t get_icon(std::string);
+    // WeatherData old_weather_data = {
+    //     0, 0, 0, 100, "Weather", "Location"};
     esp_err_t draw_rain_block();
     esp_err_t draw_wind_block();
     esp_err_t reset_rain_wind_block();
-    bool toggle_rain_wind = true;
-
     esp_err_t draw_temperature();
     esp_err_t draw_condition();
     esp_err_t draw_location();

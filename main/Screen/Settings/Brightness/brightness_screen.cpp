@@ -64,8 +64,7 @@ esp_err_t BrightnessScreen::draw_brightness_text()
     std::string percent_str = std::to_string(current_brightness) + "%";
 
     int text_width = graphics.get_text_width(percent_str.c_str(), freesans_50);
-    // The screen manager clears the area
-    // Therefore the center of the drawable area half of that
+
     const int TEXT_AREA_CENTER_X = screen_manager.get_reset_screen_mid();
     int x = TEXT_AREA_CENTER_X - (text_width / 2);
 

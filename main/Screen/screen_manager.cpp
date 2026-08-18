@@ -2,23 +2,6 @@
 #include "Common/globals.h"
 #include "Common/constants.h"
 
-#include "Home/home_screen.h"
-#include "Menu/Page_1/menu_screen_page_1.h"
-#include "Menu/Page_2/menu_screen_page_2.h"
-#include "Notification/notification_screen.h"
-#include "Weather/weather_screen.h"
-#include "Screen/Info/info_screen.h"
-
-#include "Screen/Notification/Notif_Type_Screens/notif_call_screen.h"
-#include "Screen/Notification/Notif_Type_Screens/notif_message_screen.h"
-#include "Screen/Notification/Notif_Type_Screens/notif_other_screen.h"
-#include "Screen/Notification/Ble_Type_Screens/passkey_screen.h"
-
-#include "Screen/Settings/settings_screen.h"
-#include "Screen/Settings/Brightness/brightness_screen.h"
-#include "Screen/Settings/Bluetooth/bluetooth_screen.h"
-#include "Screen/Settings/WiFi/wifi_screen.h"
-
 static constexpr char *TAG = "SCREEN_MANAGER";
 
 esp_err_t ScreenManager::init()
@@ -68,7 +51,9 @@ Screen *ScreenManager::get_screen_instance_(int screen_id)
     //case 6: Calendar
     //case 7: Navigation
     //case 8: Alarm
-    //case 9: Music
+    case 9: 
+        return new MusicScreen();
+        break;
     case 10:
         return new SettingsScreen();
         break;
