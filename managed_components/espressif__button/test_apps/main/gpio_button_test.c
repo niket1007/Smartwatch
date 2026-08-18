@@ -14,25 +14,22 @@
 
 static const char *TAG = "GPIO BUTTON TEST";
 
-#define BUTTON_IO_NUM 0
-#define BUTTON_ACTIVE_LEVEL 0
+#define BUTTON_IO_NUM  0
+#define BUTTON_ACTIVE_LEVEL   0
 
 static void button_event_cb(void *arg, void *data)
 {
     button_event_t event = iot_button_get_event(arg);
     ESP_LOGI(TAG, "%s", iot_button_get_event_str(event));
-    if (BUTTON_PRESS_REPEAT == event || BUTTON_PRESS_REPEAT_DONE == event)
-    {
+    if (BUTTON_PRESS_REPEAT == event || BUTTON_PRESS_REPEAT_DONE == event) {
         ESP_LOGI(TAG, "\tREPEAT[%d]", iot_button_get_repeat(arg));
     }
 
-    if (BUTTON_PRESS_UP == event || BUTTON_LONG_PRESS_HOLD == event || BUTTON_LONG_PRESS_UP == event)
-    {
-        ESP_LOGI(TAG, "\tPressed Time[%" PRIu32 "]", iot_button_get_pressed_time(arg));
+    if (BUTTON_PRESS_UP == event || BUTTON_LONG_PRESS_HOLD == event || BUTTON_LONG_PRESS_UP == event) {
+        ESP_LOGI(TAG, "\tPressed Time[%"PRIu32"]", iot_button_get_pressed_time(arg));
     }
 
-    if (BUTTON_MULTIPLE_CLICK == event)
-    {
+    if (BUTTON_MULTIPLE_CLICK == event) {
         ESP_LOGI(TAG, "\tMULTIPLE[%d]", (int)data);
     }
 }
@@ -74,8 +71,7 @@ TEST_CASE("gpio button test", "[button][gpio]")
     level = iot_button_get_key_level(btn);
     ESP_LOGI(TAG, "button level is %d", level);
 
-    while (1)
-    {
+    while (1) {
         vTaskDelay(pdMS_TO_TICKS(1000));
     }
 
@@ -99,11 +95,9 @@ TEST_CASE("gpio button get event test", "[button][gpio][event test]")
     level = iot_button_get_key_level(btn);
     ESP_LOGI(TAG, "button level is %d", level);
 
-    while (1)
-    {
+    while (1) {
         button_event_t event = iot_button_get_event(btn);
-        if (event != BUTTON_NONE_PRESS)
-        {
+        if (event != BUTTON_NONE_PRESS) {
             ESP_LOGI(TAG, "event is %s", iot_button_get_event_str(event));
         }
         vTaskDelay(pdMS_TO_TICKS(1));
@@ -147,8 +141,7 @@ TEST_CASE("gpio button test power save", "[button][gpio][power save]")
     iot_button_register_cb(btn, BUTTON_LONG_PRESS_UP, NULL, button_event_cb, NULL);
     iot_button_register_cb(btn, BUTTON_PRESS_END, NULL, button_event_cb, NULL);
 
-    while (1)
-    {
+    while (1) {
         vTaskDelay(pdMS_TO_TICKS(1000));
     }
 

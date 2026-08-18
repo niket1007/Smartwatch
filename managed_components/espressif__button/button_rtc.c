@@ -18,8 +18,7 @@
 
 static const char *TAG = "rtc_button";
 
-typedef struct
-{
+typedef struct {
     button_driver_t base;
     int32_t gpio_num;
     uint8_t active_level;
@@ -31,8 +30,7 @@ static esp_err_t button_rtc_enable_wakeup(uint32_t gpio_num, uint8_t active_leve
 static esp_err_t button_rtc_set_wakeup_sources(uint32_t gpio_num, uint8_t active_level, bool enable)
 {
     esp_err_t ret;
-    if (enable)
-    {
+    if (enable) {
 #if CONFIG_PM_POWER_DOWN_PERIPHERAL_IN_LIGHT_SLEEP
 #if SOC_PM_SUPPORT_EXT1_WAKEUP
         ret = esp_sleep_enable_ext1_wakeup_io((1ULL << gpio_num),
@@ -43,9 +41,7 @@ static esp_err_t button_rtc_set_wakeup_sources(uint32_t gpio_num, uint8_t active
 #endif
 #endif
         ret = rtc_gpio_wakeup_enable(gpio_num, active_level == 0 ? GPIO_INTR_LOW_LEVEL : GPIO_INTR_HIGH_LEVEL);
-    }
-    else
-    {
+    } else {
 #if CONFIG_PM_POWER_DOWN_PERIPHERAL_IN_LIGHT_SLEEP
 #if SOC_PM_SUPPORT_EXT1_WAKEUP
         esp_sleep_disable_ext1_wakeup_io(1ULL << gpio_num);
@@ -59,8 +55,7 @@ static esp_err_t button_rtc_set_wakeup_sources(uint32_t gpio_num, uint8_t active
 static esp_err_t button_rtc_del(button_driver_t *button_driver)
 {
     button_rtc_obj *rtc_btn = __containerof(button_driver, button_rtc_obj, base);
-    if (rtc_btn->enable_power_save)
-    {
+    if (rtc_btn->enable_power_save) {
         button_rtc_enable_wakeup(rtc_btn->gpio_num, rtc_btn->active_level, false);
         gpio_isr_handler_remove(rtc_btn->gpio_num);
 #if CONFIG_PM_POWER_DOWN_PERIPHERAL_IN_LIGHT_SLEEP
@@ -82,16 +77,12 @@ static uint8_t button_rtc_get_key_level(button_driver_t *button_driver)
 static esp_err_t button_rtc_enable_wakeup(uint32_t gpio_num, uint8_t active_level, bool enable)
 {
     esp_err_t ret = button_rtc_set_wakeup_sources(gpio_num, active_level, enable);
-    if (ret != ESP_OK)
-    {
+    if (ret != ESP_OK) {
         return ret;
     }
-    if (enable)
-    {
+    if (enable) {
         gpio_intr_enable(gpio_num);
-    }
-    else
-    {
+    } else {
         gpio_intr_disable(gpio_num);
     }
     return ESP_OK;
@@ -112,8 +103,7 @@ static esp_err_t button_rtc_exit_power_save(button_driver_t *button_driver)
 static esp_err_t gpio_isr_service_ensure_installed(void)
 {
     esp_err_t ret = gpio_install_isr_service(ESP_INTR_FLAG_IRAM);
-    if (ret == ESP_OK || ret == ESP_ERR_INVALID_STATE)
-    {
+    if (ret == ESP_OK || ret == ESP_ERR_INVALID_STATE) {
         return ESP_OK;
     }
     return ret;
@@ -160,22 +150,17 @@ esp_err_t iot_button_new_rtc_device(const button_config_t *button_config, const 
     ret = rtc_gpio_set_direction(rtc_cfg->gpio_num, RTC_GPIO_MODE_INPUT_ONLY);
     ESP_GOTO_ON_FALSE(ret == ESP_OK, ret, err, TAG, "RTC GPIO set direction failed");
 
-    if (!rtc_cfg->disable_pull)
-    {
-        if (rtc_cfg->active_level)
-        {
+    if (!rtc_cfg->disable_pull) {
+        if (rtc_cfg->active_level) {
             ESP_GOTO_ON_FALSE(rtc_gpio_pulldown_en(rtc_cfg->gpio_num) == ESP_OK, ESP_FAIL, err, TAG, "RTC pulldown enable failed");
             rtc_gpio_pullup_dis(rtc_cfg->gpio_num);
-        }
-        else
-        {
+        } else {
             ESP_GOTO_ON_FALSE(rtc_gpio_pullup_en(rtc_cfg->gpio_num) == ESP_OK, ESP_FAIL, err, TAG, "RTC pullup enable failed");
             rtc_gpio_pulldown_dis(rtc_cfg->gpio_num);
         }
     }
 
-    if (rtc_cfg->enable_power_save)
-    {
+    if (rtc_cfg->enable_power_save) {
 #if CONFIG_PM_POWER_DOWN_PERIPHERAL_IN_LIGHT_SLEEP
         rtc_gpio_hold_en(rtc_cfg->gpio_num);
 #endif
@@ -198,8 +183,7 @@ esp_err_t iot_button_new_rtc_device(const button_config_t *button_config, const 
     ret = iot_button_create(button_config, &rtc_btn->base, ret_button);
     ESP_GOTO_ON_FALSE(ret == ESP_OK, ESP_FAIL, err, TAG, "Create button failed");
 
-    if (rtc_cfg->enable_power_save)
-    {
+    if (rtc_cfg->enable_power_save) {
         ret = button_rtc_set_intr(rtc_btn->gpio_num,
                                   rtc_cfg->active_level == 0 ? GPIO_INTR_LOW_LEVEL : GPIO_INTR_HIGH_LEVEL,
                                   button_power_save_isr_handler);
@@ -207,15 +191,11 @@ esp_err_t iot_button_new_rtc_device(const button_config_t *button_config, const 
     }
     return ESP_OK;
 err:
-    if (ret_button && *ret_button)
-    {
+    if (ret_button && *ret_button) {
         iot_button_delete(*ret_button);
         *ret_button = NULL;
-    }
-    else if (rtc_btn)
-    {
-        if (rtc_cfg && rtc_cfg->enable_power_save)
-        {
+    } else if (rtc_btn) {
+        if (rtc_cfg && rtc_cfg->enable_power_save) {
             button_rtc_set_wakeup_sources(rtc_btn->gpio_num, rtc_btn->active_level, false);
 #if CONFIG_PM_POWER_DOWN_PERIPHERAL_IN_LIGHT_SLEEP
             rtc_gpio_hold_dis(rtc_btn->gpio_num);

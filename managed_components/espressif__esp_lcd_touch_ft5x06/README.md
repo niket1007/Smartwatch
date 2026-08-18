@@ -1,18 +1,17 @@
 # ESP LCD Touch FT5x06 Controller
 
-Implementation of the FT5x06 touch controller with esp_lcd_touch component.
+Implementation of the FT5x06 touch controller with esp_lcd_touch component. 
 
-| Touch controller | Communication interface |    Component name    |                              Link to datasheet                               |
-| :--------------: | :---------------------: | :------------------: | :--------------------------------------------------------------------------: |
-|      FT5x06      |     I2C (SPI [^1])      | esp_lcd_touch_ft5x06 | [PDF](https://www.displayfuture.com/Display/datasheet/controller/FT5x06.pdf) |
+| Touch controller | Communication interface | Component name | Link to datasheet |
+| :--------------: | :---------------------: | :------------: | :---------------: |
+| FT5x06           | I2C (SPI [^1])               | esp_lcd_touch_ft5x06 | [PDF](https://www.displayfuture.com/Display/datasheet/controller/FT5x06.pdf) |
 
 [^1]: **NOTE:** This controller should work via I2C or SPI communication interface. But it was tested on HW only via I2C communication interface.
 
 ## Add to project
 
 Packages from this repository are uploaded to [Espressif's component service](https://components.espressif.com/).
-You can add them to your project via `idf.py add-dependancy`, e.g.
-
+You can add them to your project via `idf.py add-dependancy`, e.g. 
 ```
     idf.py add-dependency esp_lcd_touch_ft5x06==1.0.0
 ```
@@ -41,7 +40,7 @@ I2C initialization of the touch component.
             .mirror_y = 0,
         },
     };
-
+    
     esp_lcd_touch_handle_t tp;
     esp_lcd_touch_new_i2c_ft5x06(io_handle, &tp_cfg, &tp);
 ```

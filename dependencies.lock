@@ -70,6 +70,6 @@ direct_dependencies:
 - espressif/esp_lcd_touch_ft5x06
 - idf
 - waveshare/esp_lcd_sh8601
-manifest_hash: 3f6833ad6802cfabe041c0a589344e5e25c00ac7c633b4b17d64c7f018a8e048
+manifest_hash: 3a13d623ed8cb09f71c0f8f643fe0b8b4cc2cccf89820e4b8e549edeff7961b5
 target: esp32s3
 version: 2.0.0
