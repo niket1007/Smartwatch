@@ -11,6 +11,7 @@
 #include "Weather/weather_screen.h"
 #include "Screen/Info/info_screen.h"
 #include "Screen/Music/music_screen.h"
+#include "Screen/Navigation/nav_screen.h"
 
 #include "Screen/Notification/Notif_Type_Screens/notif_call_screen.h"
 #include "Screen/Notification/Notif_Type_Screens/notif_message_screen.h"
@@ -47,6 +48,7 @@ public:
     esp_err_t draw();
     esp_err_t reset();
     int get_reset_screen_mid();
+    int get_reset_screen_width();
     esp_err_t change_screen(int new_screen_id);
     esp_err_t handle_events(uint32_t events);
 };

@@ -5,7 +5,6 @@
 #include "esp_err.h"
 #include "esp_log.h"
 #include "Screen/screen.h"
-#include "Screen/rect.h"
 #include "Graphics/Icons/generated/icon.h"
 #include "Graphics/Icons/generated/icon_globals.h"
 

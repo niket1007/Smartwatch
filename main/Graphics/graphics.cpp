@@ -746,16 +746,28 @@ int Graphics::get_text_width(
         return 0;
     }
 
-    int width = 0;
+    int max_width = 0;
+    int current_width = 0;
 
     while (*text)
     {
         char c = *text++;
 
-        // This function is intended for a single line
         if (c == '\r' || c == '\n')
         {
-            return 0;
+            if (current_width > max_width)
+            {
+                max_width = current_width;
+            }
+
+            current_width = 0;
+
+            if (c == '\r' && *text == '\n')
+            {
+                ++text;
+            }
+
+            continue;
         }
 
         uint32_t codepoint = static_cast<uint8_t>(c);
@@ -769,8 +781,13 @@ int Graphics::get_text_width(
         const glyph_t *glyph =
             &font.glyphs[(codepoint - font.first_char) + 1];
 
-        width += glyph->advance;
+        current_width += glyph->advance;
     }
 
-    return width;
+    if (current_width > max_width)
+    {
+        max_width = current_width;
+    }
+
+    return max_width;
 }

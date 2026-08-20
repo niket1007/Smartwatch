@@ -87,6 +87,13 @@ esp_err_t MenuScreenPage1::identify_tap()
     {
         ESP_LOGI(TAG, "Calendar clicked");
     }
+    else if(icon_containers[3].contains(tap_x, tap_y))
+    {
+        // Navigation Screen Id = 7
+        ESP_RETURN_ON_ERROR(
+            screen_manager.change_screen(7),
+            TAG, "Failed to switch to Navigation screen");
+    }
     return ESP_OK;
 }
 

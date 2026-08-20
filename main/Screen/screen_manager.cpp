@@ -49,7 +49,9 @@ Screen *ScreenManager::get_screen_instance_(int screen_id)
         return new WeatherScreen();
         break;
     //case 6: Calendar
-    //case 7: Navigation
+    case 7:
+        return new NavScreen();
+        break;
     //case 8: Alarm
     case 9: 
         return new MusicScreen();
@@ -97,6 +99,11 @@ esp_err_t ScreenManager::reset()
 int ScreenManager::get_reset_screen_mid()
 {
     return (reset_screen_width / 2) + reset_screen_x;
+}
+
+int ScreenManager::get_reset_screen_width()
+{
+    return reset_screen_width;
 }
 
 esp_err_t ScreenManager::change_screen(int new_screen_id)

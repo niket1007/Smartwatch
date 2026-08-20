@@ -185,6 +185,7 @@ esp_err_t DisplayDriver::draw(
 
 esp_err_t DisplayDriver::sleep()
 {
+    ESP_LOGI(TAG, "Sleep func called; is_sleep: %d", is_sleep);
     if (is_sleep)
     {
         return ESP_OK;
@@ -209,6 +210,7 @@ esp_err_t DisplayDriver::sleep()
 
 esp_err_t DisplayDriver::wake()
 {
+    ESP_LOGI(TAG, "Wake func called; is_sleep: %d", is_sleep);
     if (!is_sleep)
     {
         return ESP_OK;
