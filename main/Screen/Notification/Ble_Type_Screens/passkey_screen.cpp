@@ -10,6 +10,16 @@ esp_err_t PassKeyScreen::on_enter()
 {
     ESP_LOGI(TAG, "on enter called");
 
+    if(display_driver.is_sleep)
+    {
+        int ret = display_driver.wake();
+        if(ret != ESP_OK)
+        {
+            ESP_LOGE(TAG, "Failed to wake screen up");
+        }
+        display_driver.reset_screen_timeout_timer();
+    }
+
     ESP_RETURN_ON_ERROR(
         draw(), TAG, "Failed to draw");
 
@@ -28,9 +38,10 @@ esp_err_t PassKeyScreen::draw()
         graphics.draw_icon(150, 150, &icon_passkey, WHITE_COLOR),
         TAG, "Failed to draw passkey icon");
     
-    
+    std::string passkey = std::to_string(bluetooth_manager.get_passkey());
     ESP_RETURN_ON_ERROR(
-        graphics.draw_text(120, 300, "000000", freesans_50, 0x07F0, BLACK_COLOR),
+        graphics.draw_text(
+            120, 300, passkey.c_str(), freesans_50, WHITE_COLOR, BLACK_COLOR),
         TAG, "Failed to draw passkey text");
     
     return ESP_OK;

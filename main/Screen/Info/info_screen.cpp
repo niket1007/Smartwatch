@@ -25,53 +25,65 @@ esp_err_t InfoScreen::on_exit()
 
 esp_err_t InfoScreen::draw()
 {
-    {
-        ESP_RETURN_ON_ERROR(
-            graphics.draw_text(50, 100, "Code by:", freesans_30, WHITE_COLOR, BLACK_COLOR),
-            TAG, "Failed to draw text");
+    const int TEXT_AREA_CENTER_X = screen_manager.get_reset_screen_mid();
 
+    int text_width = 0;
+    int x = 0;
+    std::string content = "";
+
+    {   
+        content = "NSW";
+        text_width = graphics.get_text_width(content.c_str(), freesans_40);
+        x = TEXT_AREA_CENTER_X - (text_width / 2);
         ESP_RETURN_ON_ERROR(
-            graphics.draw_text(210, 100, "NAJ", freesans_30, WHITE_COLOR, BLACK_COLOR),
+            graphics.draw_text(
+                x, 80, content.c_str(), freesans_40, WHITE_COLOR, BLACK_COLOR),
+            TAG, "Failed to draw text");
+    }
+
+    {   
+        content = "Code by: NAJ";
+        text_width = graphics.get_text_width(content.c_str(), freesans_30);
+        x = TEXT_AREA_CENTER_X - (text_width / 2);
+        ESP_RETURN_ON_ERROR(
+            graphics.draw_text(
+                x, 140, content.c_str(), freesans_30, WHITE_COLOR, BLACK_COLOR),
             TAG, "Failed to draw text");
     }
 
     {
+        content = "Company: Waveshare";
+        text_width = graphics.get_text_width(content.c_str(), freesans_30);
+        x = TEXT_AREA_CENTER_X - (text_width / 2);
         ESP_RETURN_ON_ERROR(
-            graphics.draw_text(50, 170, "Company:", freesans_30, WHITE_COLOR, BLACK_COLOR),
-            TAG, "Failed to draw text");
-
-        ESP_RETURN_ON_ERROR(
-            graphics.draw_text(210, 170, "Waveshare", freesans_30, WHITE_COLOR, BLACK_COLOR),
-            TAG, "Failed to draw text");
-    }
-
-    {
-        ESP_RETURN_ON_ERROR(
-            graphics.draw_text(50, 240, "Screen:", freesans_30, WHITE_COLOR, BLACK_COLOR),
-            TAG, "Failed to draw text");
-
-        ESP_RETURN_ON_ERROR(
-            graphics.draw_text(210, 240, "Amoled", freesans_30, WHITE_COLOR, BLACK_COLOR),
+            graphics.draw_text(x, 210, content.c_str(), freesans_30, WHITE_COLOR, BLACK_COLOR),
             TAG, "Failed to draw text");
     }
 
     {
+        content = "Screen: Amoled";
+        text_width = graphics.get_text_width(content.c_str(), freesans_30);
+        x = TEXT_AREA_CENTER_X - (text_width / 2);
         ESP_RETURN_ON_ERROR(
-            graphics.draw_text(50, 310, "Screen Size:", freesans_30, WHITE_COLOR, BLACK_COLOR),
-            TAG, "Failed to draw text");
-
-        ESP_RETURN_ON_ERROR(
-            graphics.draw_text(230, 310, "2.06 inch", freesans_30, WHITE_COLOR, BLACK_COLOR),
+            graphics.draw_text(x, 280, content.c_str(), freesans_30, WHITE_COLOR, BLACK_COLOR),
             TAG, "Failed to draw text");
     }
 
     {
+        content = "Screen Size: 2.06 inch";
+        text_width = graphics.get_text_width(content.c_str(), freesans_30);
+        x = TEXT_AREA_CENTER_X - (text_width / 2);
         ESP_RETURN_ON_ERROR(
-            graphics.draw_text(50, 390, "Resolution:", freesans_30, WHITE_COLOR, BLACK_COLOR),
+            graphics.draw_text(x, 350, content.c_str(), freesans_30, WHITE_COLOR, BLACK_COLOR),
             TAG, "Failed to draw text");
+    }
 
+    {
+        content = "Resolution: 402 X 510";
+        text_width = graphics.get_text_width(content.c_str(), freesans_30);
+        x = TEXT_AREA_CENTER_X - (text_width / 2);
         ESP_RETURN_ON_ERROR(
-            graphics.draw_text(210, 390, "402 X 510", freesans_30, WHITE_COLOR, BLACK_COLOR),
+            graphics.draw_text(x, 420, content.c_str(), freesans_30, WHITE_COLOR, BLACK_COLOR),
             TAG, "Failed to draw text");
     }
 
