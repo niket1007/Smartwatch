@@ -12,13 +12,14 @@
 class MenuScreenPage2 : public Screen
 {
 private:
-    static constexpr Rect icon_containers[3] = {
-        {60, 90, 300, 100},  // Alarm
-        {60, 210, 300, 100}, // Navigation
-        {60, 330, 300, 100}  // Music
+    static constexpr Rect icon_containers[4] = {
+        {50, 90, 115, 115},     // Alarm
+        {240, 90, 115, 115},   // Music
+        {50, 300, 115, 115},  // Settings
+        {240, 300, 115, 115} // Info
     };
 
-    void identify_tap();
+    esp_err_t identify_tap();
 
 public:
     esp_err_t on_enter() override;

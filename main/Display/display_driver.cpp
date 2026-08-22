@@ -16,7 +16,7 @@ static const sh8601_lcd_init_cmd_t lcd_init_cmds[] = {
     {0x51, (uint8_t[]){0xFF}, 1, 0},
 };
 
-static const char *TAG = "Display_Driver";
+static constexpr const char *TAG = "Display_Driver";
 
 IRAM_ATTR static bool on_color_trans_done_cb(esp_lcd_panel_io_handle_t panel_io, esp_lcd_panel_io_event_data_t *edata, void *user_ctx)
 {
@@ -185,6 +185,7 @@ esp_err_t DisplayDriver::draw(
 
 esp_err_t DisplayDriver::sleep()
 {
+    ESP_LOGI(TAG, "Sleep func called; is_sleep: %d", is_sleep);
     if (is_sleep)
     {
         return ESP_OK;
@@ -209,6 +210,7 @@ esp_err_t DisplayDriver::sleep()
 
 esp_err_t DisplayDriver::wake()
 {
+    ESP_LOGI(TAG, "Wake func called; is_sleep: %d", is_sleep);
     if (!is_sleep)
     {
         return ESP_OK;
@@ -224,8 +226,9 @@ esp_err_t DisplayDriver::wake()
         esp_lcd_panel_disp_off(panel_handle_, false),
         TAG, "Failed display on");
 
+    uint32_t brightness = power_saver_manager.get_brightness_percentage();
     ESP_RETURN_ON_ERROR(
-        set_brightness(70), TAG, "Failed to set brightness to 70%%");
+        set_brightness(brightness), TAG, "Failed to set brightness");
 
     is_sleep = false;
 

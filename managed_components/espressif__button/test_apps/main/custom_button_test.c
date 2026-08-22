@@ -14,34 +14,30 @@
 
 static const char *TAG = "CUSTOM BUTTON TEST";
 
-#define BUTTON_IO_NUM 0
-#define BUTTON_ACTIVE_LEVEL 0
+#define BUTTON_IO_NUM  0
+#define BUTTON_ACTIVE_LEVEL   0
 
 static void button_event_cb(void *arg, void *data)
 {
     button_event_t event = iot_button_get_event(arg);
     ESP_LOGI(TAG, "%s", iot_button_get_event_str(event));
-    if (BUTTON_PRESS_REPEAT == event || BUTTON_PRESS_REPEAT_DONE == event)
-    {
+    if (BUTTON_PRESS_REPEAT == event || BUTTON_PRESS_REPEAT_DONE == event) {
         ESP_LOGI(TAG, "\tREPEAT[%d]", iot_button_get_repeat(arg));
     }
 
-    if (BUTTON_PRESS_UP == event || BUTTON_LONG_PRESS_HOLD == event || BUTTON_LONG_PRESS_UP == event)
-    {
-        ESP_LOGI(TAG, "\tPressed Time[%" PRIu32 "]", iot_button_get_pressed_time(arg));
+    if (BUTTON_PRESS_UP == event || BUTTON_LONG_PRESS_HOLD == event || BUTTON_LONG_PRESS_UP == event) {
+        ESP_LOGI(TAG, "\tPressed Time[%"PRIu32"]", iot_button_get_pressed_time(arg));
     }
 
-    if (BUTTON_MULTIPLE_CLICK == event)
-    {
+    if (BUTTON_MULTIPLE_CLICK == event) {
         ESP_LOGI(TAG, "\tMULTIPLE[%d]", (int)data);
     }
 }
 
-typedef struct
-{
+typedef struct {
     button_driver_t base;
-    int32_t gpio_num;     /**< num of gpio */
-    uint8_t active_level; /**< gpio level when press down */
+    int32_t gpio_num;              /**< num of gpio */
+    uint8_t active_level;          /**< gpio level when press down */
 } custom_gpio_obj;
 
 static uint8_t button_get_key_level(button_driver_t *button_driver)
@@ -60,10 +56,10 @@ TEST_CASE("custom button test", "[button][custom]")
 {
     gpio_config_t gpio_conf = {
         .pin_bit_mask = 1ULL << BUTTON_IO_NUM,
-        .mode = GPIO_MODE_INPUT,
-        .pull_up_en = 1,
-        .pull_down_en = 0,
-        .intr_type = GPIO_INTR_DISABLE,
+                             .mode = GPIO_MODE_INPUT,
+                             .pull_up_en = 1,
+                             .pull_down_en = 0,
+                             .intr_type = GPIO_INTR_DISABLE,
     };
     gpio_config(&gpio_conf);
 
@@ -100,8 +96,7 @@ TEST_CASE("custom button test", "[button][custom]")
     iot_button_register_cb(btn, BUTTON_LONG_PRESS_UP, NULL, button_event_cb, NULL);
     iot_button_register_cb(btn, BUTTON_PRESS_END, NULL, button_event_cb, NULL);
 
-    while (1)
-    {
+    while (1) {
         vTaskDelay(pdMS_TO_TICKS(1000));
     }
 

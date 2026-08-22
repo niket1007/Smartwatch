@@ -29,47 +29,42 @@ esp_err_t MenuScreenPage2::draw()
             graphics.draw_round_rect(
                 container.x1, container.y1,
                 container.width, container.height,
-                30, WHITE_COLOR),
+                30, WHITE_COLOR, 4U),
             TAG, "Failed to draw container box");
     }
 
     // Alarm Container Content
     {
         ESP_RETURN_ON_ERROR(
-            graphics.draw_icon(75, 100, &icon_alarm, WHITE_COLOR),
+            graphics.draw_icon(60, 95, &icon_alarm, WHITE_COLOR),
             TAG, "Failed to draw alarm icon");
-
-        ESP_RETURN_ON_ERROR(
-            graphics.draw_text(160, 160, "Alarm", freesans_40, WHITE_COLOR, BLACK_COLOR),
-            TAG, "Failed to draw alarm text");
-    }
-
-    // Navigation Container Content
-    {
-        ESP_RETURN_ON_ERROR(
-            graphics.draw_icon(70, 220, &icon_nav_default, WHITE_COLOR),
-            TAG, "Failed to draw navigation icon");
-
-        ESP_RETURN_ON_ERROR(
-            graphics.draw_text(160, 280, "Navigation", freesans_40, WHITE_COLOR, BLACK_COLOR),
-            TAG, "Failed to draw navigation text");
     }
 
     // Music Container Content
     {
         ESP_RETURN_ON_ERROR(
-            graphics.draw_icon(75, 340, &icon_music, WHITE_COLOR),
+            graphics.draw_icon(250, 95, &icon_music, WHITE_COLOR),
             TAG, "Failed to draw music icon");
+    }
 
+    // Settings Container Content
+    {
         ESP_RETURN_ON_ERROR(
-            graphics.draw_text(160, 400, "Music", freesans_40, WHITE_COLOR, BLACK_COLOR),
-            TAG, "Failed to draw music text");
+            graphics.draw_icon(60, 305, &icon_settings, WHITE_COLOR),
+            TAG, "Failed to draw setting icon");
+    }
+
+    // Info Container Content
+    {
+        ESP_RETURN_ON_ERROR(
+            graphics.draw_icon(250, 305, &icon_information, WHITE_COLOR),
+            TAG, "Failed to draw info icon");
     }
 
     return ESP_OK;
 }
 
-void MenuScreenPage2::identify_tap()
+esp_err_t MenuScreenPage2::identify_tap()
 {
     uint16_t tap_x = touch_manager.get_single_tap_x();
     uint16_t tap_y = touch_manager.get_single_tap_y();
@@ -77,15 +72,33 @@ void MenuScreenPage2::identify_tap()
     if (icon_containers[0].contains(tap_x, tap_y))
     {
         ESP_LOGI(TAG, "Alarm clicked");
+        // Test
+        ESP_RETURN_ON_ERROR(
+            screen_manager.change_screen(13),
+            TAG, "Failed to switch to Call screen");
     }
     else if (icon_containers[1].contains(tap_x, tap_y))
     {
-        ESP_LOGI(TAG, "Navigation clicked");
+        // Music Screen Id = 9
+        ESP_RETURN_ON_ERROR(
+            screen_manager.change_screen(9),
+            TAG, "Failed to switch to Music screen");
     }
     else if (icon_containers[2].contains(tap_x, tap_y))
     {
-        ESP_LOGI(TAG, "Music clicked");
+        // Settings Screen Id = 10
+        ESP_RETURN_ON_ERROR(
+            screen_manager.change_screen(10),
+            TAG, "Failed to switch to Settings screen");
     }
+    else if (icon_containers[3].contains(tap_x, tap_y))
+    {
+        // Info Screen Id = 11
+        ESP_RETURN_ON_ERROR(
+            screen_manager.change_screen(11),
+            TAG, "Failed to switch to Info screen");
+    }
+    return ESP_OK;
 }
 
 esp_err_t MenuScreenPage2::handle_events(uint32_t events)
@@ -93,7 +106,7 @@ esp_err_t MenuScreenPage2::handle_events(uint32_t events)
     ESP_LOGI(TAG, "handle_events called");
     if (events & SINGLE_TAP_EVENT)
     {
-        identify_tap();
+        return identify_tap();
     }
     return ESP_OK;
 }

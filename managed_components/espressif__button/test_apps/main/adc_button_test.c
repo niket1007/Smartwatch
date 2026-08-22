@@ -23,18 +23,15 @@ static void button_event_cb(void *arg, void *data)
 {
     button_event_t event = iot_button_get_event(arg);
     ESP_LOGI(TAG, "BTN[%d] %s", (int)data, iot_button_get_event_str(event));
-    if (BUTTON_PRESS_REPEAT == event || BUTTON_PRESS_REPEAT_DONE == event)
-    {
+    if (BUTTON_PRESS_REPEAT == event || BUTTON_PRESS_REPEAT_DONE == event) {
         ESP_LOGI(TAG, "\tREPEAT[%d]", iot_button_get_repeat(arg));
     }
 
-    if (BUTTON_PRESS_UP == event || BUTTON_LONG_PRESS_HOLD == event || BUTTON_LONG_PRESS_UP == event)
-    {
-        ESP_LOGI(TAG, "\tPressed Time[%" PRIu32 "]", iot_button_get_pressed_time(arg));
+    if (BUTTON_PRESS_UP == event || BUTTON_LONG_PRESS_HOLD == event || BUTTON_LONG_PRESS_UP == event) {
+        ESP_LOGI(TAG, "\tPressed Time[%"PRIu32"]", iot_button_get_pressed_time(arg));
     }
 
-    if (BUTTON_MULTIPLE_CLICK == event)
-    {
+    if (BUTTON_MULTIPLE_CLICK == event) {
         ESP_LOGI(TAG, "\tMULTIPLE[%d]", (int)data);
     }
 }
@@ -51,24 +48,17 @@ TEST_CASE("adc button test", "[button][adc]")
     button_handle_t btns[6] = {NULL};
 
     const uint16_t vol[6] = {380, 820, 1180, 1570, 1980, 2410};
-    for (size_t i = 0; i < 6; i++)
-    {
+    for (size_t i = 0; i < 6; i++) {
         btn_adc_cfg.button_index = i;
-        if (i == 0)
-        {
+        if (i == 0) {
             btn_adc_cfg.min = (0 + vol[i]) / 2;
-        }
-        else
-        {
+        } else {
             btn_adc_cfg.min = (vol[i - 1] + vol[i]) / 2;
         }
 
-        if (i == 5)
-        {
+        if (i == 5) {
             btn_adc_cfg.max = (vol[i] + 3000) / 2;
-        }
-        else
-        {
+        } else {
             btn_adc_cfg.max = (vol[i] + vol[i + 1]) / 2;
         }
 
@@ -87,13 +77,11 @@ TEST_CASE("adc button test", "[button][adc]")
         iot_button_register_cb(btns[i], BUTTON_PRESS_END, NULL, button_event_cb, (void *)i);
     }
 
-    while (1)
-    {
+    while (1) {
         vTaskDelay(pdMS_TO_TICKS(1000));
     }
 
-    for (size_t i = 0; i < 6; i++)
-    {
+    for (size_t i = 0; i < 6; i++) {
         iot_button_delete(btns[i]);
     }
 }
@@ -110,24 +98,17 @@ TEST_CASE("adc button test memory leak", "[button][adc][memory leak]")
     button_handle_t btns[6] = {NULL};
 
     const uint16_t vol[6] = {380, 820, 1180, 1570, 1980, 2410};
-    for (size_t i = 0; i < 6; i++)
-    {
+    for (size_t i = 0; i < 6; i++) {
         btn_adc_cfg.button_index = i;
-        if (i == 0)
-        {
+        if (i == 0) {
             btn_adc_cfg.min = (0 + vol[i]) / 2;
-        }
-        else
-        {
+        } else {
             btn_adc_cfg.min = (vol[i - 1] + vol[i]) / 2;
         }
 
-        if (i == 5)
-        {
+        if (i == 5) {
             btn_adc_cfg.max = (vol[i] + 3000) / 2;
-        }
-        else
-        {
+        } else {
             btn_adc_cfg.max = (vol[i] + vol[i + 1]) / 2;
         }
 
@@ -147,8 +128,7 @@ TEST_CASE("adc button test memory leak", "[button][adc][memory leak]")
         iot_button_register_cb(btns[i], BUTTON_PRESS_END, NULL, button_event_cb, (void *)i);
     }
 
-    for (size_t i = 0; i < 6; i++)
-    {
+    for (size_t i = 0; i < 6; i++) {
         iot_button_delete(btns[i]);
     }
 }

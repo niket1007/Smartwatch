@@ -90,7 +90,7 @@ def convert(svg, out, size):
 def main():
     input = Path("../main/Graphics/Icons/svg")
     output = Path("../main/Graphics/Icons/generated")
-    size = 80
+    size = 100
     output.mkdir(parents=True, exist_ok=True)
     ensure_icon_header(output)
     svg_names = []

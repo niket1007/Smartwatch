@@ -73,11 +73,11 @@ esp_err_t HomeScreen::draw_battery_icon()
     {
         old_icon = icon;
         ESP_RETURN_ON_ERROR(
-            graphics.fill_rect(80, 360, 80, 80, BLACK_COLOR),
+            graphics.fill_rect(80, 360, 100, 80, BLACK_COLOR),
             TAG, "Failed to re-draw battery symbol rect");
 
         ESP_RETURN_ON_ERROR(
-            graphics.draw_icon(80, 360, &icon, is_charging ? GREEN_COLOR : WHITE_COLOR),
+            graphics.draw_icon(80, 350, &icon, is_charging ? GREEN_COLOR : WHITE_COLOR),
             TAG, "Failed to re-draw battery symbol");
     }
     return ESP_OK;
@@ -134,6 +134,9 @@ esp_err_t HomeScreen::draw_datetime_labels()
     char time_str[16];
     char date_str[32];
     char day_str[16];
+    const int TEXT_AREA_CENTER_X = screen_manager.get_reset_screen_mid();
+    int text_width = 0; 
+    int x = 0;
 
     strftime(
         time_str, sizeof(time_str), "%I:%M %p", &timeinfo); // e.g., "09:46 PM"
@@ -147,24 +150,32 @@ esp_err_t HomeScreen::draw_datetime_labels()
     if (std::strcmp(old_day_str, day_str) != 0)
     {
         std::strncpy(old_day_str, day_str, sizeof(old_day_str) - 1);
+
+        text_width = graphics.get_text_width(day_str, freesans_40);
+        x = TEXT_AREA_CENTER_X - (text_width / 2);
+
         ESP_RETURN_ON_ERROR(
-            graphics.fill_rect(105, 100, 200, 40, BLACK_COLOR),
+            graphics.fill_rect(x-10, 100, text_width+20, 40, BLACK_COLOR),
             TAG, "Failed to re-draw weekday rect");
 
         ESP_RETURN_ON_ERROR(
-            graphics.draw_text(125, 130, day_str, freesans_40, WHITE_COLOR, BLACK_COLOR),
+            graphics.draw_text(x, 130, day_str, freesans_40, WHITE_COLOR, BLACK_COLOR),
             TAG, "Failed to re-draw weekday label");
     }
 
     if (std::strcmp(old_time_str, time_str) != 0)
     {
         std::strncpy(old_time_str, time_str, sizeof(old_time_str) - 1);
+
+        text_width = graphics.get_text_width(time_str, freesans_50);
+        x = TEXT_AREA_CENTER_X - (text_width / 2);
+
         ESP_RETURN_ON_ERROR(
-            graphics.fill_rect(95, 145, 230, 60, BLACK_COLOR),
+            graphics.fill_rect(x-10, 145, text_width+20, 60, BLACK_COLOR),
             TAG, "Failed to re-draw time rect");
 
         ESP_RETURN_ON_ERROR(
-            graphics.draw_text(105, 190, time_str, freesans_50, WHITE_COLOR, BLACK_COLOR),
+            graphics.draw_text(x, 190, time_str, freesans_50, WHITE_COLOR, BLACK_COLOR),
             TAG, "Failed to re-draw time label");
     }
 
@@ -172,12 +183,15 @@ esp_err_t HomeScreen::draw_datetime_labels()
     {
         std::strncpy(old_date_str, date_str, sizeof(old_date_str) - 1);
 
+        text_width = graphics.get_text_width(date_str, freesans_40);
+        x = TEXT_AREA_CENTER_X - (text_width / 2);
+
         ESP_RETURN_ON_ERROR(
-            graphics.fill_rect(90, 200, 240, 50, BLACK_COLOR),
+            graphics.fill_rect(x-10, 200, text_width+20, 50, BLACK_COLOR),
             TAG, "Failed to re-draw date rect");
 
         ESP_RETURN_ON_ERROR(
-            graphics.draw_text(100, 240, date_str, freesans_40, WHITE_COLOR, BLACK_COLOR),
+            graphics.draw_text(x, 240, date_str, freesans_40, WHITE_COLOR, BLACK_COLOR),
             TAG, "Failed to re-draw date label");
     }
 

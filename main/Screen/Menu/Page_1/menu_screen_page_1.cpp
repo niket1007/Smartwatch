@@ -29,41 +29,36 @@ esp_err_t MenuScreenPage1::draw()
             graphics.draw_round_rect(
                 container.x1, container.y1,
                 container.width, container.height,
-                30, WHITE_COLOR),
+                30, WHITE_COLOR, 4U),
             TAG, "Failed to draw container box");
     }
 
     // Notification Container Content
     {
         ESP_RETURN_ON_ERROR(
-            graphics.draw_icon(75, 100, &icon_notifications, WHITE_COLOR),
+            graphics.draw_icon(60, 95, &icon_notification, WHITE_COLOR),
             TAG, "Failed to draw notification icon");
-
-        ESP_RETURN_ON_ERROR(
-            graphics.draw_text(160, 160, "Notification", freesans_40, WHITE_COLOR, BLACK_COLOR),
-            TAG, "Failed to draw notification text");
     }
 
     // Weather Container Content
     {
         ESP_RETURN_ON_ERROR(
-            graphics.draw_icon(75, 220, &icon_weather, WHITE_COLOR),
+            graphics.draw_icon(250, 95, &icon_weather, WHITE_COLOR),
             TAG, "Failed to draw weather icon");
-
-        ESP_RETURN_ON_ERROR(
-            graphics.draw_text(180, 280, "Weather", freesans_40, WHITE_COLOR, BLACK_COLOR),
-            TAG, "Failed to draw weather text");
     }
 
     // Calendar Container Content
     {
         ESP_RETURN_ON_ERROR(
-            graphics.draw_icon(75, 340, &icon_calendar, WHITE_COLOR),
+            graphics.draw_icon(60, 305, &icon_calendar, WHITE_COLOR),
             TAG, "Failed to draw calendar icon");
+    }
 
+    // Navigation Container Content
+    {
         ESP_RETURN_ON_ERROR(
-            graphics.draw_text(180, 400, "Calendar", freesans_40, WHITE_COLOR, BLACK_COLOR),
-            TAG, "Failed to draw calendar text");
+            graphics.draw_icon(250, 305, &icon_navigation, WHITE_COLOR),
+            TAG, "Failed to draw navigation icon");
     }
 
     return ESP_OK;
@@ -91,6 +86,13 @@ esp_err_t MenuScreenPage1::identify_tap()
     else if (icon_containers[2].contains(tap_x, tap_y))
     {
         ESP_LOGI(TAG, "Calendar clicked");
+    }
+    else if(icon_containers[3].contains(tap_x, tap_y))
+    {
+        // Navigation Screen Id = 7
+        ESP_RETURN_ON_ERROR(
+            screen_manager.change_screen(7),
+            TAG, "Failed to switch to Navigation screen");
     }
     return ESP_OK;
 }

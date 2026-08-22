@@ -18,27 +18,24 @@
 static const char *TAG = "TP";
 
 /*******************************************************************************
- * Function definitions
- *******************************************************************************/
+* Function definitions
+*******************************************************************************/
 
 /*******************************************************************************
- * Local variables
- *******************************************************************************/
+* Local variables
+*******************************************************************************/
 
 /*******************************************************************************
- * Public API functions
- *******************************************************************************/
+* Public API functions
+*******************************************************************************/
 
 esp_err_t esp_lcd_touch_enter_sleep(esp_lcd_touch_handle_t tp)
 {
     ESP_RETURN_ON_FALSE(tp != NULL, ESP_ERR_INVALID_ARG, TAG, "Touch controller handle can't be NULL");
-    if (tp->enter_sleep == NULL)
-    {
+    if (tp->enter_sleep == NULL) {
         ESP_LOGE(TAG, "Sleep mode not supported!");
         return ESP_FAIL;
-    }
-    else
-    {
+    } else {
         return tp->enter_sleep(tp);
     }
 }
@@ -46,13 +43,10 @@ esp_err_t esp_lcd_touch_enter_sleep(esp_lcd_touch_handle_t tp)
 esp_err_t esp_lcd_touch_exit_sleep(esp_lcd_touch_handle_t tp)
 {
     ESP_RETURN_ON_FALSE(tp != NULL, ESP_ERR_INVALID_ARG, TAG, "Touch controller handle can't be NULL");
-    if (tp->exit_sleep == NULL)
-    {
+    if (tp->exit_sleep == NULL) {
         ESP_LOGE(TAG, "Sleep mode not supported!");
         return ESP_FAIL;
-    }
-    else
-    {
+    } else {
         return tp->exit_sleep(tp);
     }
 }
@@ -77,14 +71,12 @@ bool esp_lcd_touch_get_coordinates(esp_lcd_touch_handle_t tp, uint16_t *x, uint1
     ESP_RETURN_ON_FALSE(tp->get_xy != NULL, false, TAG, "Touch controller must be initialized");
 
     touched = tp->get_xy(tp, x, y, strength, point_num, max_point_num);
-    if (!touched)
-    {
+    if (!touched) {
         return false;
     }
 
     /* Process coordinates by user */
-    if (tp->config.process_coordinates != NULL)
-    {
+    if (tp->config.process_coordinates != NULL) {
         tp->config.process_coordinates(tp, x, y, strength, point_num, max_point_num);
     }
 
@@ -94,24 +86,20 @@ bool esp_lcd_touch_get_coordinates(esp_lcd_touch_handle_t tp, uint16_t *x, uint1
                           (tp->config.flags.swap_xy && (tp->set_swap_xy == NULL)));
 
     /* Adjust all coordinates */
-    for (int i = 0; (sw_adj_needed && i < *point_num); i++)
-    {
+    for (int i = 0; (sw_adj_needed && i < *point_num); i++) {
 
         /*  Mirror X coordinates (if not supported by HW) */
-        if (tp->config.flags.mirror_x && tp->set_mirror_x == NULL)
-        {
+        if (tp->config.flags.mirror_x && tp->set_mirror_x == NULL) {
             x[i] = tp->config.x_max - x[i];
         }
 
         /*  Mirror Y coordinates (if not supported by HW) */
-        if (tp->config.flags.mirror_y && tp->set_mirror_y == NULL)
-        {
+        if (tp->config.flags.mirror_y && tp->set_mirror_y == NULL) {
             y[i] = tp->config.y_max - y[i];
         }
 
         /* Swap X and Y coordinates (if not supported by HW) */
-        if (tp->config.flags.swap_xy && tp->set_swap_xy == NULL)
-        {
+        if (tp->config.flags.swap_xy && tp->set_swap_xy == NULL) {
             uint16_t tmp = x[i];
             x[i] = y[i];
             y[i] = tmp;
@@ -136,14 +124,12 @@ esp_err_t esp_lcd_touch_get_data(esp_lcd_touch_handle_t tp, esp_lcd_touch_point_
 
     bool touched = tp->get_xy(tp, x, y, strength, point_cnt, max_point_cnt);
 
-    if (!touched)
-    {
+    if (!touched) {
         return ESP_OK;
     }
 
     /* Process coordinates by user */
-    if (tp->config.process_coordinates != NULL)
-    {
+    if (tp->config.process_coordinates != NULL) {
         tp->config.process_coordinates(tp, x, y, strength, point_cnt, max_point_cnt);
     }
 
@@ -153,24 +139,20 @@ esp_err_t esp_lcd_touch_get_data(esp_lcd_touch_handle_t tp, esp_lcd_touch_point_
                           (tp->config.flags.swap_xy && (tp->set_swap_xy == NULL)));
 
     /* Adjust all coordinates */
-    for (int i = 0; (sw_adj_needed && i < *point_cnt); i++)
-    {
+    for (int i = 0; (sw_adj_needed && i < *point_cnt); i++) {
 
         /*  Mirror X coordinates (if not supported by HW) */
-        if (tp->config.flags.mirror_x && tp->set_mirror_x == NULL)
-        {
+        if (tp->config.flags.mirror_x && tp->set_mirror_x == NULL) {
             x[i] = tp->config.x_max - x[i];
         }
 
         /*  Mirror Y coordinates (if not supported by HW) */
-        if (tp->config.flags.mirror_y && tp->set_mirror_y == NULL)
-        {
+        if (tp->config.flags.mirror_y && tp->set_mirror_y == NULL) {
             y[i] = tp->config.y_max - y[i];
         }
 
         /* Swap X and Y coordinates (if not supported by HW) */
-        if (tp->config.flags.swap_xy && tp->set_swap_xy == NULL)
-        {
+        if (tp->config.flags.swap_xy && tp->set_swap_xy == NULL) {
             uint16_t tmp = x[i];
             x[i] = y[i];
             y[i] = tmp;
@@ -178,21 +160,18 @@ esp_err_t esp_lcd_touch_get_data(esp_lcd_touch_handle_t tp, esp_lcd_touch_point_
     }
 
     /* Process read track IDs */
-    if (tp->get_track_id != NULL && touched)
-    {
+    if (tp->get_track_id != NULL && touched) {
         ESP_RETURN_ON_ERROR(tp->get_track_id(tp, track_id, *point_cnt), TAG, "Failed to read track ID from touch driver");
     }
 
     /* Initialize the struct array since some features might not be available */
     memset(data, 0, sizeof(esp_lcd_touch_point_data_t) * max_point_cnt);
 
-    for (int i = 0; i < *point_cnt; i++)
-    {
+    for (int i = 0; i < *point_cnt; i++) {
         data[i].x = x[i];
         data[i].y = y[i];
         data[i].strength = strength[i];
-        if (tp->get_track_id != NULL)
-        {
+        if (tp->get_track_id != NULL) {
             data[i].track_id = track_id[i];
         }
     }
@@ -208,12 +187,9 @@ esp_err_t esp_lcd_touch_get_button_state(esp_lcd_touch_handle_t tp, uint8_t n, u
 
     *state = 0;
 
-    if (tp->get_button_state)
-    {
+    if (tp->get_button_state) {
         return tp->get_button_state(tp, n, state);
-    }
-    else
-    {
+    } else {
         return ESP_ERR_NOT_SUPPORTED;
     }
 
@@ -228,8 +204,7 @@ esp_err_t esp_lcd_touch_set_swap_xy(esp_lcd_touch_handle_t tp, bool swap)
     tp->config.flags.swap_xy = swap;
 
     /* Is swap supported by HW? */
-    if (tp->set_swap_xy)
-    {
+    if (tp->set_swap_xy) {
         return tp->set_swap_xy(tp, swap);
     }
 
@@ -242,12 +217,9 @@ esp_err_t esp_lcd_touch_get_swap_xy(esp_lcd_touch_handle_t tp, bool *swap)
     ESP_RETURN_ON_FALSE(swap != NULL, ESP_ERR_INVALID_ARG, TAG, "Pointer to the swap variable can't be NULL");
 
     /* Is swap supported by HW? */
-    if (tp->get_swap_xy)
-    {
+    if (tp->get_swap_xy) {
         return tp->get_swap_xy(tp, swap);
-    }
-    else
-    {
+    } else {
         *swap = tp->config.flags.swap_xy;
     }
 
@@ -261,8 +233,7 @@ esp_err_t esp_lcd_touch_set_mirror_x(esp_lcd_touch_handle_t tp, bool mirror)
     tp->config.flags.mirror_x = mirror;
 
     /* Is mirror supported by HW? */
-    if (tp->set_mirror_x)
-    {
+    if (tp->set_mirror_x) {
         return tp->set_mirror_x(tp, mirror);
     }
 
@@ -275,12 +246,9 @@ esp_err_t esp_lcd_touch_get_mirror_x(esp_lcd_touch_handle_t tp, bool *mirror)
     ESP_RETURN_ON_FALSE(mirror != NULL, ESP_ERR_INVALID_ARG, TAG, "Pointer to the mirror variable can't be NULL");
 
     /* Is swap supported by HW? */
-    if (tp->get_mirror_x)
-    {
+    if (tp->get_mirror_x) {
         return tp->get_mirror_x(tp, mirror);
-    }
-    else
-    {
+    } else {
         *mirror = tp->config.flags.mirror_x;
     }
 
@@ -294,8 +262,7 @@ esp_err_t esp_lcd_touch_set_mirror_y(esp_lcd_touch_handle_t tp, bool mirror)
     tp->config.flags.mirror_y = mirror;
 
     /* Is mirror supported by HW? */
-    if (tp->set_mirror_y)
-    {
+    if (tp->set_mirror_y) {
         return tp->set_mirror_y(tp, mirror);
     }
 
@@ -308,12 +275,9 @@ esp_err_t esp_lcd_touch_get_mirror_y(esp_lcd_touch_handle_t tp, bool *mirror)
     ESP_RETURN_ON_FALSE(mirror != NULL, ESP_ERR_INVALID_ARG, TAG, "Pointer to the mirror variable can't be NULL");
 
     /* Is swap supported by HW? */
-    if (tp->get_mirror_y)
-    {
+    if (tp->get_mirror_y) {
         return tp->get_mirror_y(tp, mirror);
-    }
-    else
-    {
+    } else {
         *mirror = tp->config.flags.mirror_y;
     }
 
@@ -324,8 +288,7 @@ esp_err_t esp_lcd_touch_del(esp_lcd_touch_handle_t tp)
 {
     ESP_RETURN_ON_FALSE(tp != NULL, ESP_ERR_INVALID_ARG, TAG, "Touch point handler can't be NULL");
 
-    if (tp->del != NULL)
-    {
+    if (tp->del != NULL) {
         return tp->del(tp);
     }
 
@@ -338,19 +301,16 @@ esp_err_t esp_lcd_touch_register_interrupt_callback(esp_lcd_touch_handle_t tp, e
     ESP_RETURN_ON_FALSE(tp != NULL, ESP_ERR_INVALID_ARG, TAG, "Touch controller handle can't be NULL");
 
     /* Interrupt pin is not selected */
-    if (tp->config.int_gpio_num == GPIO_NUM_NC)
-    {
+    if (tp->config.int_gpio_num == GPIO_NUM_NC) {
         return ESP_ERR_INVALID_ARG;
     }
 
     tp->config.interrupt_callback = callback;
 
-    if (callback != NULL)
-    {
+    if (callback != NULL) {
         ret = gpio_install_isr_service(0);
         /* ISR service can be installed from user before, then it returns invalid state */
-        if (ret != ESP_OK && ret != ESP_ERR_INVALID_STATE)
-        {
+        if (ret != ESP_OK && ret != ESP_ERR_INVALID_STATE) {
             ESP_LOGE(TAG, "GPIO ISR install failed");
             return ret;
         }
@@ -359,9 +319,7 @@ esp_err_t esp_lcd_touch_register_interrupt_callback(esp_lcd_touch_handle_t tp, e
         ESP_RETURN_ON_ERROR(ret, TAG, "GPIO ISR install failed");
         ret = gpio_isr_handler_add(tp->config.int_gpio_num, (gpio_isr_t)tp->config.interrupt_callback, tp);
         ESP_RETURN_ON_ERROR(ret, TAG, "GPIO ISR install failed");
-    }
-    else
-    {
+    } else {
         /* Remove GPIO ISR handler */
         ret = gpio_isr_handler_remove(tp->config.int_gpio_num);
         ESP_RETURN_ON_ERROR(ret, TAG, "GPIO ISR remove handler failed");

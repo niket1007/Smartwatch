@@ -9,6 +9,8 @@ WiFiManager wifi_manager;
 RTCManager rtc_manager;
 TouchManager touch_manager;
 ScreenManager screen_manager;
+BluetoothManager bluetooth_manager;
+PowerSaverManager power_saver_manager;
 
 TaskHandle_t gui_task_handle = nullptr;
 TaskHandle_t background_task_handle = nullptr;

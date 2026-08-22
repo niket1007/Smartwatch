@@ -1,5 +1,6 @@
 #include "nvs_manager.h"
 #include "nvs_flash.h"
+#include "nvs.h"
 
 static constexpr const char *TAG = "NVS_MANAGER";
 

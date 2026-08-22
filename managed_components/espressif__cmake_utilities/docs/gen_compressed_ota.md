@@ -5,7 +5,6 @@ When using the compressed OTA, we need to generate the compressed app firmware. 
 For more information about compressed OTA, refer to [bootloader_support_plus](https://github.com/espressif/esp-iot-solution/tree/master/components/bootloader_support_plus).
 
 ## Use
-
 In order to use this feature, you need to include the needed CMake file in your project's CMakeLists.txt after `project(XXXX)`.
 
 ```cmake
@@ -23,7 +22,7 @@ idf.py gen_compressed_ota
 This command will compile your project first, then it will generate the compressed app firmware. For example, run the command under the project `simple_ota_examples` folder. If there are no errors, the `custom_ota_binaries` folder will be created and contains the following files:
 
 ```plaintext
-simple_ota.bin.xz
+simple_ota.bin.xz  
 simple_ota.bin.xz.packed
 ```
 

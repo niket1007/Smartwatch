@@ -2,6 +2,11 @@
 # Source directories
 #------------------------------------------------------------------------------
 
+set(COM_DIR ./Common)
+file(GLOB_RECURSE COM_SRCS
+    ${COM_DIR}/*.cpp
+)
+
 set(DISPLAY_DIR ./Display)
 file(GLOB_RECURSE DISPLAY_SRCS
     ${DISPLAY_DIR}/*.cpp
@@ -49,6 +54,15 @@ file(GLOB_RECURSE TOUCH_SRCS
     ${TOUCH_DIR}/*.cpp
 )
 
+set(BLE_DIR ./Bluetooth)
+file(GLOB_RECURSE BLE_SRCS
+    ${BLE_DIR}/*.cpp
+)
+
+set(PS_DIR ./Power_Saver)
+file(GLOB_RECURSE PS_SRCS
+    ${PS_DIR}/*.cpp
+)
 
 #------------------------------------------------------------------------------
 # Component
@@ -57,7 +71,7 @@ file(GLOB_RECURSE TOUCH_SRCS
 idf_component_register(
     SRCS 
         "main.cpp"
-        "Common/globals.cpp"
+        ${COM_SRCS}
         ${DISPLAY_SRCS}
         ${GRAPHICS_SRCS}
         ${SCREEN_SRCS}
@@ -67,11 +81,13 @@ idf_component_register(
         ${WIFI_SRCS}
         ${RTC_SRCS}
         ${TOUCH_SRCS}
+        ${BLE_SRCS}
+        ${PS_SRCS}
 
     INCLUDE_DIRS 
         "."
+        ${COM_DIR}
         ${DISPLAY_DIR}
-        "Common"
         ${GRAPHICS_DIR}
         ${SCREEN_DIR}
         ${BATTERY_DIR}
@@ -80,4 +96,6 @@ idf_component_register(
         ${WIFI_DIR}
         ${RTC_DIR}
         ${TOUCH_DIR}
+        ${BLE_DIR}
+        ${PS_DIR}
 )

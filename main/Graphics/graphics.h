@@ -137,4 +137,6 @@ public:
         const font_t &font,
         uint16_t color,
         uint16_t bg_color);
+
+    int get_text_width(const char *text, const font_t &font);
 };

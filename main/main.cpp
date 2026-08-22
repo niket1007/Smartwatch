@@ -13,10 +13,10 @@
 #include "esp_pm.h"
 #include "esp_timer.h"
 #include "esp_sleep.h"
-extern "C"
-{
-#include "esp_private/esp_clk.h"
-}
+// extern "C"
+// {
+// #include "esp_private/esp_clk.h"
+// }
 #include "Common/globals.h"
 #include "Screen/screen_manager.h"
 
@@ -24,12 +24,6 @@ extern "C"
 #define BUTTON_ACTIVE_LEVEL 0
 
 static const char *TAG = "APP_MAIN";
-
-static RTC_DATA_ATTR int sleep_enter_count = 0;
-static RTC_DATA_ATTR int sleep_exit_count = 0;
-static RTC_DATA_ATTR int cpu_40hz_count = 0;
-
-esp_pm_lock_handle_t pm_lock;
 
 int64_t millis(void)
 {
@@ -46,6 +40,7 @@ void background_task_func(void *pvParameters)
     while (1)
     {
         uint32_t events = 0;
+        int64_t now = millis();
 
         xTaskNotifyWait(
             0,
@@ -63,8 +58,9 @@ void background_task_func(void *pvParameters)
             battery_manager.refresh();
         }
 
-        int64_t now = millis();
-        if (now - display_driver.get_screen_timeout_timer() > SCREEN_TIMEOUT)
+        if (
+            (now - display_driver.get_screen_timeout_timer()) >
+            power_saver_manager.get_screen_timeout())
         {
             display_driver.reset_screen_timeout_timer(now);
             xTaskNotify(
@@ -81,6 +77,11 @@ void background_task_func(void *pvParameters)
                 UPDATE_TIME_EVENT,
                 eSetBits);
         }
+
+        // power_diagnostic_task();
+        // ESP_LOGI(TAG, "Before calling dump locks");
+        // esp_pm_dump_locks(stdout);
+        // ESP_LOGI(TAG, "After calling dump locks");
 
         // esp_pm_dump_locks(stdout);
         // ESP_LOGI(TAG, "CPU freq = %d MHz",
@@ -137,6 +138,8 @@ void gui_task_func(void *pvParameters)
         {
             screen_manager.handle_events(events);
         }
+
+        power_saver_manager.handle_events(events);
     }
     vTaskDelete(nullptr);
 }
@@ -188,7 +191,6 @@ void time_sync_task_func(void *pvParameters)
 
 static void button_single_click_event_cb(void *arg, void *data)
 {
-    ESP_LOGI(TAG, "Button single click!");
     if (display_driver.is_sleep)
     {
         display_driver.wake();
@@ -200,35 +202,21 @@ static void button_single_click_event_cb(void *arg, void *data)
     display_driver.reset_screen_timeout_timer();
 }
 
-static int on_sleep_enter(int64_t sleep_time_us, void *arg)
-{
-    sleep_enter_count++;
-    return 0;
-}
-
-static int on_sleep_exit(int64_t slept_time_us, void *arg)
-{
-    sleep_exit_count++;
-    if (esp_clk_cpu_freq() == 40000000)
-    {
-        cpu_40hz_count++;
-    }
-    return 0;
-}
-
 extern "C" void app_main(void)
 {
     ESP_ERROR_CHECK(i2c_manager.init());
     ESP_LOGI(TAG, "I2C initialized successfully");
 
     ESP_ERROR_CHECK(nvs_manager.init());
+
     ESP_ERROR_CHECK(battery_manager.init());
 
     ESP_ERROR_CHECK(display_driver.init());
-    ESP_ERROR_CHECK(display_driver.set_brightness(70));
     ESP_ERROR_CHECK(display_driver.clear());
 
     ESP_ERROR_CHECK(screen_manager.init());
+
+    ESP_ERROR_CHECK(power_saver_manager.init());
 
     int retry_count = 0;
     bool is_touch_init = false;
@@ -266,14 +254,6 @@ extern "C" void app_main(void)
         ESP_ERROR_CHECK(ret);
     }
 
-    xTaskCreate(
-        time_sync_task_func,
-        "TIME_SYNC",
-        4096,
-        NULL,
-        1,
-        &time_sync_handle);
-
     if (is_touch_init)
     {
         xTaskCreate(
@@ -284,6 +264,14 @@ extern "C" void app_main(void)
             1,
             &touch_task_handle);
     }
+
+    xTaskCreate(
+        time_sync_task_func,
+        "TIME_SYNC",
+        4096,
+        NULL,
+        1,
+        &time_sync_handle);
 
     xTaskCreatePinnedToCore(
         gui_task_func,
@@ -309,24 +297,5 @@ extern "C" void app_main(void)
         .light_sleep_enable = true,
     };
 
-    // 1. Define callback configuration
-    esp_pm_sleep_cbs_register_config_t cb_config = {
-        .enter_cb = on_sleep_enter,
-        .exit_cb = on_sleep_exit,
-        .enter_cb_user_arg = NULL,
-        .exit_cb_user_arg = NULL,
-        .enter_cb_prior = 5, // Default mid-level priority
-        .exit_cb_prior = 5   // Default mid-level priority
-    };
-
-    // 2. Register the sleep callbacks
-    esp_err_t err = esp_pm_light_sleep_register_cbs(&cb_config);
-    if (err != ESP_OK)
-    {
-        ESP_LOGE(TAG, "Failed to register sleep callbacks: %s", esp_err_to_name(err));
-        return;
-    }
-    ESP_LOGI(TAG, "Sleep callbacks registered successfully.");
     ESP_ERROR_CHECK(esp_pm_configure(&pm_config));
-    // esp_pm_lock_create(ESP_PM_NO_LIGHT_SLEEP, 0, "touch_init", &pm_lock);
 }

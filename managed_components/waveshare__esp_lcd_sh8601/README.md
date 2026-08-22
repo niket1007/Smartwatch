@@ -4,15 +4,14 @@
 
 Waveshare ESP32-S3-Touch-AMOLED-1.8 Display used QSPI
 
-| LCD controller | Communication interface | Component name |                                             Link to datasheet                                              |
-| :------------: | :---------------------: | :------------: | :--------------------------------------------------------------------------------------------------------: |
+| LCD controller | Communication interface | Component name |                               Link to datasheet                               |
+| :------------: |:-----------------------:| :------------: | :---------------------------------------------------------------------------: |
 |     SH8601     |          QSPI           | esp_lcd_sh8601 | [PDF](https://dl.espressif.com/AE/esp-iot-solution/SH8601A0_DataSheet_Preliminary_V0.0_UCS__191107_1_.pdf) |
 
 ## Add to project
 
 Packages from this repository are uploaded to [Espressif's component service](https://components.espressif.com/).
 You can add them to your project via `idf.py add-dependancy`, e.g.
-
 ```
     idf.py add-dependency "waveshare/esp_lcd_sh8601"
 ```
@@ -24,6 +23,7 @@ Alternatively, you can create `idf_component.yml`. More is in [Espressif's docum
 sent 0x51 0x00~0xFF to control backlight
 
 ## Initialization Code
+
 
 ### QSPI Interface
 
@@ -79,7 +79,7 @@ sent 0x51 0x00~0xFF to control backlight
 
 ## Notes
 
-- When utilizing `esp_panel_lcd_draw_bitmap()` to refresh the screen, ensure that `x_start`, `y_start`, `x_end` and `y_end` are divisible by `2`. This is a requirement of SH8610. For LVGL, register the following function into `rounder_cb` of `lv_disp_drv_t` to round the coordinates.
+* When utilizing `esp_panel_lcd_draw_bitmap()` to refresh the screen, ensure that `x_start`, `y_start`, `x_end` and `y_end` are divisible by `2`. This is a requirement of SH8610. For LVGL, register the following function into `rounder_cb` of `lv_disp_drv_t` to round the coordinates.
 
 ```c
 void lvgl_port_rounder_callback(struct _lv_disp_drv_t * disp_drv, lv_area_t * area)

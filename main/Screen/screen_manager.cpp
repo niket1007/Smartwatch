@@ -2,16 +2,6 @@
 #include "Common/globals.h"
 #include "Common/constants.h"
 
-#include "Home/home_screen.h"
-#include "Menu/Page_1/menu_screen_page_1.h"
-#include "Menu/Page_2/menu_screen_page_2.h"
-#include "Notification/notification_screen.h"
-#include "Weather/weather_screen.h"
-
-#include "Screen/Notification/Notif_Type_Screens/notif_call_screen.h"
-#include "Screen/Notification/Notif_Type_Screens/notif_message_screen.h"
-#include "Screen/Notification/Notif_Type_Screens/notif_other_screen.h"
-
 static constexpr const char *TAG = "SCREEN_MANAGER";
 
 esp_err_t ScreenManager::init()
@@ -46,9 +36,6 @@ Screen *ScreenManager::get_screen_instance_(int screen_id)
     case 4:
         return new NotificationScreen();
         break;
-    case 5:
-        return new WeatherScreen();
-        break;
     case 41:
         return new NotifCallScreen();
         break;
@@ -57,6 +44,38 @@ Screen *ScreenManager::get_screen_instance_(int screen_id)
         break;
     case 43:
         return new NotifOtherScreen();
+        break;
+    case 5:
+        return new WeatherScreen();
+        break;
+    //case 6: Calendar
+    case 7:
+        return new NavScreen();
+        break;
+    //case 8: Alarm
+    case 9: 
+        return new MusicScreen();
+        break;
+    case 10:
+        return new SettingsScreen();
+        break;
+    case 101:
+        return new BluetoothScreen();
+        break;
+    case 102:
+        return new WIFIScreen();
+        break;
+    case 103:
+        return new BrightnessScreen();
+        break;
+    case 11:
+        return new InfoScreen();
+        break;
+    case 12:
+        return new PassKeyScreen();
+        break;
+    case 13:
+        return new CallScreen();
         break;
     default:
         return new HomeScreen();
@@ -67,9 +86,24 @@ esp_err_t ScreenManager::reset()
 {
     // Reset the screen
     ESP_RETURN_ON_ERROR(
-        graphics.fill_rect(50, 40, 310, 420, BLACK_COLOR),
+        graphics.fill_rect(
+            reset_screen_x, 
+            reset_screen_y, 
+            reset_screen_width, 
+            reset_screen_height, 
+            BLACK_COLOR),
         TAG, "Failed to reset screen");
     return ESP_OK;
+}
+
+int ScreenManager::get_reset_screen_mid()
+{
+    return (reset_screen_width / 2) + reset_screen_x;
+}
+
+int ScreenManager::get_reset_screen_width()
+{
+    return reset_screen_width;
 }
 
 esp_err_t ScreenManager::change_screen(int new_screen_id)

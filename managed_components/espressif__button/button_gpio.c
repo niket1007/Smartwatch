@@ -14,12 +14,11 @@
 
 static const char *TAG = "gpio_button";
 
-typedef struct
-{
-    button_driver_t base;   /**< button driver */
-    int32_t gpio_num;       /**< num of gpio */
-    uint8_t active_level;   /**< gpio level when press down */
-    bool enable_power_save; /**< enable power save */
+typedef struct {
+    button_driver_t base;          /**< button driver */
+    int32_t gpio_num;              /**< num of gpio */
+    uint8_t active_level;          /**< gpio level when press down */
+    bool enable_power_save;        /**< enable power save */
 } button_gpio_obj;
 
 static esp_err_t button_gpio_enable_gpio_wakeup(uint32_t gpio_num, uint8_t active_level, bool enable);
@@ -27,8 +26,7 @@ static esp_err_t button_gpio_enable_gpio_wakeup(uint32_t gpio_num, uint8_t activ
 static esp_err_t button_gpio_del(button_driver_t *button_driver)
 {
     button_gpio_obj *gpio_btn = __containerof(button_driver, button_gpio_obj, base);
-    if (gpio_btn->enable_power_save)
-    {
+    if (gpio_btn->enable_power_save) {
         button_gpio_enable_gpio_wakeup(gpio_btn->gpio_num, gpio_btn->active_level, false);
         gpio_isr_handler_remove(gpio_btn->gpio_num);
     }
@@ -47,16 +45,12 @@ static uint8_t button_gpio_get_key_level(button_driver_t *button_driver)
 static esp_err_t button_gpio_enable_gpio_wakeup(uint32_t gpio_num, uint8_t active_level, bool enable)
 {
     esp_err_t ret;
-    if (enable)
-    {
+    if (enable) {
         ret = gpio_wakeup_enable(gpio_num, active_level == 0 ? GPIO_INTR_LOW_LEVEL : GPIO_INTR_HIGH_LEVEL);
-        if (ret == ESP_OK)
-        {
+        if (ret == ESP_OK) {
             gpio_intr_enable(gpio_num);
         }
-    }
-    else
-    {
+    } else {
         gpio_intr_disable(gpio_num);
         ret = gpio_wakeup_disable(gpio_num);
 #if CONFIG_PM_POWER_DOWN_PERIPHERAL_IN_LIGHT_SLEEP
@@ -83,8 +77,7 @@ static esp_err_t button_gpio_exit_power_save(button_driver_t *button_driver)
 static esp_err_t gpio_isr_service_ensure_installed(void)
 {
     esp_err_t ret = gpio_install_isr_service(ESP_INTR_FLAG_IRAM);
-    if (ret == ESP_OK || ret == ESP_ERR_INVALID_STATE)
-    {
+    if (ret == ESP_OK || ret == ESP_ERR_INVALID_STATE) {
         return ESP_OK;
     }
     return ret;
@@ -101,7 +94,7 @@ static esp_err_t button_gpio_set_intr(int gpio_num, gpio_int_type_t intr_type, g
     return ESP_OK;
 }
 
-static void IRAM_ATTR button_power_save_isr_handler(void *arg)
+static void IRAM_ATTR button_power_save_isr_handler(void* arg)
 {
     iot_button_power_save_wakeup_isr((uint32_t)arg);
 }
@@ -134,15 +127,11 @@ esp_err_t iot_button_new_gpio_device(const button_config_t *button_config, const
     gpio_conf.intr_type = GPIO_INTR_DISABLE;
     gpio_conf.mode = GPIO_MODE_INPUT;
     gpio_conf.pin_bit_mask = (1ULL << gpio_cfg->gpio_num);
-    if (!gpio_cfg->disable_pull)
-    {
-        if (gpio_cfg->active_level)
-        {
+    if (!gpio_cfg->disable_pull) {
+        if (gpio_cfg->active_level) {
             gpio_conf.pull_down_en = GPIO_PULLDOWN_ENABLE;
             gpio_conf.pull_up_en = GPIO_PULLUP_DISABLE;
-        }
-        else
-        {
+        } else {
             gpio_conf.pull_down_en = GPIO_PULLDOWN_DISABLE;
             gpio_conf.pull_up_en = GPIO_PULLUP_ENABLE;
         }
@@ -150,8 +139,7 @@ esp_err_t iot_button_new_gpio_device(const button_config_t *button_config, const
     ret = gpio_config(&gpio_conf);
     ESP_GOTO_ON_FALSE(ret == ESP_OK, ret, err, TAG, "GPIO config failed");
 
-    if (gpio_cfg->enable_power_save)
-    {
+    if (gpio_cfg->enable_power_save) {
 #if CONFIG_PM_POWER_DOWN_PERIPHERAL_IN_LIGHT_SLEEP
         ESP_GOTO_ON_FALSE(esp_sleep_is_valid_wakeup_gpio(gpio_cfg->gpio_num), ESP_FAIL, err, TAG,
                           "GPIO %ld is not a valid wakeup source under CONFIG_GPIO_BUTTON_SUPPORT_POWER_SAVE", gpio_cfg->gpio_num);
@@ -187,29 +175,22 @@ esp_err_t iot_button_new_gpio_device(const button_config_t *button_config, const
     ret = iot_button_create(button_config, &gpio_btn->base, ret_button);
     ESP_GOTO_ON_FALSE(ret == ESP_OK, ESP_FAIL, err, TAG, "Create button failed");
 
-    if (gpio_cfg->enable_power_save)
-    {
+    if (gpio_cfg->enable_power_save) {
         ret = button_gpio_set_intr(gpio_btn->gpio_num, gpio_cfg->active_level == 0 ? GPIO_INTR_LOW_LEVEL : GPIO_INTR_HIGH_LEVEL, button_power_save_isr_handler);
         ESP_GOTO_ON_FALSE(ret == ESP_OK, ESP_FAIL, err, TAG, "Set gpio interrupt failed");
     }
     return ESP_OK;
 err:
-    if (ret_button && *ret_button)
-    {
+    if (ret_button && *ret_button) {
         iot_button_delete(*ret_button);
         *ret_button = NULL;
-    }
-    else if (gpio_btn)
-    {
-        if (gpio_cfg && gpio_cfg->enable_power_save)
-        {
-            if (wakeup_en)
-            {
+    } else if (gpio_btn) {
+        if (gpio_cfg && gpio_cfg->enable_power_save) {
+            if (wakeup_en) {
                 button_gpio_enable_gpio_wakeup(gpio_btn->gpio_num, gpio_btn->active_level, false);
             }
 #if CONFIG_PM_POWER_DOWN_PERIPHERAL_IN_LIGHT_SLEEP
-            if (hold_en)
-            {
+            if (hold_en) {
                 gpio_hold_dis(gpio_btn->gpio_num);
             }
 #endif
