@@ -8,28 +8,39 @@
 
 static constexpr const char *TAG = "DISPLAY_MANAGER";
 
-void DisplayManager::update_gesture_limits()
+static void touch_event_cb(lv_event_t *e)
+{
+    display_manager.reset_screen_timeout_timer();
+}
+
+void DisplayManager::update_configs()
 {
     lv_indev_t *indev = bsp_display_get_input_dev();
     if (indev)
     {
         indev->gesture_limit = 30;       // Minimum pixel distance
         indev->gesture_min_velocity = 3; // Minimum swipe velocity
-    }
+        lv_indev_add_event_cb(
+            indev,
+            touch_event_cb,
+            LV_EVENT_ALL,
+            nullptr);
+    } 
 }
 
 esp_err_t DisplayManager::init()
 {
     lv_display_t *display = bsp_display_start();
-    if(display == nullptr)
+    if (display == nullptr)
     {
         ESP_LOGE(TAG, "Failed to init the display");
         return ESP_ERR_INVALID_ARG;
     }
     display_pointer = display;
 
-    // Update the gesture limit for smooth gesture catch
-    update_gesture_limits();
+    // 1. Update the gesture limit for smooth gesture catch
+    // 2. Register global touch event
+    update_configs();
 
     return ESP_OK;
 }
@@ -122,6 +133,16 @@ esp_err_t DisplayManager::set_brightness(int brightness_percentage)
 int DisplayManager::get_brightness()
 {
     return bsp_display_brightness_get();
+}
+
+void DisplayManager::set_screen_timeout_enabled(bool enabled)
+{
+    screen_timeout_enabled_ = enabled;
+}
+
+bool DisplayManager::is_screen_timeout_enabled() const
+{
+    return screen_timeout_enabled_;
 }
 
 esp_err_t DisplayManager::reset_screen_timeout_timer(int64_t timer)

@@ -14,6 +14,7 @@
     "ui_image_alarm.c",
     "ui_image_battery_charging.c",
     "ui_image_bluetooth_connected.c",
+    "ui_image_brightness.c",
     "ui_image_calendar.c",
     "ui_image_info.c",
     "ui_image_music.c",
@@ -29,6 +30,7 @@
     "ui_image_phone_reject_action.c",
     "ui_image_settings.c",
     "ui_image_weather.c",
+    "ui_image_wifi.c",
     "vars.h"
   ]
 }

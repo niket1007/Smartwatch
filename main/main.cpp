@@ -38,7 +38,8 @@ void background_task_func(void *pvParameters)
         {
             bluetooth_manager.init();
         }
-        if (now - display_manager.get_screen_timeout_timer() >= 15000) // 15sec
+        if (display_manager.is_screen_timeout_enabled() and
+            (now - display_manager.get_screen_timeout_timer()) >= 15000) // 15sec
         {
             display_manager.reset_screen_timeout_timer(now);
             xTaskNotify(gui_task_handle, SCREEN_OFF_EVENT, eSetBits);

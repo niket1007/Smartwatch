@@ -29,6 +29,8 @@ constexpr uint32_t BLE_STATUS_EVENT = 1U << 11;
 constexpr uint32_t CALL_SCREEN_EVENT = 1U << 13;
 constexpr uint32_t UPDATE_CALL_SCREEN_EVENT = 1U << 14;
 
+// MENU SCREEN
+constexpr uint32_t MENU_OPTION_CLICKED_EVENT = 1U << 15;
 
 // ---------------------- Timeout -----------------
 constexpr uint32_t SCREEN_TIMEOUT = 15000;

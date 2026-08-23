@@ -1,8 +1,8 @@
 {
   "navigation": {
-    "selectedUserPageObject": "[SmartWatchUI.eez-project]:/userPages/1",
-    "selectedActionObject": "[SmartWatchUI.eez-project]:/actions/0",
-    "selectedBitmapObject": "[SmartWatchUI.eez-project]:/bitmaps/8",
+    "selectedUserPageObject": "[SmartWatchUI.eez-project]:/userPages/4",
+    "selectedActionObject": "[SmartWatchUI.eez-project]:/actions/-1",
+    "selectedBitmapObject": "[SmartWatchUI.eez-project]:/bitmaps/7",
     "subnavigationSelectedItems": {
       "variables-tab/sub-navigation/selected-item": "Global"
     }
@@ -195,18 +195,18 @@
               "children": [
                 {
                   "type": "tab",
-                  "id": "#6493462d-949c-4ada-bbb8-4d1835d861c7",
-                  "name": "MenuScreenOne",
+                  "id": "#4880dd10-9760-4de6-9628-09ed28db3a6b",
+                  "name": "Ble_Status",
                   "component": "editor",
                   "config": {
-                    "objectPath": "[SmartWatchUI.eez-project]:/userPages/1",
+                    "objectPath": "[SmartWatchUI.eez-project]:/userPages/4",
                     "permanent": false
                   },
                   "icon": "svg:page"
                 },
                 {
                   "type": "tab",
-                  "id": "#34383828-9ccc-47ca-9081-f3909dfabfdf",
+                  "id": "#5065a6fe-afdd-4b85-93e0-5d90d44647d2",
                   "name": "Settings",
                   "component": "editor",
                   "config": {
@@ -215,6 +215,17 @@
                     "permanent": false
                   },
                   "icon": "material:settings"
+                },
+                {
+                  "type": "tab",
+                  "id": "#e1153f2c-9ecb-469f-b0a5-220b9496c500",
+                  "name": "MenuScreenTwo",
+                  "component": "editor",
+                  "config": {
+                    "objectPath": "[SmartWatchUI.eez-project]:/userPages/2",
+                    "permanent": true
+                  },
+                  "icon": "svg:page"
                 }
               ],
               "active": true
@@ -1074,7 +1085,8 @@
             "2": {},
             "4": {
               "1": {}
-            }
+            },
+            "$selected": true
           }
         }
       },
@@ -1095,23 +1107,14 @@
     "[SmartWatchUI.eez-project]:/userPages/4[flow-state]": {
       "selectionFront": {},
       "selectionBack": {
-        "0": {
-          "0": {
-            "0": {
-              "$selected": true
-            },
-            "1": {
-              "$selected": true
-            }
-          }
-        }
+        "0": {}
       },
       "transform": {
         "translate": {
           "x": -205,
           "y": -251
         },
-        "scale": 1
+        "scale": 1.1
       },
       "timeline": {
         "isEditorActive": false,
@@ -1125,22 +1128,17 @@
       "selectionBack": {
         "0": {
           "0": {
-            "1": {
-              "1": {
-                "4": {}
-              },
-              "$selected": true
-            }
-          },
-          "1": {}
+            "1": {},
+            "$selected": true
+          }
         }
       },
       "transform": {
         "translate": {
           "x": -205,
-          "y": -351
+          "y": -251
         },
-        "scale": 1.25
+        "scale": 1.1
       },
       "timeline": {
         "isEditorActive": false,
@@ -1154,14 +1152,16 @@
       "selectionBack": {
         "0": {
           "0": {
-            "1": {}
+            "0": {},
+            "1": {},
+            "$selected": true
           }
         }
       },
       "transform": {
         "translate": {
           "x": -205,
-          "y": -252.9568752288818
+          "y": -352.9568752288818
         },
         "scale": 1.1
       },
@@ -1176,7 +1176,13 @@
       "selectionFront": {},
       "selectionBack": {
         "0": {
-          "0": {}
+          "0": {
+            "0": {},
+            "1": {},
+            "2": {},
+            "3": {},
+            "$selected": true
+          }
         }
       },
       "transform": {
@@ -1197,7 +1203,9 @@
       "selectionFront": {},
       "selectionBack": {
         "0": {
-          "0": {}
+          "0": {
+            "$selected": true
+          }
         }
       },
       "transform": {
@@ -1205,7 +1213,7 @@
           "x": -205,
           "y": -251
         },
-        "scale": 1
+        "scale": 1.1
       },
       "timeline": {
         "isEditorActive": false,
@@ -1219,14 +1227,7 @@
       "selectionBack": {
         "0": {
           "0": {
-            "0": {},
-            "2": {},
-            "3": {},
-            "4": {
-              "1": {
-                "$selected": true
-              }
-            }
+            "$selected": true
           }
         }
       },
@@ -1235,7 +1236,7 @@
           "x": -205,
           "y": -251
         },
-        "scale": 1.25
+        "scale": 1.1
       },
       "timeline": {
         "isEditorActive": false,
@@ -1258,7 +1259,124 @@
           "x": -205,
           "y": -251
         },
-        "scale": 1
+        "scale": 1.1
+      },
+      "timeline": {
+        "isEditorActive": false,
+        "position": 0,
+        "secondToPx": 200,
+        "scrollLeft": 0
+      }
+    },
+    "[SmartWatchUI.eez-project]:/userPages/8[flow-state]": {
+      "selectionFront": {},
+      "selectionBack": {
+        "0": {
+          "0": {
+            "$selected": true
+          }
+        }
+      },
+      "transform": {
+        "translate": {
+          "x": -205,
+          "y": -51
+        },
+        "scale": 1.1
+      },
+      "timeline": {
+        "isEditorActive": false,
+        "position": 0,
+        "secondToPx": 200,
+        "scrollLeft": 0
+      }
+    },
+    "[SmartWatchUI.eez-project]:/userPages/9[flow-state]": {
+      "selectionFront": {},
+      "selectionBack": {
+        "0": {
+          "0": {
+            "$selected": true
+          }
+        }
+      },
+      "transform": {
+        "translate": {
+          "x": -205,
+          "y": -251
+        },
+        "scale": 1.1
+      },
+      "timeline": {
+        "isEditorActive": false,
+        "position": 0,
+        "secondToPx": 200,
+        "scrollLeft": 0
+      }
+    },
+    "[SmartWatchUI.eez-project]:/userPages/10[flow-state]": {
+      "selectionFront": {},
+      "selectionBack": {
+        "0": {
+          "0": {
+            "$selected": true
+          }
+        }
+      },
+      "transform": {
+        "translate": {
+          "x": -205,
+          "y": -251
+        },
+        "scale": 1.1
+      },
+      "timeline": {
+        "isEditorActive": false,
+        "position": 0,
+        "secondToPx": 200,
+        "scrollLeft": 0
+      }
+    },
+    "[SmartWatchUI.eez-project]:/userPages/11[flow-state]": {
+      "selectionFront": {},
+      "selectionBack": {
+        "0": {
+          "0": {
+            "1": {},
+            "2": {},
+            "$selected": true
+          }
+        }
+      },
+      "transform": {
+        "translate": {
+          "x": -205,
+          "y": -251
+        },
+        "scale": 1.1
+      },
+      "timeline": {
+        "isEditorActive": false,
+        "position": 0,
+        "secondToPx": 200,
+        "scrollLeft": 0
+      }
+    },
+    "[SmartWatchUI.eez-project]:/userPages/12[flow-state]": {
+      "selectionFront": {},
+      "selectionBack": {
+        "0": {
+          "0": {
+            "$selected": true
+          }
+        }
+      },
+      "transform": {
+        "translate": {
+          "x": -205,
+          "y": -251
+        },
+        "scale": 1.1
       },
       "timeline": {
         "isEditorActive": false,
@@ -1282,11 +1400,12 @@
   "lvglPart": "MAIN",
   "lvglState": "DEFAULT",
   "lvglExpandedPropertiesGroup": [
-    "BORDER"
+    "TEXT",
+    "PADDING"
   ],
   "showInactiveFlowsInDebugger": true,
   "globalFlowZoom": true,
   "flowZoom": 1.1,
   "implementationLanguage": "C",
-  "openDialogDefaultPath": "C:\\Github_repos\\Smartwatch\\Icons\\info.png"
+  "openDialogDefaultPath": "C:\\Github_repos\\Smartwatch\\Icons\\music.png"
 }

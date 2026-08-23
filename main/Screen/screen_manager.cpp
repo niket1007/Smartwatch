@@ -7,7 +7,16 @@
 // Screen Includes
 #include "Screen/Home/home_screen.h"
 #include "Screen/Menu/menu_screen.h"
-#include "Screen/Notification/Ble_Status/blestatus_screen.h"
+#include "Screen/Ble_Status/blestatus_screen.h"
+#include "Screen/Alarm/alarm_screen.h"
+#include "Screen/Calendar/calendar_screen.h"
+#include "Screen/Navigation/navigation_screen.h"
+#include "Screen/Call/call_screen.h"
+#include "Screen/Info/info_screen.h"
+#include "Screen/Music/music_screen.h"
+#include "Screen/Notification/notification_screen.h"
+#include "Screen/Weather/weather_screen.h"
+#include "Screen/Settings/settings_screen.h"
 
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
@@ -34,6 +43,17 @@ esp_err_t ScreenManager::init()
     return ESP_OK;
 }
 
+MenuScreen *ScreenManager::get_current_menu_screen()
+{
+    if (current_screen_id != SCREEN_ID_MENU_SCREEN_ONE &&
+        current_screen_id != SCREEN_ID_MENU_SCREEN_TWO)
+    {
+        return nullptr;
+    }
+
+    return static_cast<MenuScreen *>(current_screen);
+}
+
 Screen *ScreenManager::get_screen_instance(int id)
 {
     switch (id)
@@ -47,9 +67,45 @@ Screen *ScreenManager::get_screen_instance(int id)
     {
         return new MenuScreen();
     }
+    case SCREEN_ID_NOTIFICATION:
+    {
+        return new NotificationScreen();
+    }
+    case SCREEN_ID_WEATHER:
+    {
+        return new WeatherScreen();
+    }
+    case SCREEN_ID_CALENDAR:
+    {
+        return new CalendarScreen();
+    }
+    case SCREEN_ID_NAVIGATION:
+    {
+        return new NavigationScreen();
+    }
+    case SCREEN_ID_ALARM:
+    {
+        return new AlarmScreen();
+    }
+    case SCREEN_ID_MUSIC:
+    {
+        return new MusicScreen();
+    }
+    case SCREEN_ID_SETTINGS:
+    {
+        return new SettingsScreen();
+    }
+    case SCREEN_ID_INFO:
+    {
+        return new InfoScreen();
+    }
     case SCREEN_ID_BLE_STATUS:
     {
         return new BleStatusScreen();
+    }
+    case SCREEN_ID_CALL:
+    {
+        return new CallScreen();
     }
     default:
     {
@@ -188,7 +244,7 @@ esp_err_t ScreenManager::navigate(int direction)
 
 esp_err_t ScreenManager::handle_events(uint32_t events)
 {
-    if(current_screen_id >= 1 and current_screen_id <= 3)
+    if (current_screen_id >= 1 and current_screen_id <= 3)
     {
         if (events & SWIPE_LEFT_EVENT)
         {
@@ -201,7 +257,7 @@ esp_err_t ScreenManager::handle_events(uint32_t events)
         }
     }
 
-    if((events & BLE_STATUS_EVENT) and (current_screen_id != SCREEN_ID_BLE_STATUS))
+    if ((events & BLE_STATUS_EVENT) and (current_screen_id != SCREEN_ID_BLE_STATUS))
     {
         ESP_LOGI(TAG, "Ble status event called");
         return change_screen(SCREEN_ID_BLE_STATUS);

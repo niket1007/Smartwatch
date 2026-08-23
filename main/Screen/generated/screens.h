@@ -16,7 +16,15 @@ enum ScreensEnum {
     SCREEN_ID_MENU_SCREEN_TWO = 3,
     SCREEN_ID_CALL = 4,
     SCREEN_ID_BLE_STATUS = 5,
-    _SCREEN_ID_LAST = 5
+    SCREEN_ID_NOTIFICATION = 6,
+    SCREEN_ID_MUSIC = 7,
+    SCREEN_ID_WEATHER = 8,
+    SCREEN_ID_NAVIGATION = 9,
+    SCREEN_ID_ALARM = 10,
+    SCREEN_ID_CALENDAR = 11,
+    SCREEN_ID_SETTINGS = 12,
+    SCREEN_ID_INFO = 13,
+    _SCREEN_ID_LAST = 13
 };
 
 typedef struct _objects_t {
@@ -25,6 +33,14 @@ typedef struct _objects_t {
     lv_obj_t *menu_screen_two;
     lv_obj_t *call;
     lv_obj_t *ble_status;
+    lv_obj_t *notification;
+    lv_obj_t *music;
+    lv_obj_t *weather;
+    lv_obj_t *navigation;
+    lv_obj_t *alarm;
+    lv_obj_t *calendar;
+    lv_obj_t *settings;
+    lv_obj_t *info;
     lv_obj_t *parent_container;
     lv_obj_t *time_label;
     lv_obj_t *date_label;
@@ -39,9 +55,9 @@ typedef struct _objects_t {
     lv_obj_t *obj1;
     lv_obj_t *obj2;
     lv_obj_t *obj3;
+    lv_obj_t *menu_two_pc;
     lv_obj_t *obj4;
     lv_obj_t *obj5;
-    lv_obj_t *menu_two_pc;
     lv_obj_t *obj6;
     lv_obj_t *obj7;
     lv_obj_t *call_container;
@@ -53,6 +69,24 @@ typedef struct _objects_t {
     lv_obj_t *outgoing_icon;
     lv_obj_t *blestatus_pc;
     lv_obj_t *ble_con_status_label;
+    lv_obj_t *notification_pc;
+    lv_obj_t *music_pc;
+    lv_obj_t *weather_pc;
+    lv_obj_t *navigation_pc;
+    lv_obj_t *alarm_pc;
+    lv_obj_t *calendar_pc;
+    lv_obj_t *calendar_calendar;
+    lv_obj_t *settings_pc;
+    lv_obj_t *obj8;
+    lv_obj_t *obj9;
+    lv_obj_t *obj10;
+    lv_obj_t *info_pc;
+    lv_obj_t *obj11;
+    lv_obj_t *obj12;
+    lv_obj_t *obj13;
+    lv_obj_t *obj14;
+    lv_obj_t *obj15;
+    lv_obj_t *obj16;
 } objects_t;
 
 extern objects_t objects;
@@ -71,6 +105,30 @@ void tick_screen_call();
 
 void create_screen_ble_status();
 void tick_screen_ble_status();
+
+void create_screen_notification();
+void tick_screen_notification();
+
+void create_screen_music();
+void tick_screen_music();
+
+void create_screen_weather();
+void tick_screen_weather();
+
+void create_screen_navigation();
+void tick_screen_navigation();
+
+void create_screen_alarm();
+void tick_screen_alarm();
+
+void create_screen_calendar();
+void tick_screen_calendar();
+
+void create_screen_settings();
+void tick_screen_settings();
+
+void create_screen_info();
+void tick_screen_info();
 
 void tick_screen_by_id(enum ScreensEnum screenId);
 void tick_screen(int screen_index);

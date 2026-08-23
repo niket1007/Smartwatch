@@ -5,6 +5,8 @@
 #include "esp_err.h"
 #include "screen.h"
 
+#include "Screen/Menu/menu_screen.h"
+
 class ScreenManager
 {
 private:
@@ -20,4 +22,6 @@ public:
     esp_err_t change_screen(int new_screen_id);
     esp_err_t handle_events(uint32_t events);
     esp_err_t load_default_screen();
+
+    MenuScreen *get_current_menu_screen();
 };

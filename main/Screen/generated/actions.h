@@ -8,7 +8,7 @@ extern "C" {
 #endif
 
 extern void action_gesture_func(lv_event_t * e);
-extern void action_notification_click(lv_event_t * e);
+extern void action_menu_click_func(lv_event_t * e);
 
 #ifdef __cplusplus
 }
