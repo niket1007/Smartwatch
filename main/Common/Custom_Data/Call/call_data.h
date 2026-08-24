@@ -81,15 +81,15 @@ public:
         std::string cmd)
     {
         xSemaphoreTake(call_mutex_, portMAX_DELAY);
-
-        name = contact_name;
+        
         is_name_dirty = name != contact_name;
+        name = contact_name;
 
-        phone_number = contact_number;
         is_number_dirty = phone_number != contact_number;
+        phone_number = contact_number;
 
-        status = cmd;
         is_status_dirty = status != cmd;
+        status = cmd;
 
         xSemaphoreGive(call_mutex_);
     }

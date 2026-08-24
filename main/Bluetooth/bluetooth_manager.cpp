@@ -26,10 +26,17 @@
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 
+// #include <cjson/cJSON.h>
+#include "cJSON.h"
+
 #include <cstring>
 #include <string>
 #include <algorithm>
 #include <inttypes.h>
+
+// Custom Data
+#include "Common/Custom_Data/Call/call_data.h"
+#include "Common/Custom_Data/Weather/weather_data.h"
 
 static constexpr char *TAG = "BLUETOOTH_MANAGER";
 
@@ -365,11 +372,11 @@ void BluetoothManager::process_complete_line(const char *line)
      * weather/navigation data structures and notify the
      * GUI task.
      */
-    ble_handle_gadgetbridge_line(json_string.c_str());
+    handle_gadgetbridge_line(json_string.c_str());
 }
 
 // NimBLE reset callback
-void BluetoothManager::ble_on_reset(int reason)
+void BluetoothManager::on_reset(int reason)
 {
     ESP_LOGE(
         TAG,
@@ -383,7 +390,7 @@ void BluetoothManager::ble_on_reset(int reason)
 }
 
 // NimBLE synchronization callback
-void BluetoothManager::ble_on_sync()
+void BluetoothManager::on_sync()
 {
     /*
      * Ask NimBLE to choose the correct local identity
@@ -460,7 +467,7 @@ esp_err_t BluetoothManager::init_advertising()
         nullptr,
         BLE_HS_FOREVER,
         &adv_params,
-        ble_gap_event,
+        gap_event,
         nullptr);
 
     if (rc != 0)
@@ -480,7 +487,7 @@ esp_err_t BluetoothManager::init_advertising()
  * --------------------------------------------------------------------------
  */
 
-int BluetoothManager::ble_gap_event(
+int BluetoothManager::gap_event(
     struct ble_gap_event *event,
     void *arg)
 {
@@ -501,6 +508,22 @@ int BluetoothManager::ble_gap_event(
             // is_connected = true;
 
             ble_status = BLE_STATUS::CONNECTED;
+
+            struct ble_gap_upd_params params = {
+                .itvl_min = 80, // min interval = 80 * 1.25 = 100ms
+                .itvl_max = 160, // max Interval = 160 * 1.25 = 200ms
+                .latency = 10,
+                .supervision_timeout = 400, // 400 * 10 = 4000ms [Connection Timeout]
+                .min_ce_len = 0,
+                .max_ce_len = 0,
+            };
+
+            int rc = ble_gap_update_params(connection_handle, &params);
+            if (rc != 0)
+            {
+                ESP_LOGE(
+                    TAG, "Connection parameter update failed: %d", rc);
+            }
 
             if (gui_task_handle != nullptr)
             {
@@ -595,16 +618,12 @@ int BluetoothManager::ble_gap_event(
             tx_notifications_enabled =
                 event->subscribe.cur_notify != 0;
 
-            // ESP_LOGI(TAG,
-            //          "TX notifications %s", tx_notifications_enabled ? "enabled" : "disabled");
-
             if (tx_notifications_enabled)
             {
-                // TODO: Send a event to background handle that weather data can be fetched from phone
-                // if (task_background_handle != nullptr)
-                // {
-                //     xTaskNotify(task_background_handle, BLE_WEATHER_FETCH_EVENT);
-                // }
+                if (background_task_handle != nullptr)
+                {
+                    xTaskNotify(background_task_handle, SEND_BATTERY_DATA_EVENT, eSetBits);
+                }
             }
         }
 
@@ -613,11 +632,11 @@ int BluetoothManager::ble_gap_event(
     // MTU update
     case BLE_GAP_EVENT_MTU:
 
-        // ESP_LOGI(
-        //     TAG,
-        //     "MTU updated: conn=%d mtu=%d",
-        //     event->mtu.conn_handle,
-        //     event->mtu.value);
+        ESP_LOGI(
+            TAG,
+            "MTU updated: conn=%d mtu=%d",
+            event->mtu.conn_handle,
+            event->mtu.value);
 
         return 0;
 
@@ -664,8 +683,8 @@ esp_err_t BluetoothManager::init()
     }
 
     // Configure NimBLE host callbacks
-    ble_hs_cfg.reset_cb = ble_on_reset;
-    ble_hs_cfg.sync_cb = ble_on_sync;
+    ble_hs_cfg.reset_cb = on_reset;
+    ble_hs_cfg.sync_cb = on_sync;
     ble_hs_cfg.gatts_register_cb = gatt_register_callback;
 
     /*
@@ -772,7 +791,7 @@ esp_err_t BluetoothManager::init()
     /*
      * Start the NimBLE host task.
      *
-     * Advertising itself starts later from ble_on_sync(),
+     * Advertising itself starts later from on_sync(),
      * because NimBLE must first finish host/controller sync.
      */
     nimble_port_freertos_init(
@@ -801,15 +820,8 @@ BLE_STATUS BluetoothManager::get_ble_conn_status()
  * --------------------------------------------------------------------------
  */
 
-bool BluetoothManager::ble_send_to_phone(const std::string &json)
+bool BluetoothManager::send_to_phone(const std::string &json)
 {
-    /*
-     * We need:
-     *
-     * 1. a connection
-     * 2. notification subscription
-     * 3. a valid TX characteristic handle
-     */
     if (ble_status == BLE_STATUS::DISCONNECTED)
     {
         return false;
@@ -826,8 +838,7 @@ bool BluetoothManager::ble_send_to_phone(const std::string &json)
     }
 
     // Gadgetbridge expects one JSON object per line
-    std::string packet =
-        json + "\r\n";
+    std::string packet = json + "\r\n";
 
     // Convert the std::string into an mbuf chain
     struct os_mbuf *om =
@@ -850,24 +861,15 @@ bool BluetoothManager::ble_send_to_phone(const std::string &json)
 
     if (rc != 0)
     {
-        /*
-         * If NimBLE rejected the notification, it did not take
-         * ownership of the mbuf.
-         */
         os_mbuf_free_chain(om);
-
         ESP_LOGE(
-            TAG,
-            "ble_gatts_notify_custom failed: %d",
-            rc);
+            TAG, "ble_gatts_notify_custom failed: %d", rc);
 
         return false;
     }
 
-    ESP_LOGD(
-        TAG,
-        "Gadgetbridge TX: %s",
-        packet.c_str());
+    ESP_LOGI(
+        TAG, "Gadgetbridge TX: %s", packet.c_str());
 
     return true;
 }
@@ -911,42 +913,147 @@ uint32_t BluetoothManager::get_passkey()
     return passkey;
 }
 
-void BluetoothManager::ble_handle_gadgetbridge_line(const char *line)
+void BluetoothManager::handle_gadgetbridge_line(const char *line)
 {
-    /*
-     * IMPORTANT:
-     *
-     * `line` contains ONLY the JSON object.
-     *
-     * Example:
-     *
-     * {"t":"notify","id":123,"src":"WhatsApp",
-     *  "title":"Niket","body":"Hello"}
-     *
-     * It does NOT contain:
-     *
-     * GB(...)
-     *
-     * because the BLE layer already removed that wrapper.
-     *
-     * Connect this function to your common data layer.
-     */
+    ESP_LOGI(TAG, "Gadgetbridge JSON: %s", line);
 
-    ESP_LOGI(
-        TAG,
-        "Gadgetbridge JSON: %s",
-        line);
+    cJSON *json = cJSON_Parse(line);
 
-    /*
-     * Example integration:
-     *
-     * notification_manager.handle_bangle_json(line);
-     *
-     * or:
-     *
-     * common_data.set_notification(...);
-     * xTaskNotify(gui_task_handle, NOTIFICATION_EVENT, eSetBits);
-     *
-     * Do not update LVGL directly from the NimBLE callback.
-     */
+    if (json == nullptr)
+    {
+        const char *error_ptr = cJSON_GetErrorPtr();
+
+        if (error_ptr != nullptr)
+        {
+            ESP_LOGE(TAG, "JSON parse error near: %s", error_ptr);
+        }
+
+        return;
+    }
+
+    cJSON *event = cJSON_GetObjectItemCaseSensitive(json, "t");
+
+    if (!cJSON_IsString(event) || event->valuestring == nullptr)
+    {
+        ESP_LOGW(TAG, "Missing or invalid 't' field");
+        cJSON_Delete(json);
+        return;
+    }
+
+    ESP_LOGI(TAG, "Event: %s", event->valuestring);
+
+    if (strcmp(event->valuestring, "call") == 0)
+    {
+        cJSON *cmd = cJSON_GetObjectItemCaseSensitive(json, "cmd");
+        cJSON *name_item = cJSON_GetObjectItemCaseSensitive(json, "name");
+        cJSON *number_item = cJSON_GetObjectItemCaseSensitive(json, "number");
+
+        std::string status = cJSON_IsString(cmd) ? cmd->valuestring : "";
+
+        std::string name = cJSON_IsString(name_item) ? name_item->valuestring : "UNKNOWN";
+        name = name.empty() ? "UNKNOWN" : name;
+
+        std::string number = cJSON_IsString(number_item) ? number_item->valuestring : "";
+
+        if (gui_task_handle != nullptr)
+        {
+            xTaskNotify(
+                gui_task_handle, CALL_SCREEN_EVENT, eSetBits);
+        }
+    }
+
+    if (strcmp(event->valuestring, "weather") == 0)
+    {
+        cJSON *temp_item = cJSON_GetObjectItemCaseSensitive(json, "temp");
+        cJSON *high_item = cJSON_GetObjectItemCaseSensitive(json, "hi");
+        cJSON *low_item = cJSON_GetObjectItemCaseSensitive(json, "lo");
+        cJSON *humidity_item = cJSON_GetObjectItemCaseSensitive(json, "hum");
+        cJSON *rain_item = cJSON_GetObjectItemCaseSensitive(json, "rain");
+        cJSON *wind_item = cJSON_GetObjectItemCaseSensitive(json, "wind");
+        cJSON *text_item = cJSON_GetObjectItemCaseSensitive(json, "txt");
+        cJSON *location_item = cJSON_GetObjectItemCaseSensitive(json, "loc");
+
+        float temp = cJSON_IsNumber(temp_item) ? temp_item->valuedouble - 273.15f : 0;
+        float high = cJSON_IsNumber(high_item) ? high_item->valuedouble - 273.15f : 0;
+        float low = cJSON_IsNumber(low_item) ? low_item->valuedouble - 273.15f : 0;
+        float humidity = cJSON_IsNumber(humidity_item) ? humidity_item->valuedouble : 0;
+        float rain = cJSON_IsNumber(rain_item) ? rain_item->valuedouble : 0;
+        float wind = cJSON_IsNumber(wind_item) ? wind_item->valuedouble : 0;
+
+        std::string text =
+            cJSON_IsString(text_item) ? text_item->valuestring : "Weather";
+
+        std::string location =
+            cJSON_IsString(location_item) ? location_item->valuestring : "Location";
+
+        weather_data.update(
+            temp,
+            high,
+            low,
+            humidity,
+            rain,
+            wind,
+            text,
+            location);
+
+        if (gui_task_handle != nullptr)
+        {
+            xTaskNotify(
+                gui_task_handle, WEATHER_UI_UPDATE_EVENT, eSetBits);
+        }
+    }
+
+    cJSON_Delete(json);
+}
+
+esp_err_t BluetoothManager::handle_events(uint32_t events)
+{
+    std::string data;
+    if (events & ACCEPT_CALL_EVENT)
+    {
+        data = R"({"t":"call","n":"ACCEPT"})";
+        bool status = send_to_phone(data);
+        if (!status)
+        {
+            return ESP_FAIL;
+        }
+    }
+
+    if (events & REJECT_CALL_EVENT)
+    {
+        data = R"({"t":"call","n":"REJECT"})";
+        bool status = send_to_phone(data);
+        if (!status)
+        {
+            return ESP_FAIL;
+        }
+    }
+
+    if (events & SEND_BATTERY_DATA_EVENT)
+    {
+        ESP_LOGI(TAG, "SEND_BATTERY_DATA_EVENT triggered");
+        vTaskDelay(pdMS_TO_TICKS(1000));
+
+        data = R"({"t":"status","bat":90,"chg":0})";
+        bool status = send_to_phone(data);
+        if (!status)
+            return ESP_FAIL;
+
+        if (background_task_handle != nullptr)
+        {
+            xTaskNotify(background_task_handle, INIT_WEATHER_FETCH_EVENT, eSetBits);
+        }
+    }
+
+    if (events & INIT_WEATHER_FETCH_EVENT)
+    {
+        vTaskDelay(pdMS_TO_TICKS(200));
+
+        // Weather related data fetch init call
+        data = R"({"t":"weather","v":1})";
+        bool status = send_to_phone(data);
+        if (!status)
+            return ESP_FAIL;
+    }
+    return ESP_OK;
 }

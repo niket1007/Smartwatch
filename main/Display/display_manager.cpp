@@ -38,6 +38,8 @@ esp_err_t DisplayManager::init()
     }
     display_pointer = display;
 
+    set_brightness(70);
+
     // 1. Update the gesture limit for smooth gesture catch
     // 2. Register global touch event
     update_configs();

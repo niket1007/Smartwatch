@@ -430,7 +430,7 @@ esp_err_t bsp_display_new(const bsp_display_config_t *config, esp_lcd_panel_hand
                                                                  BSP_LCD_DATA1,
                                                                  BSP_LCD_DATA2,
                                                                  BSP_LCD_DATA3,
-                                                                 4096); // 4096 is required otherwise it will throw error
+                                                                 2048); // must cover the largest LVGL flush (H_RES * buf height * bytes/px)
     ESP_ERROR_CHECK(spi_bus_initialize(BSP_LCD_SPI_NUM, &buscfg, SPI_DMA_CH_AUTO));
 
     const esp_lcd_panel_io_spi_config_t io_config = SH8601_PANEL_IO_QSPI_CONFIG(BSP_LCD_CS, NULL, NULL);
@@ -539,25 +539,12 @@ static lv_display_t *bsp_display_lcd_init()
             .swap_bytes = true,
 #endif
         }};
-    const lvgl_port_display_rgb_cfg_t rgb_cfg = {
-        .flags = {
-#if CONFIG_BSP_LCD_RGB_BOUNCE_BUFFER_MODE
-            .bb_mode = 1,
-#else
-            .bb_mode = 0,
-#endif
-#if CONFIG_BSP_DISPLAY_LVGL_AVOID_TEAR
-            .avoid_tearing = true,
-#else
-            .avoid_tearing = false,
-#endif
-        }};
 
-#if CONFIG_BSP_LCD_RGB_BOUNCE_BUFFER_MODE
-    ESP_LOGW(TAG, "CONFIG_BSP_LCD_RGB_BOUNCE_BUFFER_MODE");
-#endif
-
-    lv_display_t *disp = lvgl_port_add_disp_rgb(&disp_cfg, &rgb_cfg);
+    // This panel is QSPI (SH8601), not the ESP32-S3 parallel RGB peripheral.
+    // lvgl_port_add_disp_rgb() reinterprets panel_handle as an RGB panel struct
+    // and skips the on_color_trans_done throttling -> SPI queue overflow. Use the
+    // generic SPI/QSPI-safe path instead.
+    lv_display_t *disp = lvgl_port_add_disp(&disp_cfg);
     if (!disp)
     {
         return NULL;
@@ -617,8 +604,6 @@ lv_display_t *bsp_display_start_with_config(const bsp_display_cfg_t *cfg)
     BSP_NULL_CHECK(disp = bsp_display_lcd_init(cfg), NULL);
 
     BSP_NULL_CHECK(disp_indev = bsp_display_indev_init(disp), NULL);
-
-    BSP_ERROR_CHECK_RETURN_NULL(bsp_display_brightness_init());
 
     return disp;
 }

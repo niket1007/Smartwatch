@@ -263,6 +263,12 @@ esp_err_t ScreenManager::handle_events(uint32_t events)
         return change_screen(SCREEN_ID_BLE_STATUS);
     }
 
+    if((events & CALL_SCREEN_EVENT) and (current_screen_id != SCREEN_ID_CALL))
+    {
+        ESP_LOGI(TAG, "Call screen event called");
+        return change_screen(SCREEN_ID_CALL);
+    }
+
     if (current_screen != nullptr)
         return current_screen->handle_events(events);
 

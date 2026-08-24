@@ -11,9 +11,7 @@
 #include "iot_button.h"
 #include "button_gpio.h"
 
-// #include "lvgl.h"
-// #define LV_USE_PRIVATE_API
-// #include "src/indev/lv_indev_private.h"
+#include "esp_pm.h"
 
 #include "Common/globals.h"
 #include "Screen/screen_manager.h"
@@ -39,11 +37,19 @@ void background_task_func(void *pvParameters)
             bluetooth_manager.init();
         }
         if (display_manager.is_screen_timeout_enabled() and
-            (now - display_manager.get_screen_timeout_timer()) >= 15000) // 15sec
+            (now - display_manager.get_screen_timeout_timer()) >= SCREEN_TIMEOUT) // 15sec
         {
             display_manager.reset_screen_timeout_timer(now);
             xTaskNotify(gui_task_handle, SCREEN_OFF_EVENT, eSetBits);
         }
+
+        int ret = bluetooth_manager.handle_events(events);
+        if (ret != ESP_OK)
+        {
+            ESP_LOGE(TAG, "Failed to handle bluetooth event");
+        }
+
+        // esp_pm_dump_locks(stdout);
     }
 
     vTaskDelete(nullptr);
@@ -139,6 +145,14 @@ esp_err_t register_boot_button()
 
 extern "C" void app_main(void)
 {
+    esp_pm_config_t pm_config = {
+        .max_freq_mhz = 240,
+        .min_freq_mhz = 40,
+        .light_sleep_enable = true,
+    };
+
+    ESP_ERROR_CHECK(esp_pm_configure(&pm_config));
+
     ESP_ERROR_CHECK(nvs_manager.init());
     ESP_ERROR_CHECK(display_manager.init());
     ESP_ERROR_CHECK(screen_manager.init());

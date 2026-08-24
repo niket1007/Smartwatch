@@ -58,7 +58,7 @@ private:
         struct ble_gatt_access_ctxt *ctxt,
         void *arg);
 
-    static int ble_gap_event(
+    static int gap_event(
         struct ble_gap_event *event,
         void *arg);
 
@@ -79,21 +79,21 @@ private:
     // NimBLE host
     static void nimble_host_task(void *param);
 
-    static void ble_on_reset(int reason);
+    static void on_reset(int reason);
 
-    static void ble_on_sync();
+    static void on_sync();
 
     // Advertising
     static esp_err_t init_advertising();
 
-    static bool ble_send_to_phone(
+    static bool send_to_phone(
         const std::string &json);
 
     // Pairing
     static uint32_t generate_passkey();
 
     // Application integration
-    static void ble_handle_gadgetbridge_line(
+    static void handle_gadgetbridge_line(
         const char *line);
 
 public:
