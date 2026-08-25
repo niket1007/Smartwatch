@@ -13,19 +13,17 @@ private:
     float high;
     float low;
     float humidity;
-    int condition_code;
     std::string condition_text;
     std::string loc;
 
-    bool temp_dirty = false;
-    bool high_dirty = false;
-    bool low_dirty = false;
-    bool humidity_dirty = false;
-    bool rain_dirty = false;
-    bool wind_dirty = false;
-    bool code_dirty = false;
-    bool text_dirty = false;
-    bool loc_dirty = false;
+    bool temp_dirty;
+    bool high_dirty;
+    bool low_dirty;
+    bool humidity_dirty;
+    bool rain_dirty;
+    bool wind_dirty;
+    bool text_dirty;
+    bool loc_dirty;
 
     SemaphoreHandle_t weather_mutex_ = nullptr;
 
@@ -42,6 +40,15 @@ public:
         humidity = 0;
         condition_text = "Weather";
         loc = "Location";
+
+        temp_dirty = false;
+        high_dirty = false;
+        low_dirty = false;
+        humidity_dirty = false;
+        rain_dirty = false;
+        wind_dirty = false;
+        text_dirty = false;
+        loc_dirty = false;
     }
 
     float get_temp() const
