@@ -2,21 +2,24 @@
 
 #include "Screen/screen.h"
 #include <string>
+#include "lvgl.h"
 
 class HomeScreen : public Screen
 {
 private:
-    std::string date = "";
-    std::string time = "";
-    std::string weekday = "";
-    bool charging_status = false;
-    int battery_percentage = 0;
-    
-    esp_err_t update_date(std::string date);
-    esp_err_t update_time(std::string time);
-    esp_err_t update_weekday(std::string weekday);
-    esp_err_t update_battery_percentage(int percentage);
-    esp_err_t update_battery_icon(bool status, int percentage);
+    char old_day_str[16] = "";
+    char old_date_str[32] = "";
+    char old_time_str[16] = "";
+
+    // Calendar Variables
+    int cal_year = 0;
+    int cal_month = 0;
+    int cal_day = 0;
+
+    esp_err_t update_bat_percent_fields();
+    esp_err_t update_bat_charging_fields();
+    esp_err_t update_datetime_fields();
+    const lv_image_dsc_t *get_battery_icon(bool charging, int percent);
     
 public:
     ~HomeScreen() = default;

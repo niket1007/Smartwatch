@@ -97,7 +97,7 @@ esp_err_t WeatherScreen::update_screen()
 
 esp_err_t WeatherScreen::on_exit()
 {
-    ESP_LOGI(TAG, "on_exit called");
+    // ESP_LOGI(TAG, "on_exit called");
 
     return ESP_OK;
 }

@@ -377,15 +377,38 @@ int bsp_display_brightness_get(void)
 
 esp_err_t bsp_display_backlight_off(void)
 {
-    ESP_LOGI(TAG, "Backlight off");
-    return bsp_display_brightness_set(0);
+    ESP_RETURN_ON_ERROR(
+        esp_lcd_panel_disp_off(panel_handle, true),
+        TAG,
+        "Failed to turn display off");
+
+    ESP_RETURN_ON_ERROR(
+        esp_lcd_panel_io_tx_param(io_handle, 0x10, NULL, 0),
+        TAG,
+        "Failed to enter display sleep");
+
+    vTaskDelay(pdMS_TO_TICKS(120));
+
+    return ESP_OK;
 }
 
 esp_err_t bsp_display_backlight_on(void)
 {
-    ESP_LOGI(TAG, "Backlight on");
-    return bsp_display_brightness_set(100);
+    ESP_RETURN_ON_ERROR(
+        esp_lcd_panel_io_tx_param(io_handle, 0x11, NULL, 0),
+        TAG,
+        "Failed to exit display sleep");
+
+    vTaskDelay(pdMS_TO_TICKS(120));
+
+    ESP_RETURN_ON_ERROR(
+        esp_lcd_panel_disp_off(panel_handle, false),
+        TAG,
+        "Failed to turn display on");
+
+    return ESP_OK;
 }
+
 #if LVGL_VERSION_MAJOR >= 9
 static void rounder_event_cb(lv_event_t *e)
 {
@@ -430,7 +453,7 @@ esp_err_t bsp_display_new(const bsp_display_config_t *config, esp_lcd_panel_hand
                                                                  BSP_LCD_DATA1,
                                                                  BSP_LCD_DATA2,
                                                                  BSP_LCD_DATA3,
-                                                                 16384); // 16 KB
+                                                                 12 * 1024); // 12 KB
     ESP_ERROR_CHECK(spi_bus_initialize(BSP_LCD_SPI_NUM, &buscfg, SPI_DMA_CH_AUTO));
 
     const esp_lcd_panel_io_spi_config_t io_config = SH8601_PANEL_IO_QSPI_CONFIG(BSP_LCD_CS, NULL, NULL);

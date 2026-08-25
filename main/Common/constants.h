@@ -32,6 +32,9 @@ constexpr uint32_t MENU_OPTION_CLICKED_EVENT = 1U << 10;
 // WEATHER SCREEN
 constexpr uint32_t WEATHER_UI_UPDATE_EVENT = 1U << 11;
 
+// HOME SCREEN
+constexpr uint32_t BACK_TO_HOME_EVENT = 1U << 12;
+
 /*
 *   Other Events
 *   Events received by other tasks [RTC Time Sync Task, Background Task]
@@ -52,5 +55,4 @@ constexpr uint32_t SEND_BATTERY_DATA_EVENT = 1U << 6;
 constexpr uint32_t INIT_WEATHER_FETCH_EVENT = 1U << 7;
 
 // ---------------------- Timeout -----------------
-constexpr uint32_t SCREEN_TIMEOUT = 15000;
-constexpr uint32_t UPDATE_TIME_TIMER = 30000;
+constexpr uint32_t UPDATE_TIME_TIMER = 20000; //20 sec

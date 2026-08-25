@@ -114,6 +114,11 @@ Screen *ScreenManager::get_screen_instance(int id)
     }
 }
 
+int ScreenManager::get_current_screen_id()
+{
+    return current_screen_id;
+}
+
 esp_err_t ScreenManager::load_default_screen()
 {
     if (!initialized_)
@@ -244,6 +249,12 @@ esp_err_t ScreenManager::navigate(int direction)
 
 esp_err_t ScreenManager::handle_events(uint32_t events)
 {
+    if ((events & BACK_TO_HOME_EVENT) and
+        (current_screen_id != SCREEN_ID_HOME))
+    {
+        return change_screen(SCREEN_ID_HOME);
+    }
+
     if (current_screen_id >= 1 and current_screen_id <= 3)
     {
         if (events & SWIPE_LEFT_EVENT)
@@ -263,7 +274,7 @@ esp_err_t ScreenManager::handle_events(uint32_t events)
         return change_screen(SCREEN_ID_BLE_STATUS);
     }
 
-    if((events & CALL_SCREEN_EVENT) and (current_screen_id != SCREEN_ID_CALL))
+    if ((events & CALL_SCREEN_EVENT) and (current_screen_id != SCREEN_ID_CALL))
     {
         ESP_LOGI(TAG, "Call screen event called");
         return change_screen(SCREEN_ID_CALL);
@@ -278,27 +289,38 @@ esp_err_t ScreenManager::handle_events(uint32_t events)
 // LVGL Gesture Event
 void action_gesture_func(lv_event_t *e)
 {
-
-    lv_dir_t dir = lv_indev_get_gesture_dir(lv_indev_active());
-
-    if (dir == LV_DIR_LEFT)
+    if (power_saver_manager.is_touch_enabled())
     {
-        if (gui_task_handle != nullptr)
+        lv_dir_t dir = lv_indev_get_gesture_dir(lv_indev_active());
+
+        if (dir == LV_DIR_LEFT)
         {
-            xTaskNotify(
-                gui_task_handle,
-                SWIPE_LEFT_EVENT,
-                eSetBits);
+            if (gui_task_handle != nullptr)
+            {
+                xTaskNotify(
+                    gui_task_handle,
+                    SWIPE_LEFT_EVENT,
+                    eSetBits);
+            }
+        }
+        else if (dir == LV_DIR_RIGHT)
+        {
+            if (gui_task_handle != nullptr)
+            {
+                xTaskNotify(
+                    gui_task_handle,
+                    SWIPE_RIGHT_EVENT,
+                    eSetBits);
+            }
         }
     }
-    else if (dir == LV_DIR_RIGHT)
+    else
     {
-        if (gui_task_handle != nullptr)
+        if ((gui_task_handle != nullptr) and
+            (screen_manager.get_current_screen_id() != SCREEN_ID_HOME))
         {
             xTaskNotify(
-                gui_task_handle,
-                SWIPE_RIGHT_EVENT,
-                eSetBits);
+                gui_task_handle, BACK_TO_HOME_EVENT, eSetBits);
         }
     }
 }

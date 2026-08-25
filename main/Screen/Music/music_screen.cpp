@@ -16,7 +16,7 @@ esp_err_t MusicScreen::on_enter()
 
 esp_err_t MusicScreen::on_exit()
 {
-    ESP_LOGI(TAG, "on_exit called");
+    // ESP_LOGI(TAG, "on_exit called");
 
     return ESP_OK;
 }

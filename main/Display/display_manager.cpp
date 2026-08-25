@@ -41,23 +41,6 @@ esp_err_t DisplayManager::init()
     }
     display_pointer = display;
 
-    ESP_LOGI(TAG,
-             "DMA free=%u largest=%u",
-             heap_caps_get_free_size(MALLOC_CAP_DMA),
-             heap_caps_get_largest_free_block(MALLOC_CAP_DMA));
-
-    ESP_LOGI(TAG,
-             "INTERNAL free=%u largest=%u",
-             heap_caps_get_free_size(MALLOC_CAP_INTERNAL),
-             heap_caps_get_largest_free_block(MALLOC_CAP_INTERNAL));
-
-    ESP_LOGI(TAG,
-             "SPIRAM free=%u largest=%u",
-             heap_caps_get_free_size(MALLOC_CAP_SPIRAM),
-             heap_caps_get_largest_free_block(MALLOC_CAP_SPIRAM));
-
-    // set_brightness(70);
-
     // 1. Update the gesture limit for smooth gesture catch
     // 2. Register global touch event
     update_configs();
@@ -91,13 +74,9 @@ esp_err_t DisplayManager::sleep()
     ESP_RETURN_ON_ERROR(
         set_brightness(0), TAG, "Failed to set brightness to 0%%");
 
-    // ESP_RETURN_ON_ERROR(
-    //     esp_lcd_panel_disp_off(panel_handle_, true),
-    //     TAG, "Failed display off");
-
-    // ESP_RETURN_ON_ERROR(
-    //     esp_lcd_panel_io_tx_param(io_handle_, 0x10, NULL, 0),
-    //     TAG, "Failed display sleep");
+    ESP_RETURN_ON_ERROR(
+        bsp_display_backlight_off(),
+        TAG, "Failed to turn off the display");
 
     vTaskDelay(pdMS_TO_TICKS(120));
 
@@ -113,19 +92,13 @@ esp_err_t DisplayManager::wake()
         return ESP_OK;
     }
 
-    // ESP_RETURN_ON_ERROR(
-    //     esp_lcd_panel_io_tx_param(io_handle_, 0x11, NULL, 0),
-    //     TAG, "Failed to wake up display");
-
-    // vTaskDelay(pdMS_TO_TICKS(120));
-
-    // ESP_RETURN_ON_ERROR(
-    //     esp_lcd_panel_disp_off(panel_handle_, false),
-    //     TAG, "Failed display on");
-
-    // uint32_t brightness = power_saver_manager.get_brightness_percentage();
     ESP_RETURN_ON_ERROR(
-        set_brightness(70), TAG, "Failed to set brightness");
+        bsp_display_backlight_on(),
+        TAG, "Failed to turn on the display");
+
+    uint32_t brightness = power_saver_manager.get_brightness_percentage();
+    ESP_RETURN_ON_ERROR(
+        set_brightness(brightness), TAG, "Failed to set brightness");
 
     is_sleep = false;
 

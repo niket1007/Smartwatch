@@ -33,6 +33,16 @@ void background_task_func(void *pvParameters)
 
         now = millis();
 
+        if (events & SCREEN_ON_EVENT)
+        {
+            battery_manager.refresh();
+        }
+
+        if (!display_manager.is_sleeping())
+        {
+            battery_manager.refresh();
+        }
+
         if (events & BLUETOOTH_INIT)
         {
             esp_err_t err = bluetooth_manager.init();
@@ -41,9 +51,19 @@ void background_task_func(void *pvParameters)
                 ESP_LOGE(TAG, "Failed to intialize bluetooth");
             }
         }
-        if (display_manager.is_screen_timeout_enabled() and
-            (now - display_manager.get_screen_timeout_timer()) >= SCREEN_TIMEOUT) // 15sec
+
+        if (now - update_time_event_timer > UPDATE_TIME_TIMER)
         {
+            update_time_event_timer = now;
+            xTaskNotify(
+                gui_task_handle, UPDATE_TIME_EVENT, eSetBits);
+        }
+
+        if (display_manager.is_screen_timeout_enabled() and
+            (now - display_manager.get_screen_timeout_timer()) >=
+                power_saver_manager.get_screen_timeout())
+        {
+
             display_manager.reset_screen_timeout_timer(now);
             if (gui_task_handle != nullptr)
             {
@@ -51,10 +71,16 @@ void background_task_func(void *pvParameters)
             }
         }
 
-        int ret = bluetooth_manager.handle_events(events);
+        esp_err_t ret = bluetooth_manager.handle_events(events);
         if (ret != ESP_OK)
         {
             ESP_LOGE(TAG, "Failed to handle bluetooth event");
+        }
+
+        ret = power_saver_manager.update_bluetooth_state();
+        if (ret != ESP_OK)
+        {
+            ESP_LOGE(TAG, "Failed to update the bluetooth status");
         }
 
         // esp_pm_dump_locks(stdout);
@@ -73,12 +99,6 @@ void gui_task_func(void *pvParameters)
     else
     {
         ESP_LOGE(TAG, "Failed to acquire display lock");
-    }
-
-    if (background_task_handle != nullptr)
-    {
-        vTaskDelay(pdMS_TO_TICKS(3000));
-        xTaskNotify(background_task_handle, BLUETOOTH_INIT, eSetBits);
     }
 
     while (true)
@@ -110,9 +130,64 @@ void gui_task_func(void *pvParameters)
                 ESP_LOGW(
                     TAG, "Failed to acquire display lock for event handling");
             }
+
+            power_saver_manager.handle_events(events);
         }
     }
     vTaskDelete(nullptr);
+}
+
+void time_sync_task_func(void *pvParameters)
+{
+    ESP_LOGI(TAG, "Boot Wi-Fi sync starting...");
+
+    if (wifi_manager.init() == ESP_OK)
+    {
+        uint32_t events = 0;
+
+        bool notified = xTaskNotifyWait(
+            0,
+            UINT32_MAX,
+            &events,
+            pdMS_TO_TICKS(15000));
+
+        if (notified && (events & WIFI_CONNECTED_EVENT))
+        {
+            ESP_LOGI(TAG, "Wi-Fi Connected! Syncing RTC...");
+            rtc_manager.init();
+            rtc_manager.deinit();
+        }
+        else if (!notified)
+        {
+            ESP_LOGE(TAG, "Wi-Fi sync timed out");
+        }
+        else if (events & WIFI_FAILED_EVENT)
+        {
+            ESP_LOGE(TAG, "Wi-Fi connection failed (Max retries reached)");
+        }
+
+        wifi_manager.deinit();
+    }
+    else
+    {
+        ESP_LOGE(TAG, "Failed to initialize Wi-Fi manager");
+    }
+
+    rtc_manager.get_PCF85063_rtc();
+    if (gui_task_handle != nullptr)
+    {
+        xTaskNotify(gui_task_handle, UPDATE_TIME_EVENT, eSetBits);
+    }
+    if (background_task_handle != nullptr)
+    {
+        vTaskDelay(pdMS_TO_TICKS(3000));
+        xTaskNotify(background_task_handle, BLUETOOTH_INIT, eSetBits);
+    }
+
+    ESP_LOGI(TAG, "Boot Wi-Fi sync completed. Deleting task.");
+
+    time_sync_handle = NULL;
+    vTaskDelete(NULL);
 }
 
 static void boot_button_single_click_event(void *arg, void *data)
@@ -155,10 +230,27 @@ esp_err_t register_boot_button()
 extern "C" void app_main(void)
 {
 
+    ESP_ERROR_CHECK(i2c_manager.init());
+
     ESP_ERROR_CHECK(nvs_manager.init());
+
+    ESP_ERROR_CHECK(battery_manager.init());
+
     ESP_ERROR_CHECK(display_manager.init());
+
     ESP_ERROR_CHECK(screen_manager.init());
+
+    ESP_ERROR_CHECK(power_saver_manager.init());
+
     ESP_ERROR_CHECK(register_boot_button());
+
+    xTaskCreate(
+        time_sync_task_func,
+        "TIME_SYNC",
+        4096,
+        NULL,
+        1,
+        &time_sync_handle);
 
     xTaskCreatePinnedToCore(
         gui_task_func,
@@ -181,7 +273,7 @@ extern "C" void app_main(void)
     esp_pm_config_t pm_config = {
         .max_freq_mhz = 240,
         .min_freq_mhz = 40,
-        .light_sleep_enable = false,
+        .light_sleep_enable = true,
     };
 
     ESP_ERROR_CHECK(esp_pm_configure(&pm_config));

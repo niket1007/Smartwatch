@@ -513,7 +513,7 @@ int BluetoothManager::gap_event(
                 .itvl_min = 80, // min interval = 80 * 1.25 = 100ms
                 .itvl_max = 160, // max Interval = 160 * 1.25 = 200ms
                 .latency = 10,
-                .supervision_timeout = 400, // 400 * 10 = 4000ms [Connection Timeout]
+                .supervision_timeout = 600, // 600 * 10 = 6000ms [supervision timeout > 2 × (latency + 1) × max_interval]
                 .min_ce_len = 0,
                 .max_ce_len = 0,
             };
@@ -1040,11 +1040,6 @@ esp_err_t BluetoothManager::handle_events(uint32_t events)
         bool status = send_to_phone(data);
         if (!status)
             return ESP_FAIL;
-
-        if (background_task_handle != nullptr)
-        {
-            xTaskNotify(background_task_handle, INIT_WEATHER_FETCH_EVENT, eSetBits);
-        }
     }
 
     if (events & INIT_WEATHER_FETCH_EVENT)

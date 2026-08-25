@@ -1,6 +1,6 @@
 #include "images.h"
 
-const ext_img_desc_t images[20] = {
+const ext_img_desc_t images[24] = {
     { "battery_charging", &img_battery_charging },
     { "info", &img_info },
     { "notification", &img_notification },
@@ -21,4 +21,8 @@ const ext_img_desc_t images[20] = {
     { "bluetooth_connected", &img_bluetooth_connected },
     { "wifi", &img_wifi },
     { "brightness", &img_brightness },
+    { "battery_0_20", &img_battery_0_20 },
+    { "battery_21_49", &img_battery_21_49 },
+    { "battery_50_79", &img_battery_50_79 },
+    { "battery_80_100", &img_battery_80_100 },
 };

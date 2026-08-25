@@ -120,7 +120,7 @@ esp_err_t CallScreen::update_screen()
 
 esp_err_t CallScreen::on_exit()
 {
-    ESP_LOGI(TAG, "on_exit called");
+    // ESP_LOGI(TAG, "on_exit called");
 
     display_manager.set_screen_timeout_enabled(true);
 
