@@ -9,7 +9,7 @@ static constexpr const char *TAG = "ALARM_SCREEN";
 
 esp_err_t AlarmScreen::on_enter()
 {
-    ESP_LOGI(TAG, "on_enter called");
+    // ESP_LOGI(TAG, "on_enter called");
     return ESP_OK;
 }
 

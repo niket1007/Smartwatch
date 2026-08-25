@@ -955,6 +955,8 @@ void BluetoothManager::handle_gadgetbridge_line(const char *line)
 
         std::string number = cJSON_IsString(number_item) ? number_item->valuestring : "";
 
+        call_data.update(name, number, status);
+
         if (gui_task_handle != nullptr)
         {
             xTaskNotify(

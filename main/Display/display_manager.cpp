@@ -3,8 +3,11 @@
 
 #include "bsp/esp-bsp.h"
 #include "bsp/display.h"
+
 #define LV_USE_PRIVATE_API
 #include "src/indev/lv_indev_private.h"
+
+#include "esp_heap_caps.h"
 
 static constexpr const char *TAG = "DISPLAY_MANAGER";
 
@@ -25,7 +28,7 @@ void DisplayManager::update_configs()
             touch_event_cb,
             LV_EVENT_ALL,
             nullptr);
-    } 
+    }
 }
 
 esp_err_t DisplayManager::init()
@@ -38,7 +41,22 @@ esp_err_t DisplayManager::init()
     }
     display_pointer = display;
 
-    set_brightness(70);
+    ESP_LOGI(TAG,
+             "DMA free=%u largest=%u",
+             heap_caps_get_free_size(MALLOC_CAP_DMA),
+             heap_caps_get_largest_free_block(MALLOC_CAP_DMA));
+
+    ESP_LOGI(TAG,
+             "INTERNAL free=%u largest=%u",
+             heap_caps_get_free_size(MALLOC_CAP_INTERNAL),
+             heap_caps_get_largest_free_block(MALLOC_CAP_INTERNAL));
+
+    ESP_LOGI(TAG,
+             "SPIRAM free=%u largest=%u",
+             heap_caps_get_free_size(MALLOC_CAP_SPIRAM),
+             heap_caps_get_largest_free_block(MALLOC_CAP_SPIRAM));
+
+    // set_brightness(70);
 
     // 1. Update the gesture limit for smooth gesture catch
     // 2. Register global touch event

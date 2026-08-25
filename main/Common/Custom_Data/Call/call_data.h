@@ -25,6 +25,10 @@ public:
         name = "Phone";
         phone_number = "+911234567890";
         status = "incoming";
+
+        bool is_name_dirty = false;
+        bool is_number_dirty = false;
+        bool is_status_dirty = false;
     }
 
     std::string get_contact_name() const
@@ -81,7 +85,7 @@ public:
         std::string cmd)
     {
         xSemaphoreTake(call_mutex_, portMAX_DELAY);
-        
+
         is_name_dirty = name != contact_name;
         name = contact_name;
 

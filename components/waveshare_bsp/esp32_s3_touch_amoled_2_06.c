@@ -430,7 +430,7 @@ esp_err_t bsp_display_new(const bsp_display_config_t *config, esp_lcd_panel_hand
                                                                  BSP_LCD_DATA1,
                                                                  BSP_LCD_DATA2,
                                                                  BSP_LCD_DATA3,
-                                                                 2048); // must cover the largest LVGL flush (H_RES * buf height * bytes/px)
+                                                                 16384); // 16 KB
     ESP_ERROR_CHECK(spi_bus_initialize(BSP_LCD_SPI_NUM, &buscfg, SPI_DMA_CH_AUTO));
 
     const esp_lcd_panel_io_spi_config_t io_config = SH8601_PANEL_IO_QSPI_CONFIG(BSP_LCD_CS, NULL, NULL);
@@ -494,18 +494,20 @@ esp_err_t bsp_touch_new(const bsp_touch_config_t *config, esp_lcd_touch_handle_t
     return esp_lcd_touch_new_i2c_ft5x06(tp_io_handle, &tp_cfg, ret_touch);
 }
 
-static lv_display_t *bsp_display_lcd_init()
+static lv_display_t *bsp_display_lcd_init(const bsp_display_cfg_t *cfg)
 {
     bsp_display_config_t disp_config = {0};
 
-    BSP_ERROR_CHECK_RETURN_NULL(bsp_display_new(&disp_config, &panel_handle, &io_handle));
+    BSP_ERROR_CHECK_RETURN_NULL(
+        bsp_display_new(&disp_config, &panel_handle, &io_handle));
 
     int buffer_size = 0;
+
 #if CONFIG_BSP_DISPLAY_LVGL_AVOID_TEAR
     buffer_size = BSP_LCD_H_RES * BSP_LCD_V_RES;
 #else
     buffer_size = BSP_LCD_H_RES * LVGL_BUFFER_HEIGHT;
-#endif /* CONFIG_BSP_DISPLAY_LVGL_AVOID_TEAR */
+#endif
 
     const lvgl_port_display_cfg_t disp_cfg = {
         .io_handle = io_handle,
@@ -515,6 +517,7 @@ static lv_display_t *bsp_display_lcd_init()
         .monochrome = false,
         .hres = BSP_LCD_H_RES,
         .vres = BSP_LCD_V_RES,
+
 #if LVGL_VERSION_MAJOR >= 9
         .color_format = LV_COLOR_FORMAT_RGB565,
 #endif
@@ -524,37 +527,44 @@ static lv_display_t *bsp_display_lcd_init()
             .mirror_x = false,
             .mirror_y = false,
         },
+
         .flags = {
             .sw_rotate = true,
-            .buff_dma = false,
+            .buff_dma = cfg->flags.buff_dma,
+
 #if CONFIG_BSP_DISPLAY_LVGL_PSRAM
-            .buff_spiram = false,
+            .buff_spiram = cfg->flags.buff_spiram,
 #endif
+
 #if CONFIG_BSP_DISPLAY_LVGL_FULL_REFRESH
             .full_refresh = 1,
 #elif CONFIG_BSP_DISPLAY_LVGL_DIRECT_MODE
             .direct_mode = 1,
 #endif
+
 #if LVGL_VERSION_MAJOR >= 9
             .swap_bytes = true,
 #endif
-        }};
+        },
+    };
 
-    // This panel is QSPI (SH8601), not the ESP32-S3 parallel RGB peripheral.
-    // lvgl_port_add_disp_rgb() reinterprets panel_handle as an RGB panel struct
-    // and skips the on_color_trans_done throttling -> SPI queue overflow. Use the
-    // generic SPI/QSPI-safe path instead.
     lv_display_t *disp = lvgl_port_add_disp(&disp_cfg);
+
     if (!disp)
     {
         return NULL;
     }
 
 #if LVGL_VERSION_MAJOR >= 9
-    lv_display_add_event_cb(disp, rounder_event_cb, LV_EVENT_INVALIDATE_AREA, NULL);
+    lv_display_add_event_cb(
+        disp,
+        rounder_event_cb,
+        LV_EVENT_INVALIDATE_AREA,
+        NULL);
 #else
     lv_disp_t *disp_v8 = (lv_disp_t *)disp;
-    if (disp_v8 && disp_v8->driver) {
+    if (disp_v8 && disp_v8->driver)
+    {
         disp_v8->driver->rounder_cb = bsp_lvgl_rounder_cb;
     }
 #endif
@@ -604,6 +614,8 @@ lv_display_t *bsp_display_start_with_config(const bsp_display_cfg_t *cfg)
     BSP_NULL_CHECK(disp = bsp_display_lcd_init(cfg), NULL);
 
     BSP_NULL_CHECK(disp_indev = bsp_display_indev_init(disp), NULL);
+
+    BSP_ERROR_CHECK_RETURN_NULL(bsp_display_brightness_init());
 
     return disp;
 }

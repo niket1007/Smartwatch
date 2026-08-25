@@ -9,7 +9,7 @@ static constexpr const char *TAG = "SETTINGS_SCREEN";
 
 esp_err_t SettingsScreen::on_enter()
 {
-    ESP_LOGI(TAG, "on_enter called");
+    // ESP_LOGI(TAG, "on_enter called");
     return ESP_OK;
 }
 

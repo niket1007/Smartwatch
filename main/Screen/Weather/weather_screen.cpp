@@ -11,7 +11,7 @@ static constexpr const char *TAG = "WEATHER_SCREEN";
 
 esp_err_t WeatherScreen::on_enter()
 {
-    ESP_LOGI(TAG, "on_enter called");
+    // ESP_LOGI(TAG, "on_enter called");
 
     lv_obj_add_flag(objects.wrefresh_label, LV_OBJ_FLAG_CLICKABLE);
     
@@ -123,6 +123,6 @@ void action_weather_refresh_clicked(lv_event_t *e)
     if(background_task_handle != nullptr)
     {
         xTaskNotify(background_task_handle, INIT_WEATHER_FETCH_EVENT,eSetBits);
-        lv_obj_remove_flag(objects.wrefresh_label, LV_OBJ_FLAG_CLICKABLE);
+        // lv_obj_remove_flag(objects.wrefresh_label, LV_OBJ_FLAG_CLICKABLE);
     }
 }

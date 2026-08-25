@@ -8,7 +8,7 @@ static constexpr const char *TAG = "HOME_SCREEN";
 
 esp_err_t HomeScreen::on_enter()
 {
-    ESP_LOGI(TAG, "on_enter called");
+    // ESP_LOGI(TAG, "on_enter called");
     return ESP_OK;
 }
 

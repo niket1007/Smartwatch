@@ -26,21 +26,29 @@ void background_task_func(void *pvParameters)
     while (true)
     {
         uint32_t events = 0;
-        now = millis();
 
         bool notified = xTaskNotifyWait(
             0, UINT32_MAX, &events,
             display_manager.is_sleeping() ? portMAX_DELAY : pdMS_TO_TICKS(2000));
 
+        now = millis();
+
         if (events & BLUETOOTH_INIT)
         {
-            bluetooth_manager.init();
+            esp_err_t err = bluetooth_manager.init();
+            if (err != ESP_OK)
+            {
+                ESP_LOGE(TAG, "Failed to intialize bluetooth");
+            }
         }
         if (display_manager.is_screen_timeout_enabled() and
             (now - display_manager.get_screen_timeout_timer()) >= SCREEN_TIMEOUT) // 15sec
         {
             display_manager.reset_screen_timeout_timer(now);
-            xTaskNotify(gui_task_handle, SCREEN_OFF_EVENT, eSetBits);
+            if (gui_task_handle != nullptr)
+            {
+                xTaskNotify(gui_task_handle, SCREEN_OFF_EVENT, eSetBits);
+            }
         }
 
         int ret = bluetooth_manager.handle_events(events);
@@ -69,6 +77,7 @@ void gui_task_func(void *pvParameters)
 
     if (background_task_handle != nullptr)
     {
+        vTaskDelay(pdMS_TO_TICKS(3000));
         xTaskNotify(background_task_handle, BLUETOOTH_INIT, eSetBits);
     }
 
@@ -145,13 +154,6 @@ esp_err_t register_boot_button()
 
 extern "C" void app_main(void)
 {
-    esp_pm_config_t pm_config = {
-        .max_freq_mhz = 240,
-        .min_freq_mhz = 40,
-        .light_sleep_enable = true,
-    };
-
-    ESP_ERROR_CHECK(esp_pm_configure(&pm_config));
 
     ESP_ERROR_CHECK(nvs_manager.init());
     ESP_ERROR_CHECK(display_manager.init());
@@ -175,4 +177,12 @@ extern "C" void app_main(void)
         1,
         &background_task_handle,
         0);
+
+    esp_pm_config_t pm_config = {
+        .max_freq_mhz = 240,
+        .min_freq_mhz = 40,
+        .light_sleep_enable = false,
+    };
+
+    ESP_ERROR_CHECK(esp_pm_configure(&pm_config));
 }

@@ -8,14 +8,12 @@ static constexpr const char *TAG = "BLESTATUS_SCREEN";
 
 esp_err_t BleStatusScreen::on_enter() 
 {
-    ESP_LOGI(TAG, "on_enter called");
-
-    // display_manager.set_screen_timeout_enabled(false);
+    // ESP_LOGI(TAG, "on_enter called");
 
     if(display_manager.is_sleeping())
     {
         display_manager.wake();
-        vTaskDelay(10);
+        vTaskDelay(pdMS_TO_TICKS(10));
     }
     
     lv_label_set_text(
@@ -28,7 +26,6 @@ esp_err_t BleStatusScreen::on_enter()
 esp_err_t BleStatusScreen::on_exit() 
 {
     ESP_LOGI(TAG, "on_exit called");
-    // display_manager.set_screen_timeout_enabled(true);
     return ESP_OK;
 }
 
