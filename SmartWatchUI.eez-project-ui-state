@@ -1,7 +1,7 @@
 {
   "navigation": {
-    "selectedUserPageObject": "[SmartWatchUI.eez-project]:/userPages/10",
-    "selectedBitmapObject": "[SmartWatchUI.eez-project]:/bitmaps/2",
+    "selectedUserPageObject": "[SmartWatchUI.eez-project]:/userPages/8",
+    "selectedBitmapObject": "[SmartWatchUI.eez-project]:/bitmaps/46",
     "subnavigationSelectedItems": {
       "variables-tab/sub-navigation/selected-item": "Global"
     }
@@ -24,6 +24,7 @@
           },
           {
             "type": "border",
+            "selected": 2,
             "size": 240,
             "location": "right",
             "children": [
@@ -196,10 +197,10 @@
                 {
                   "type": "tab",
                   "id": "#5843f785-a2c6-49aa-bc78-957d610e5e4b",
-                  "name": "Calendar",
+                  "name": "Navigation",
                   "component": "editor",
                   "config": {
-                    "objectPath": "[SmartWatchUI.eez-project]:/userPages/10",
+                    "objectPath": "[SmartWatchUI.eez-project]:/userPages/8",
                     "permanent": false
                   },
                   "icon": "svg:page"
@@ -1170,7 +1171,7 @@
           "x": -205,
           "y": -251
         },
-        "scale": 1
+        "scale": 1.1
       },
       "timeline": {
         "isEditorActive": false,
@@ -1233,7 +1234,11 @@
       "selectionFront": {},
       "selectionBack": {
         "0": {
-          "0": {}
+          "0": {
+            "7": {
+              "$selected": true
+            }
+          }
         }
       },
       "transform": {
@@ -1284,8 +1289,8 @@
       },
       "transform": {
         "translate": {
-          "x": -205,
-          "y": -251
+          "x": -241.45000000000002,
+          "y": -302.31062393188483
         },
         "scale": 1.1
       },
@@ -1310,7 +1315,7 @@
           "x": -205,
           "y": -251
         },
-        "scale": 1
+        "scale": 1.1
       },
       "timeline": {
         "isEditorActive": false,
@@ -1333,7 +1338,7 @@
           "x": -205,
           "y": -251
         },
-        "scale": 1
+        "scale": 1.1
       },
       "timeline": {
         "isEditorActive": false,
@@ -1360,7 +1365,7 @@
           "x": -205,
           "y": -251
         },
-        "scale": 1
+        "scale": 1.1
       },
       "timeline": {
         "isEditorActive": false,
@@ -1383,7 +1388,7 @@
           "x": -205,
           "y": -251
         },
-        "scale": 1
+        "scale": 1.1
       },
       "timeline": {
         "isEditorActive": false,
@@ -1432,12 +1437,12 @@
   "lvglPart": "MAIN",
   "lvglState": "DEFAULT",
   "lvglExpandedPropertiesGroup": [
-    "BORDER",
+    "TEXT",
     "MISCELLANEOUS"
   ],
   "showInactiveFlowsInDebugger": true,
   "globalFlowZoom": true,
-  "flowZoom": 1,
+  "flowZoom": 1.1,
   "implementationLanguage": "C",
-  "openDialogDefaultPath": "C:\\Github_repos\\Smartwatch\\Icons\\battery_80_100.png"
+  "openDialogDefaultPath": "C:\\Github_repos\\Smartwatch\\Icons\\nav_finish.png"
 }

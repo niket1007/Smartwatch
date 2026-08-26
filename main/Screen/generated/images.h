@@ -31,6 +31,29 @@ extern const lv_img_dsc_t img_battery_0_20;
 extern const lv_img_dsc_t img_battery_21_49;
 extern const lv_img_dsc_t img_battery_50_79;
 extern const lv_img_dsc_t img_battery_80_100;
+extern const lv_img_dsc_t img_play;
+extern const lv_img_dsc_t img_pause;
+extern const lv_img_dsc_t img_next;
+extern const lv_img_dsc_t img_prev;
+extern const lv_img_dsc_t img_volume_plus;
+extern const lv_img_dsc_t img_volume_minus;
+extern const lv_img_dsc_t img_arrow_right;
+extern const lv_img_dsc_t img_arrow_left;
+extern const lv_img_dsc_t img_arrow_up;
+extern const lv_img_dsc_t img_keep_left;
+extern const lv_img_dsc_t img_keep_right;
+extern const lv_img_dsc_t img_slight_right;
+extern const lv_img_dsc_t img_slight_left;
+extern const lv_img_dsc_t img_sharp_right;
+extern const lv_img_dsc_t img_sharp_left;
+extern const lv_img_dsc_t img_u_turn_right;
+extern const lv_img_dsc_t img_u_turn_left;
+extern const lv_img_dsc_t img_roundabout_left;
+extern const lv_img_dsc_t img_roundabout_right;
+extern const lv_img_dsc_t img_roundabout_straight;
+extern const lv_img_dsc_t img_roundabout_uturn;
+extern const lv_img_dsc_t img_offroute;
+extern const lv_img_dsc_t img_nav_finish;
 
 #ifndef EXT_IMG_DESC_T
 #define EXT_IMG_DESC_T
@@ -40,7 +63,7 @@ typedef struct _ext_img_desc_t {
 } ext_img_desc_t;
 #endif
 
-extern const ext_img_desc_t images[24];
+extern const ext_img_desc_t images[47];
 
 #ifdef __cplusplus
 }

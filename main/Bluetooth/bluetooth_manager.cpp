@@ -37,6 +37,7 @@
 // Custom Data
 #include "Common/Custom_Data/Call/call_data.h"
 #include "Common/Custom_Data/Weather/weather_data.h"
+#include "Common/Custom_Data/Navigation/nav_data.h"
 
 static constexpr char *TAG = "BLUETOOTH_MANAGER";
 
@@ -510,7 +511,7 @@ int BluetoothManager::gap_event(
             ble_status = BLE_STATUS::CONNECTED;
 
             struct ble_gap_upd_params params = {
-                .itvl_min = 80, // min interval = 80 * 1.25 = 100ms
+                .itvl_min = 80,  // min interval = 80 * 1.25 = 100ms
                 .itvl_max = 160, // max Interval = 160 * 1.25 = 200ms
                 .latency = 10,
                 .supervision_timeout = 600, // 600 * 10 = 6000ms [supervision timeout > 2 × (latency + 1) × max_interval]
@@ -1002,6 +1003,43 @@ void BluetoothManager::handle_gadgetbridge_line(const char *line)
         {
             xTaskNotify(
                 gui_task_handle, WEATHER_UI_UPDATE_EVENT, eSetBits);
+        }
+    }
+
+    if (strcmp(event->valuestring, "nav") == 0)
+    {
+        if (!cJSON_HasObjectItem(json, "distance") and
+            !cJSON_HasObjectItem(json, "action") and
+            !cJSON_HasObjectItem(json, "eta") and
+            !cJSON_HasObjectItem(json, "instr"))
+        {
+            nav_data.update("Navigation", "--:-- --", "", 0);
+        }
+        else
+        {
+            cJSON *dist_item = cJSON_GetObjectItemCaseSensitive(json, "distance");
+            cJSON *dir_item = cJSON_GetObjectItemCaseSensitive(json, "action");
+            cJSON *eta_item = cJSON_GetObjectItemCaseSensitive(json, "eta");
+            cJSON *instr_item = cJSON_GetObjectItemCaseSensitive(json, "instr");
+
+            int dist = cJSON_IsNumber(dist_item) ? dist_item->valueint : 0;
+
+            std::string instr =
+                cJSON_IsString(instr_item) ? instr_item->valuestring : "";
+
+            std::string dir =
+                cJSON_IsString(dir_item) ? dir_item->valuestring : "";
+
+            std::string eta =
+                cJSON_IsString(eta_item) ? eta_item->valuestring : "";
+
+            nav_data.update(dir, eta, instr, dist);
+        }
+
+        if (gui_task_handle != nullptr)
+        {
+            xTaskNotify(
+                gui_task_handle, NAV_SCREEN_UDPATE_EVENT, eSetBits);
         }
     }
 

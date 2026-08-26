@@ -35,6 +35,9 @@ constexpr uint32_t WEATHER_UI_UPDATE_EVENT = 1U << 11;
 // HOME SCREEN
 constexpr uint32_t BACK_TO_HOME_EVENT = 1U << 12;
 
+// NAVIGATION SCREEN
+constexpr uint32_t NAV_SCREEN_UDPATE_EVENT = 1U << 13;
+
 /*
 *   Other Events
 *   Events received by other tasks [RTC Time Sync Task, Background Task]

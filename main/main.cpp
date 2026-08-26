@@ -13,6 +13,8 @@
 
 #include "esp_pm.h"
 
+#include "esp_heap_caps.h"
+
 #include "Common/globals.h"
 #include "Screen/screen_manager.h"
 
@@ -72,9 +74,10 @@ void background_task_func(void *pvParameters)
         if (events & BLUETOOTH_INIT)
         {
             esp_err_t err = bluetooth_manager.init();
+
             if (err != ESP_OK)
             {
-                ESP_LOGE(TAG, "Failed to intialize bluetooth");
+                ESP_LOGE(TAG, "Failed to initialize bluetooth");
             }
         }
 
@@ -228,9 +231,7 @@ void time_sync_task_func(void *pvParameters)
             UPDATE_TIME_EVENT,
             eSetBits);
     }
-
-    vTaskDelay(pdMS_TO_TICKS(3000));
-
+    vTaskDelay(pdMS_TO_TICKS(1000)); 
     if (background_task_handle != nullptr)
     {
         xTaskNotify(
