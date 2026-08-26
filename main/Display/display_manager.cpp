@@ -1,5 +1,7 @@
 #include "display_manager.h"
 #include "Common/globals.h"
+// #include "Locks/locks_manager.h"
+
 
 #include "bsp/esp-bsp.h"
 #include "bsp/display.h"
@@ -7,7 +9,7 @@
 #define LV_USE_PRIVATE_API
 #include "src/indev/lv_indev_private.h"
 
-#include "esp_heap_caps.h"
+#include "esp_pm.h"
 
 static constexpr const char *TAG = "DISPLAY_MANAGER";
 
@@ -33,6 +35,8 @@ void DisplayManager::update_configs()
 
 esp_err_t DisplayManager::init()
 {
+    // LocksManager locks(cpu_freq_lock, no_sleep_lock);
+
     lv_display_t *display = bsp_display_start();
     if (display == nullptr)
     {
@@ -65,51 +69,112 @@ bool DisplayManager::is_sleeping()
 
 esp_err_t DisplayManager::sleep()
 {
+    // LocksManager locks(cpu_freq_lock, no_sleep_lock);
+
     ESP_LOGI(TAG, "Sleep func called; is_sleep: %d", is_sleep);
+
     if (is_sleep)
     {
         return ESP_OK;
     }
 
-    ESP_RETURN_ON_ERROR(
-        set_brightness(0), TAG, "Failed to set brightness to 0%%");
+    // if (!bsp_display_lock(1000))
+    // {
+    //     ESP_LOGE(TAG, "Failed to acquire display lock for sleep");
+    //     return ESP_ERR_TIMEOUT;
+    // }
 
-    ESP_RETURN_ON_ERROR(
-        bsp_display_backlight_off(),
-        TAG, "Failed to turn off the display");
+    esp_err_t ret = ESP_OK;
 
-    vTaskDelay(pdMS_TO_TICKS(120));
+    ret = set_brightness(0);
+    if (ret != ESP_OK)
+    {
+        ESP_LOGE(TAG, "Failed to set brightness to 0%%");
+        // bsp_display_unlock();
+        return ret;
+    }
+
+    // ret = bsp_display_backlight_off();
+    // if (ret != ESP_OK)
+    // {
+    //     ESP_LOGE(TAG, "Failed to turn off the display");
+    //     bsp_display_unlock();
+    //     return ret;
+    // }
 
     is_sleep = true;
+
+    // bsp_display_unlock();
+
+    ret = esp_pm_lock_release(no_sleep_lock);
+    if(ret != ESP_OK)
+    {
+        ESP_LOGE(TAG, "Failed to release no sleep lock");
+    }
+
     return ESP_OK;
 }
 
+
 esp_err_t DisplayManager::wake()
 {
+    // LocksManager locks(cpu_freq_lock, no_sleep_lock);
+    
     ESP_LOGI(TAG, "Wake func called; is_sleep: %d", is_sleep);
+
     if (!is_sleep)
     {
         return ESP_OK;
     }
 
-    ESP_RETURN_ON_ERROR(
-        bsp_display_backlight_on(),
-        TAG, "Failed to turn on the display");
+    esp_err_t ret = esp_pm_lock_acquire(no_sleep_lock);
+    if(ret != ESP_OK)
+    {
+        ESP_LOGE(TAG, "Failed to acquire no sleep lock");
+    }
+
+    // if (!bsp_display_lock(1000))
+    // {
+    //     ESP_LOGE(TAG, "Failed to acquire display lock for wake");
+    //     return ESP_ERR_TIMEOUT;
+    // }
+
+    // ret = bsp_display_backlight_on();
+    // if (ret != ESP_OK)
+    // {
+    //     ESP_LOGE(TAG, "Failed to turn on the display");
+    //     bsp_display_unlock();
+    //     return ret;
+    // }
 
     uint32_t brightness = power_saver_manager.get_brightness_percentage();
-    ESP_RETURN_ON_ERROR(
-        set_brightness(brightness), TAG, "Failed to set brightness");
+
+    ret = set_brightness(brightness);
+    if (ret != ESP_OK)
+    {
+        ESP_LOGE(TAG, "Failed to set brightness");
+        // bsp_display_unlock();
+        return ret;
+    }
 
     is_sleep = false;
 
+    // bsp_display_unlock();
+
     if (background_task_handle != nullptr)
     {
-        xTaskNotify(background_task_handle, SCREEN_ON_EVENT, eSetBits);
+        xTaskNotify(
+            background_task_handle, SCREEN_ON_EVENT, eSetBits);
+    }
+    else 
+    {
+        ESP_LOGE(TAG, "Background task handle is null");
     }
 
     if (gui_task_handle != nullptr)
     {
-        xTaskNotify(gui_task_handle, UPDATE_TIME_EVENT, eSetBits);
+        xTaskNotify(
+            gui_task_handle, UPDATE_TIME_EVENT, eSetBits);
     }
 
     return ESP_OK;

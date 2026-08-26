@@ -24,8 +24,7 @@ enum ScreensEnum {
     SCREEN_ID_CALENDAR = 11,
     SCREEN_ID_SETTINGS = 12,
     SCREEN_ID_INFO = 13,
-    SCREEN_ID_BRIGHTNESS = 14,
-    _SCREEN_ID_LAST = 14
+    _SCREEN_ID_LAST = 13
 };
 
 typedef struct _objects_t {
@@ -42,7 +41,6 @@ typedef struct _objects_t {
     lv_obj_t *calendar;
     lv_obj_t *settings;
     lv_obj_t *info;
-    lv_obj_t *brightness;
     lv_obj_t *parent_container;
     lv_obj_t *status_container;
     lv_obj_t *notif_count_label;
@@ -97,7 +95,6 @@ typedef struct _objects_t {
     lv_obj_t *navigation_pc;
     lv_obj_t *alarm_pc;
     lv_obj_t *calendar_pc;
-    lv_obj_t *calendar_calendar;
     lv_obj_t *settings_pc;
     lv_obj_t *obj9;
     lv_obj_t *obj10;
@@ -110,14 +107,16 @@ typedef struct _objects_t {
     lv_obj_t *brightness_label;
     lv_obj_t *wifi_reset_button;
     lv_obj_t *obj14;
-    lv_obj_t *info_pc;
     lv_obj_t *obj15;
+    lv_obj_t *battery_saver_button;
     lv_obj_t *obj16;
+    lv_obj_t *info_pc;
     lv_obj_t *obj17;
     lv_obj_t *obj18;
     lv_obj_t *obj19;
     lv_obj_t *obj20;
-    lv_obj_t *brightness_pc;
+    lv_obj_t *obj21;
+    lv_obj_t *obj22;
 } objects_t;
 
 extern objects_t objects;
@@ -160,9 +159,6 @@ void tick_screen_settings();
 
 void create_screen_info();
 void tick_screen_info();
-
-void create_screen_brightness();
-void tick_screen_brightness();
 
 void tick_screen_by_id(enum ScreensEnum screenId);
 void tick_screen(int screen_index);

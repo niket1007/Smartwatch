@@ -14,6 +14,8 @@
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 
+#include "esp_pm.h"
+
 #define BOOT_BUTTON_PIN 0
 #define BUTTON_ACTIVE_LEVEL 0
 
@@ -33,3 +35,6 @@ extern TaskHandle_t time_sync_handle;
 extern TaskHandle_t touch_task_handle;
 
 int64_t millis(void);
+
+extern esp_pm_lock_handle_t cpu_freq_lock;
+extern esp_pm_lock_handle_t no_sleep_lock;

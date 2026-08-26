@@ -52,3 +52,8 @@ void action_setting_set_wifi_cred(lv_event_t *e)
 {
     ESP_LOGI(TAG, "WiFi set cred button clicked");
 }
+
+void action_enable_power_saver_mode(lv_event_t *e)
+{
+    ESP_LOGI(TAG, "Enable power saver mode");
+}

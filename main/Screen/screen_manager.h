@@ -13,6 +13,7 @@ private:
     bool initialized_ = false;
     int current_screen_id = -1;
     Screen *current_screen = nullptr;
+    bool transition_running_ = false;
 
     Screen *get_screen_instance(int id);
     esp_err_t navigate(int direction);

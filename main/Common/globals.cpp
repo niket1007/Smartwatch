@@ -17,6 +17,9 @@ TaskHandle_t background_task_handle = nullptr;
 TaskHandle_t time_sync_handle = nullptr;
 TaskHandle_t touch_task_handle = nullptr;
 
+esp_pm_lock_handle_t cpu_freq_lock = nullptr;
+esp_pm_lock_handle_t no_sleep_lock = nullptr;
+
 
 int64_t millis(void)
 {

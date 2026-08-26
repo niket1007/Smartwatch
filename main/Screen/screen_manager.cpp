@@ -150,16 +150,22 @@ esp_err_t ScreenManager::change_screen(int new_screen_id)
         return ESP_ERR_INVALID_STATE;
     }
 
+    if (transition_running_)
+    {
+        ESP_LOGW(TAG, "Screen transition already in progress");
+        return ESP_ERR_INVALID_STATE;
+    }
+
     if (new_screen_id == current_screen_id)
     {
         return ESP_OK;
     }
 
+    transition_running_ = true;
+
     ESP_LOGI(
-        TAG,
-        "Changing screen: %d -> %d",
-        current_screen_id,
-        new_screen_id);
+        TAG, "Changing screen: %d -> %d",
+        current_screen_id, new_screen_id);
 
     Screen *new_screen = get_screen_instance(new_screen_id);
 
@@ -170,6 +176,7 @@ esp_err_t ScreenManager::change_screen(int new_screen_id)
             "Failed to create screen: %d",
             new_screen_id);
 
+        transition_running_ = false;
         return ESP_ERR_NOT_FOUND;
     }
 
@@ -180,6 +187,7 @@ esp_err_t ScreenManager::change_screen(int new_screen_id)
         if (err != ESP_OK)
         {
             delete new_screen;
+            transition_running_ = false;
             return err;
         }
     }
@@ -191,7 +199,11 @@ esp_err_t ScreenManager::change_screen(int new_screen_id)
     current_screen = new_screen;
     current_screen_id = new_screen_id;
 
-    return current_screen->on_enter();
+    esp_err_t err = current_screen->on_enter();
+
+    transition_running_ = false;
+
+    return err;
 }
 
 esp_err_t ScreenManager::navigate(int direction)

@@ -1,8 +1,7 @@
 {
   "navigation": {
-    "selectedUserPageObject": "[SmartWatchUI.eez-project]:/userPages/4",
-    "selectedActionObject": "[SmartWatchUI.eez-project]:/actions/-1",
-    "selectedBitmapObject": "[SmartWatchUI.eez-project]:/bitmaps/7",
+    "selectedUserPageObject": "[SmartWatchUI.eez-project]:/userPages/10",
+    "selectedBitmapObject": "[SmartWatchUI.eez-project]:/bitmaps/2",
     "subnavigationSelectedItems": {
       "variables-tab/sub-navigation/selected-item": "Global"
     }
@@ -166,7 +165,8 @@
                       "enableClose": false,
                       "icon": "svg:hierarchy"
                     }
-                  ]
+                  ],
+                  "active": true
                 },
                 {
                   "type": "tabset",
@@ -195,11 +195,11 @@
               "children": [
                 {
                   "type": "tab",
-                  "id": "#4880dd10-9760-4de6-9628-09ed28db3a6b",
-                  "name": "Ble_Status",
+                  "id": "#5843f785-a2c6-49aa-bc78-957d610e5e4b",
+                  "name": "Calendar",
                   "component": "editor",
                   "config": {
-                    "objectPath": "[SmartWatchUI.eez-project]:/userPages/4",
+                    "objectPath": "[SmartWatchUI.eez-project]:/userPages/10",
                     "permanent": false
                   },
                   "icon": "svg:page"
@@ -227,8 +227,7 @@
                   },
                   "icon": "svg:page"
                 }
-              ],
-              "active": true
+              ]
             },
             {
               "type": "row",
@@ -1082,20 +1081,22 @@
       "selectionBack": {
         "0": {
           "0": {
-            "2": {},
+            "0": {},
+            "3": {},
             "4": {
-              "1": {}
-            },
-            "$selected": true
+              "1": {
+                "$selected": true
+              }
+            }
           }
         }
       },
       "transform": {
         "translate": {
-          "x": -142.03000000000003,
-          "y": -284.9772512817383
+          "x": -205,
+          "y": -251
         },
-        "scale": 1.1
+        "scale": 1
       },
       "timeline": {
         "isEditorActive": false,
@@ -1107,7 +1108,13 @@
     "[SmartWatchUI.eez-project]:/userPages/4[flow-state]": {
       "selectionFront": {},
       "selectionBack": {
-        "0": {}
+        "0": {
+          "0": {
+            "1": {
+              "$selected": true
+            }
+          }
+        }
       },
       "transform": {
         "translate": {
@@ -1161,9 +1168,9 @@
       "transform": {
         "translate": {
           "x": -205,
-          "y": -352.9568752288818
+          "y": -251
         },
-        "scale": 1.1
+        "scale": 1
       },
       "timeline": {
         "isEditorActive": false,
@@ -1187,8 +1194,8 @@
       },
       "transform": {
         "translate": {
-          "x": -256.25,
-          "y": -313.75
+          "x": -205,
+          "y": -251
         },
         "scale": 1.1
       },
@@ -1213,7 +1220,7 @@
           "x": -205,
           "y": -251
         },
-        "scale": 1.1
+        "scale": 1
       },
       "timeline": {
         "isEditorActive": false,
@@ -1226,9 +1233,7 @@
       "selectionFront": {},
       "selectionBack": {
         "0": {
-          "0": {
-            "$selected": true
-          }
+          "0": {}
         }
       },
       "transform": {
@@ -1236,7 +1241,7 @@
           "x": -205,
           "y": -251
         },
-        "scale": 1.1
+        "scale": 1
       },
       "timeline": {
         "isEditorActive": false,
@@ -1259,7 +1264,7 @@
           "x": -205,
           "y": -251
         },
-        "scale": 1.1
+        "scale": 1
       },
       "timeline": {
         "isEditorActive": false,
@@ -1280,7 +1285,7 @@
       "transform": {
         "translate": {
           "x": -205,
-          "y": -51
+          "y": -251
         },
         "scale": 1.1
       },
@@ -1305,7 +1310,7 @@
           "x": -205,
           "y": -251
         },
-        "scale": 1.1
+        "scale": 1
       },
       "timeline": {
         "isEditorActive": false,
@@ -1328,7 +1333,7 @@
           "x": -205,
           "y": -251
         },
-        "scale": 1.1
+        "scale": 1
       },
       "timeline": {
         "isEditorActive": false,
@@ -1342,9 +1347,11 @@
       "selectionBack": {
         "0": {
           "0": {
+            "0": {},
             "1": {},
             "2": {},
-            "$selected": true
+            "9": {},
+            "11": {}
           }
         }
       },
@@ -1353,7 +1360,7 @@
           "x": -205,
           "y": -251
         },
-        "scale": 1.1
+        "scale": 1
       },
       "timeline": {
         "isEditorActive": false,
@@ -1376,7 +1383,32 @@
           "x": -205,
           "y": -251
         },
-        "scale": 1.1
+        "scale": 1
+      },
+      "timeline": {
+        "isEditorActive": false,
+        "position": 0,
+        "secondToPx": 200,
+        "scrollLeft": 0
+      }
+    },
+    "[SmartWatchUI.eez-project]:/userPages/13[flow-state]": {
+      "selectionFront": {},
+      "selectionBack": {
+        "0": {
+          "0": {
+            "0": {
+              "$selected": true
+            }
+          }
+        }
+      },
+      "transform": {
+        "translate": {
+          "x": -205,
+          "y": -251
+        },
+        "scale": 1
       },
       "timeline": {
         "isEditorActive": false,
@@ -1400,12 +1432,12 @@
   "lvglPart": "MAIN",
   "lvglState": "DEFAULT",
   "lvglExpandedPropertiesGroup": [
-    "TEXT",
-    "PADDING"
+    "BORDER",
+    "MISCELLANEOUS"
   ],
   "showInactiveFlowsInDebugger": true,
   "globalFlowZoom": true,
-  "flowZoom": 1.1,
+  "flowZoom": 1,
   "implementationLanguage": "C",
-  "openDialogDefaultPath": "C:\\Github_repos\\Smartwatch\\Icons\\music.png"
+  "openDialogDefaultPath": "C:\\Github_repos\\Smartwatch\\Icons\\battery_80_100.png"
 }

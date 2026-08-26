@@ -448,12 +448,17 @@ esp_err_t bsp_display_new(const bsp_display_config_t *config, esp_lcd_panel_hand
     esp_err_t ret = ESP_OK;
 
     ESP_LOGI(TAG, "Initialize SPI bus");
+#if CONFIG_BSP_DISPLAY_LVGL_AVOID_TEAR
+    const size_t lcd_max_transfer_sz = BSP_LCD_H_RES * BSP_LCD_V_RES * 2; // full frame
+#else
+    const size_t lcd_max_transfer_sz = BSP_LCD_H_RES * LVGL_BUFFER_HEIGHT * 2; // partial buffer
+#endif
     const spi_bus_config_t buscfg = SH8601_PANEL_BUS_QSPI_CONFIG(BSP_LCD_PCLK,
                                                                  BSP_LCD_DATA0,
                                                                  BSP_LCD_DATA1,
                                                                  BSP_LCD_DATA2,
                                                                  BSP_LCD_DATA3,
-                                                                 12 * 1024); // 12 KB
+                                                                 lcd_max_transfer_sz);
     ESP_ERROR_CHECK(spi_bus_initialize(BSP_LCD_SPI_NUM, &buscfg, SPI_DMA_CH_AUTO));
 
     const esp_lcd_panel_io_spi_config_t io_config = SH8601_PANEL_IO_QSPI_CONFIG(BSP_LCD_CS, NULL, NULL);
@@ -621,7 +626,7 @@ lv_display_t *bsp_display_start(void)
         .buffer_size = BSP_LCD_DRAW_BUFF_SIZE,
         .double_buffer = BSP_LCD_DRAW_BUFF_DOUBLE,
         .flags = {
-            .buff_dma = false,
+            .buff_dma = true,
             .buff_spiram = true,
         }};
     return bsp_display_start_with_config(&cfg);

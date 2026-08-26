@@ -55,4 +55,4 @@ constexpr uint32_t SEND_BATTERY_DATA_EVENT = 1U << 6;
 constexpr uint32_t INIT_WEATHER_FETCH_EVENT = 1U << 7;
 
 // ---------------------- Timeout -----------------
-constexpr uint32_t UPDATE_TIME_TIMER = 20000; //20 sec
+constexpr uint32_t UPDATE_TIME_TIMER = 3000; //3 sec

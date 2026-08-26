@@ -28,7 +28,6 @@ file(GLOB_RECURSE BATTERY_SOURCES ${BATTERY_DIR}/*.cpp)
 set(PS_DIR ./Power_Saver)
 file(GLOB_RECURSE PS_SOURCES ${PS_DIR}/*.cpp)
 
-
 idf_component_register(
     SRCS 
         main.cpp

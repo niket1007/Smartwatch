@@ -125,21 +125,6 @@ esp_err_t HomeScreen::update_datetime_fields()
         lv_label_set_text(objects.date_label, old_date_str);
     }
 
-    if (objects.calendar_calendar)
-    {
-        if ((cal_year != timeinfo.tm_year) or
-            (cal_day != timeinfo.tm_mday) or (cal_month != timeinfo.tm_mon))
-        {
-            cal_year = timeinfo.tm_year;
-            cal_month = timeinfo.tm_mon;
-            cal_day = timeinfo.tm_mday;
-            lv_calendar_set_today_date(
-                objects.calendar_calendar, cal_year, cal_month, cal_day);
-            // lv_calendar_set_month_shown(
-            //     objects.calendar_calendar, cal_year, cal_month);
-        }
-    }
-
     return ESP_OK;
 }
 
