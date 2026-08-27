@@ -23,8 +23,6 @@ private:
     UserDefined user_defined_option = {0, 0, false};
     SemaphoreHandle_t brightness_mutex_ = nullptr;
 
-    bool bluetooth_enabled_ = true;
-
     esp_err_t change_brightness_value(int batt);
     esp_err_t change_screen_timeout_value(int batt);
     void clear_user_defined_options();

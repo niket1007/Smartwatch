@@ -41,47 +41,47 @@ esp_err_t NavigationScreen::on_enter()
 
 const lv_image_dsc_t *NavigationScreen::get_direction_icon(std::string action)
 {
-    if (action == "CONTINUE")
+    if (action == "continue")
     {
         return &img_arrow_up;
     }
-    else if (action == "LEFT")
+    else if (action == "left")
     {
         return &img_arrow_left;
     }
-    else if (action == "LEFT_SLIGHT")
+    else if (action == "left_slight")
     {
         return &img_slight_left;
     }
-    else if (action == "LEFT_SHARP")
+    else if (action == "left_sharp")
     {
         return &img_sharp_left;
     }
-    else if (action == "RIGHT")
+    else if (action == "right")
     {
         return &img_arrow_right;
     }
-    else if (action == "RIGHT_SLIGHT")
+    else if (action == "right_slight")
     {
         return &img_slight_right;
     }
-    else if (action == "RIGHT_SHARP")
+    else if (action == "right_sharp")
     {
         return &img_sharp_right;
     }
-    else if (action == "KEEP_LEFT")
+    else if (action == "keep_left")
     {
         return &img_keep_left;
     }
-    else if (action == "KEEP_RIGHT")
+    else if (action == "keep_right")
     {
         return &img_keep_right;
     }
-    else if (action == "UTURN_LEFT")
+    else if (action == "uturn_left")
     {
         return &img_u_turn_left;
     }
-    else if (action == "UTURN_RIGHT")
+    else if (action == "uturn_right")
     {
         return &img_u_turn_right;
     }
@@ -89,19 +89,19 @@ const lv_image_dsc_t *NavigationScreen::get_direction_icon(std::string action)
     {
         return &img_offroute;
     }
-    else if (action == "ROUNDABOUT_LEFT")
+    else if (action == "roundabout_left")
     {
         return &img_roundabout_left;
     }
-    else if (action == "ROUNDABOUT_RIGHT")
+    else if (action == "roundabout_right")
     {
         return &img_roundabout_right;
     }
-    else if (action == "ROUNDABOUT_STRAIGHT")
+    else if (action == "roundabout_straight")
     {
         return &img_roundabout_straight;
     }
-    else if (action == "ROUNDABOUT_UTURN")
+    else if (action == "roundabout_uturn")
     {
         return &img_roundabout_uturn;
     }

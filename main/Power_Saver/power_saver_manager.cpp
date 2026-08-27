@@ -186,7 +186,7 @@ esp_err_t PowerSaverManager::update_bluetooth_state()
     
     if (batt <= 20)
     {
-        if (!bluetooth_enabled_)
+        if (!bluetooth_manager.is_initialised)
         {
             return ESP_OK;
         }
@@ -196,12 +196,10 @@ esp_err_t PowerSaverManager::update_bluetooth_state()
         ESP_RETURN_ON_ERROR(
             bluetooth_manager.deinit(),
             TAG, "Failed to deinitialize Bluetooth");
-
-        bluetooth_enabled_ = false;
     }
     else if (batt >= 25)
     {
-        if (bluetooth_enabled_)
+        if (bluetooth_manager.is_initialised)
         {
             return ESP_OK;
         }
@@ -211,8 +209,6 @@ esp_err_t PowerSaverManager::update_bluetooth_state()
         ESP_RETURN_ON_ERROR(
             bluetooth_manager.init(),
             TAG, "Failed to initialize Bluetooth");
-
-        bluetooth_enabled_ = true;
     }
 
     return ESP_OK;

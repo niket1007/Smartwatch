@@ -26,9 +26,9 @@ public:
         phone_number = "+911234567890";
         status = "incoming";
 
-        bool is_name_dirty = false;
-        bool is_number_dirty = false;
-        bool is_status_dirty = false;
+        is_name_dirty = false;
+        is_number_dirty = false;
+        is_status_dirty = false;
     }
 
     std::string get_contact_name() const

@@ -1,6 +1,7 @@
 #include "rtc_manager.h"
 
 #include "esp_sntp.h"
+#include "esp_netif_sntp.h"
 #include "Common/globals.h"
 
 static constexpr const char *TAG = "RTC_MANAGER";
@@ -17,49 +18,98 @@ uint8_t RTCManager::bcd2dec(uint8_t val)
 
 esp_err_t RTCManager::init()
 {
-    esp_sntp_setoperatingmode(SNTP_OPMODE_POLL);
-    esp_sntp_setservername(0, "pool.ntp.org");
-    esp_sntp_setservername(1, "time.nist.gov");
-    esp_sntp_setservername(2, "time.google.com");
-    esp_sntp_init();
+    setenv("TZ", "IST-5:30", 1);
+    tzset();
 
-    int retry = 0;
-    while (sntp_get_sync_status() == SNTP_SYNC_STATUS_RESET && ++retry < MAX_RETRIES)
+    esp_sntp_config_t config =
+        ESP_NETIF_SNTP_DEFAULT_CONFIG("pool.ntp.org");
+
+    config.start = false;
+    config.wait_for_sync = true;
+    config.smooth_sync = false;
+
+    esp_err_t err = esp_netif_sntp_init(&config);
+    if (err != ESP_OK)
     {
-        ESP_LOGI(TAG, "Waiting for system time to be set... (%d/%d)", retry, MAX_RETRIES);
-        vTaskDelay(RETRY_DELAY);
+        ESP_LOGE(TAG, "Failed to initialize SNTP: %s", esp_err_to_name(err));
+        return err;
     }
 
-    if (retry < MAX_RETRIES)
+    err = esp_netif_sntp_start();
+    if (err != ESP_OK)
     {
-        // Set timezone to Indian Standard Time (UTC+5:30)
-        setenv("TZ", "IST-5:30", 1);
-        tzset();
+        ESP_LOGE(TAG, "Failed to start SNTP: %s", esp_err_to_name(err));
+        esp_netif_sntp_deinit();
+        return err;
+    }
 
-        time_t now;
-        struct tm timeinfo;
-        time(&now);
-        localtime_r(&now, &timeinfo);
+    ESP_LOGI(TAG, "SNTP started. Waiting for synchronization...");
 
-        char strftime_buf[64];
-        strftime(strftime_buf, sizeof(strftime_buf), "%c", &timeinfo);
-        ESP_LOGI(TAG, "Time successfully synced! Current RTC time: %s", strftime_buf);
-
-        if (sync_PCF85063_rtc(&timeinfo) == ESP_OK)
+    err = esp_netif_sntp_sync_wait(SNTP_SYNC_TIMEOUT);
+    if (err != ESP_OK)
+    {
+        if (err == ESP_ERR_NOT_FINISHED)
         {
-            ESP_LOGI(TAG, "Successfully synced PCF85063 RTC");
+            ESP_LOGW(
+                TAG,
+                "SNTP synchronization is still in progress after timeout.");
+        }
+        else if (err == ESP_ERR_TIMEOUT)
+        {
+            ESP_LOGW(
+                TAG,
+                "SNTP synchronization timed out after %lu seconds.",
+                (unsigned long)(SNTP_SYNC_TIMEOUT / configTICK_RATE_HZ));
         }
         else
         {
-            ESP_LOGI(TAG, "Failed to sync PCF85063 rtc");
+            ESP_LOGE(
+                TAG,
+                "SNTP synchronization failed: %s",
+                esp_err_to_name(err));
         }
-        return ESP_OK;
-    }
-    else
-    {
-        ESP_LOGW(TAG, "Time sync failed. Proceeding with unsynced RTC.");
+
+        esp_netif_sntp_deinit();
         return ESP_FAIL;
     }
+
+    time_t now;
+    struct tm timeinfo;
+    time(&now);
+    localtime_r(&now, &timeinfo);
+
+    char strftime_buf[64];
+    strftime(strftime_buf, sizeof(strftime_buf), "%c", &timeinfo);
+    ESP_LOGI(TAG, "Time successfully synced! Current RTC time: %s", strftime_buf);
+
+    err = sync_PCF85063_rtc(&timeinfo);
+    if (err != ESP_OK)
+    {
+        ESP_LOGE(
+            TAG,
+            "Failed to sync PCF85063 RTC: %s",
+            esp_err_to_name(err));
+
+        esp_netif_sntp_deinit();
+        return err;
+    }
+
+    err = sync_PCF85063_rtc(&timeinfo);
+    if (err != ESP_OK)
+    {
+        ESP_LOGE(
+            TAG,
+            "Failed to sync PCF85063 RTC: %s", esp_err_to_name(err));
+
+        esp_netif_sntp_deinit();
+        return err;
+    }
+
+    ESP_LOGI(TAG, "Successfully synced PCF85063 RTC");
+
+    esp_netif_sntp_deinit();
+
+    return ESP_OK;
 }
 
 esp_err_t RTCManager::sync_PCF85063_rtc(struct tm *tminfo)

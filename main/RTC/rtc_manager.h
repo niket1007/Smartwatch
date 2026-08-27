@@ -12,6 +12,7 @@ class RTCManager
 private:
     static constexpr int MAX_RETRIES = 15;
     static constexpr TickType_t RETRY_DELAY = pdMS_TO_TICKS(2000);
+    static constexpr TickType_t SNTP_SYNC_TIMEOUT = pdMS_TO_TICKS(30000);
 
     uint8_t dec2bcd(uint8_t val);
     uint8_t bcd2dec(uint8_t val);
