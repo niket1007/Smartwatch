@@ -7,10 +7,6 @@
 #include "Arduino_GFX_Library.h"
 #include <Preferences.h>
 #include <ArduinoJson.h>
-extern "C" {
-  #include "ui/ui.h"
-  #include "ui/actions.h"
-}
 
 // WIFI Global Variables
 struct Global_Variables {
