@@ -6,8 +6,10 @@
 class BatteryManager
 {
 private:
-    int current_batt_percentage_;
-    bool curent_charging_status_;
+    int current_batt_percentage_ = -1;
+    bool curent_charging_status_ = false;
+    uint32_t current_touch_event_status = 0;
+    uint32_t current_ble_event_status = 0;
 
     XPowersAXP2101 power;
 

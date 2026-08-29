@@ -10,7 +10,6 @@
 class ScreenManager
 {
 private:
-    bool initialized_ = false;
     int current_screen_id = -1;
     Screen *current_screen = nullptr;
     bool transition_running_ = false;
@@ -20,9 +19,9 @@ private:
 
 public:
     esp_err_t init();
+    esp_err_t load_default_screen();
     esp_err_t change_screen(int new_screen_id);
     esp_err_t handle_events(uint32_t events);
-    esp_err_t load_default_screen();
     int get_current_screen_id();
 
     MenuScreen *get_current_menu_screen();

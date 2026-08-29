@@ -1,14 +1,15 @@
 #include "wifi_manager.h"
 #include <WiFi.h>
+#include "Common/globals.h"
 // #include "preferences_manager.h"
 // #include "ble_manager.h"
 
-static const char *TAG = "BATTERY_MANAGER";
+static const char *TAG = "WIFI_MANAGER";
 
 esp_err_t WifiManager::init() {
     int attempts = 0;
 
-    ESP_LOGI(TAG, "Initiating Wifi Connection");
+    usb_serial.println("Initiating Wifi Connection");
 
     // fetch_wifi_credentials();
     // if(gv.ssid.isEmpty() && gv.password.isEmpty()) {
@@ -23,7 +24,7 @@ esp_err_t WifiManager::init() {
     
     while (WiFi.status() != WL_CONNECTED && attempts < WIFI_MAX_ATTEMPTS) {
         vTaskDelay(pdMS_TO_TICKS(500));
-        ESP_LOGI(TAG, "Connecting Wifi ......");
+        usb_serial.println("Connecting Wifi ......");
         attempts++;
     }
 

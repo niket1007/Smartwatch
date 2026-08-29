@@ -1,6 +1,6 @@
 #include "lvgl_manager.h"
 #include "Common/globals.h"
-#include "Screen/Generated/ui.h"
+// #include "Screen/Generated/ui.h"
 
 #include <lvgl.h>
 
@@ -107,5 +107,5 @@ void lvgl_manager_init() {
   lv_indev_set_read_cb(indev, lvgl_touch_read_cb);
 
   // LOAD THE EEZ STUDIO UI
-  ui_init();
+  // ui_init();
 }

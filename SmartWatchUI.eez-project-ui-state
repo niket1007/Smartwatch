@@ -1,6 +1,6 @@
 {
   "navigation": {
-    "selectedUserPageObject": "[SmartWatchUI.eez-project]:/userPages/5",
+    "selectedUserPageObject": "[SmartWatchUI.eez-project]:/userPages/11",
     "selectedBitmapObject": "[SmartWatchUI.eez-project]:/bitmaps/46",
     "subnavigationSelectedItems": {
       "variables-tab/sub-navigation/selected-item": "Global"
@@ -195,10 +195,10 @@
                 {
                   "type": "tab",
                   "id": "#5843f785-a2c6-49aa-bc78-957d610e5e4b",
-                  "name": "Notification",
+                  "name": "Settings",
                   "component": "editor",
                   "config": {
-                    "objectPath": "[SmartWatchUI.eez-project]:/userPages/5",
+                    "objectPath": "[SmartWatchUI.eez-project]:/userPages/11",
                     "permanent": false
                   },
                   "icon": "svg:page"
@@ -226,8 +226,7 @@
                   },
                   "icon": "svg:page"
                 }
-              ],
-              "active": true
+              ]
             },
             {
               "type": "row",
@@ -247,7 +246,8 @@
                       "enableClose": false,
                       "icon": "svg:properties"
                     }
-                  ]
+                  ],
+                  "active": true
                 },
                 {
                   "type": "tabset",
@@ -1084,9 +1084,7 @@
             "0": {},
             "3": {},
             "4": {
-              "1": {
-                "$selected": true
-              }
+              "1": {}
             }
           }
         }
@@ -1096,7 +1094,7 @@
           "x": -205,
           "y": -251
         },
-        "scale": 1.1
+        "scale": 0.9
       },
       "timeline": {
         "isEditorActive": false,
@@ -1121,7 +1119,7 @@
           "x": -205,
           "y": -251
         },
-        "scale": 1.1
+        "scale": 0.9
       },
       "timeline": {
         "isEditorActive": false,
@@ -1145,7 +1143,7 @@
           "x": -205,
           "y": -251
         },
-        "scale": 1.1
+        "scale": 0.9
       },
       "timeline": {
         "isEditorActive": false,
@@ -1200,7 +1198,7 @@
           "x": -205,
           "y": -251
         },
-        "scale": 1.1
+        "scale": 0.9
       },
       "timeline": {
         "isEditorActive": false,
@@ -1246,7 +1244,7 @@
           "x": -205,
           "y": -251
         },
-        "scale": 1
+        "scale": 0.9
       },
       "timeline": {
         "isEditorActive": false,
@@ -1269,7 +1267,7 @@
           "x": -205,
           "y": -251
         },
-        "scale": 1
+        "scale": 0.9
       },
       "timeline": {
         "isEditorActive": false,
@@ -1292,7 +1290,7 @@
           "x": -241.45000000000002,
           "y": -302.31062393188483
         },
-        "scale": 1.1
+        "scale": 0.9
       },
       "timeline": {
         "isEditorActive": false,
@@ -1315,7 +1313,7 @@
           "x": -205,
           "y": -251
         },
-        "scale": 1.1
+        "scale": 0.9
       },
       "timeline": {
         "isEditorActive": false,
@@ -1328,9 +1326,7 @@
       "selectionFront": {},
       "selectionBack": {
         "0": {
-          "0": {
-            "$selected": true
-          }
+          "0": {}
         }
       },
       "transform": {
@@ -1338,7 +1334,7 @@
           "x": -205,
           "y": -251
         },
-        "scale": 1.1
+        "scale": 0.9
       },
       "timeline": {
         "isEditorActive": false,
@@ -1355,6 +1351,9 @@
             "0": {},
             "1": {},
             "2": {},
+            "7": {
+              "$selected": true
+            },
             "9": {},
             "11": {}
           }
@@ -1365,7 +1364,7 @@
           "x": -205,
           "y": -251
         },
-        "scale": 1.1
+        "scale": 0.9
       },
       "timeline": {
         "isEditorActive": false,
@@ -1388,7 +1387,7 @@
           "x": -205,
           "y": -251
         },
-        "scale": 1.1
+        "scale": 0.9
       },
       "timeline": {
         "isEditorActive": false,
@@ -1437,11 +1436,13 @@
   "lvglPart": "MAIN",
   "lvglState": "DEFAULT",
   "lvglExpandedPropertiesGroup": [
-    "TEXT"
+    "TEXT",
+    "BACKGROUND",
+    "BORDER"
   ],
   "showInactiveFlowsInDebugger": true,
   "globalFlowZoom": true,
   "flowZoom": 0.9,
   "implementationLanguage": "C",
-  "openDialogDefaultPath": "C:\\Github_repos\\Smartwatch\\Icons\\nav_finish.png"
+  "openDialogDefaultPath": "C:\\Github_repos\\Smartwatch_platformio\\src\\Screen\\Generated"
 }

@@ -19,6 +19,12 @@ file(GLOB_RECURSE RTC_SOURCES ${RTC_DIR}/*.cpp)
 set(WIFI_DIR ./WiFi)
 file(GLOB_RECURSE WIFI_SOURCES ${WIFI_DIR}/*.cpp)
 
+set(DISPLAY_DIR ./Display)
+file(GLOB_RECURSE DISPLAY_SOURCES ${DISPLAY_DIR}/*.cpp )
+
+set(PS_DIR ./PowerSaver)
+file(GLOB_RECURSE PS_SOURCES ${PS_DIR}/*.cpp)
+
 idf_component_register(
     SRCS 
         main.cpp
@@ -29,6 +35,8 @@ idf_component_register(
         ${BLUETOOTH_SOURCES}
         ${RTC_SOURCES}
         ${WIFI_SOURCES}
+        ${DISPLAY_SOURCES}
+        ${PS_SOURCES}
 
     INCLUDE_DIRS 
         .
@@ -39,4 +47,6 @@ idf_component_register(
         ${WIFI_DIR}
         ${RTC_DIR}
         ${BLUETOOTH_DIR}
+        ${DISPLAY_DIR}
+        ${PS_DIR}
 )

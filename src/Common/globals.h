@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Arduino_DriveBus_Library.h"
 #include <Arduino.h>
 #include "pin_config.h"
 #include <Wire.h>
@@ -10,7 +11,8 @@
 
 #include "esp_pm.h"
 
-#include "esp_log.h"
+// Constants
+#include "constants.h"
 
 // Managers
 #include "Battery/battery_manager.h"
@@ -18,6 +20,9 @@
 #include "WiFi/wifi_manager.h"
 #include "RTC/rtc_manager.h"
 #include "Bluetooth/bluetooth_manager.h"
+#include "Screen/screen_manager.h"
+#include "Display/display_manager.h"
+#include "PowerSaver/power_saver_manager.h"
 
 #define BOOT_BUTTON_PIN 0
 
@@ -27,6 +32,7 @@ extern TaskHandle_t background_task_handle;
 extern HWCDC usb_serial;
 extern SemaphoreHandle_t i2c_mutex;
 extern Arduino_GFX *gfx;
+extern Arduino_DataBus *bus;
 
 extern esp_pm_lock_handle_t sleep_lock;
 
@@ -36,3 +42,6 @@ extern BatteryManager battery_manager;
 extern WifiManager wifi_manager;
 extern RTCManager rtc_manager;
 extern BluetoothManager bluetooth_manager;
+extern ScreenManager screen_manager;
+extern DisplayManager display_manager;
+extern PowerSaverManager power_saver_manager;

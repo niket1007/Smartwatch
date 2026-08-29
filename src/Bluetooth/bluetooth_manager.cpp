@@ -1,10 +1,11 @@
 #include "bluetooth_manager.h"
-#include "esp_log.h"
+#include "Common/globals.h"
 
 static const char* TAG = "BLUETOOTH_MANAGER";
 
 String BluetoothManager::rxBuffer = "";
 std::string BluetoothManager::connected_device_name = "";
+BLE_STATUS ble_status = BLE_STATUS::NOTHING;
 
 // =====================================================================
 // BLE SERVER CALLBACKS
@@ -18,9 +19,8 @@ public:
         NimBLEServer* pServer,
         NimBLEConnInfo& connInfo) override
     {
-        ESP_LOGI(
-            TAG,
-            "BLE CONNECTED addr=%s handle=%d bonded=%d encrypted=%d",
+        usb_serial.printf(
+            "BLE CONNECTED addr=%s handle=%d bonded=%d encrypted=%d\n",
             connInfo.getAddress().toString().c_str(),
             connInfo.getConnHandle(),
             connInfo.isBonded(),
@@ -28,14 +28,12 @@ public:
 
         BluetoothManager::connected_device_name = connInfo.getAddress().toString();
 
-        // FIX: Modern Android and Gadgetbridge need latency at 0 during initialization 
-        // to complete handshakes seamlessly. Relax the bounds slightly.
         pServer->updateConnParams(
             connInfo.getConnHandle(),
-            24,     // 24 * 1.25 = 30 ms (min)
-            40,     // 40 * 1.25 = 50 ms (max)
-            0,      // Latency = 0 for stability during security handshakes
-            600     // 600 * 10 = 6000 ms timeout
+            160,     // 160 * 1.25 = 200 ms (min)
+            320,     // 320 * 1.25 = 400 ms (max)
+            1,      // Latency = 1 for stability during security handshakes
+            1000     // 1000 * 10 = 10000 ms timeout
         );
     }
 
@@ -44,9 +42,8 @@ public:
         NimBLEConnInfo& connInfo,
         int reason) override
     {
-        ESP_LOGW(
-            TAG,
-            "BLE DISCONNECTED addr=%s reason=%d (%s)",
+        usb_serial.printf(
+            "BLE DISCONNECTED addr=%s reason=%d (%s)\n",
             connInfo.getAddress().toString().c_str(),
             reason,
             NimBLEUtils::returnCodeToString(reason));
@@ -56,8 +53,18 @@ public:
         BluetoothManager::connected_device_name.clear();
         BluetoothManager::rxBuffer.clear();
 
-        // FIX: Manually restart advertising safely rather than using automated loops
-        NimBLEDevice::startAdvertising();
+        NimBLEDevice::startAdvertising();        
+        
+        ble_status = BLE_STATUS::DISCONNECTED;
+    }
+
+    uint32_t onPassKeyDisplay() override {
+        Serial.printf("Server Passkey Display\n");
+        /**
+         * This should return a random 6 digit number for security
+         *  or make your own static passkey as done here.
+         */
+        return 101010;
     }
 
     void onAuthenticationComplete(
@@ -65,11 +72,13 @@ public:
     {
         if (!connInfo.isEncrypted())
         {
-            ESP_LOGE(TAG, "BLE authentication failed");
+            usb_serial.println("BLE authentication failed");
             NimBLEDevice::getServer()->disconnect(connInfo.getConnHandle());
+            ble_status = BLE_STATUS::PAIRTING_FAILED;
             return;
         }
-        ESP_LOGI(TAG, "BLE authentication successful");
+        ble_status = BLE_STATUS::PAIRED;
+        usb_serial.println("BLE authentication successful");
     }
 };
 
@@ -94,7 +103,7 @@ public:
 
             if (line.startsWith("GB(")) 
             {
-                ESP_LOGI(TAG, "%s", line.c_str());
+                usb_serial.printf("%s\n", line.c_str());
             }
         }
     }
@@ -104,9 +113,8 @@ public:
         NimBLEConnInfo& connInfo,
         uint16_t subValue) override
     {
-        ESP_LOGI(
-            TAG,
-            "Subscription changed: device=%s value=%u",
+        usb_serial.printf(
+            "Subscription changed: device=%s value=%u\n",
             connInfo.getAddress().toString().c_str(),
             subValue
         );
@@ -125,11 +133,11 @@ esp_err_t BluetoothManager::init()
 {
     if (is_initialised)
     {
-        ESP_LOGI(TAG, "Bluetooth already initialized");
+        usb_serial.println("Bluetooth already initialized");
         return ESP_OK;
     }
 
-    ESP_LOGI(TAG, "Initializing Bluetooth");
+    usb_serial.println("Initializing Bluetooth");
 
     NimBLEDevice::init(BLE_DEVICE_NAME);
 
@@ -145,7 +153,7 @@ esp_err_t BluetoothManager::init()
     pServer = NimBLEDevice::createServer();
     if (pServer == nullptr)
     {
-        ESP_LOGE(TAG, "Failed to create BLE server");
+        usb_serial.println("Failed to create BLE server");
         return ESP_FAIL;
     }
 
@@ -154,7 +162,7 @@ esp_err_t BluetoothManager::init()
     NimBLEService* pService = pServer->createService(BLE_SERVICE_UUID);
     if (pService == nullptr)
     {
-        ESP_LOGE(TAG, "Failed to create BLE service");
+        usb_serial.println("Failed to create BLE service");
         return ESP_FAIL;
     }
 
@@ -163,7 +171,7 @@ esp_err_t BluetoothManager::init()
 
     if (pTxCharacteristic == nullptr)
     {
-        ESP_LOGE(TAG, "Failed to create TX characteristic");
+        usb_serial.println("Failed to create TX characteristic");
         return ESP_FAIL;
     }
     pTxCharacteristic->setCallbacks(&characteristic_callbacks);
@@ -177,7 +185,7 @@ esp_err_t BluetoothManager::init()
 
     if (pRxCharacteristic == nullptr)
     {
-        ESP_LOGE(TAG, "Failed to create RX characteristic");
+        usb_serial.println("Failed to create RX characteristic");
         return ESP_FAIL;
     }
     pRxCharacteristic->setCallbacks(&characteristic_callbacks);
@@ -187,12 +195,12 @@ esp_err_t BluetoothManager::init()
     esp_err_t result = init_advertising();
     if (result != ESP_OK)
     {
-        ESP_LOGE(TAG, "Failed to start BLE advertising");
+        usb_serial.println("Failed to start BLE advertising");
         return result;
     }
 
     is_initialised = true;
-    ESP_LOGI(TAG,"Bluetooth initialized successfully");
+    usb_serial.println("Bluetooth initialized successfully");
 
     return ESP_OK;
 }
@@ -203,7 +211,7 @@ esp_err_t BluetoothManager::init_advertising()
 
     if (pAdvertising == nullptr)
     {
-        ESP_LOGE(TAG, "BLE advertising object is null");
+        usb_serial.println("BLE advertising object is null");
         return ESP_FAIL;
     }
 
@@ -215,11 +223,11 @@ esp_err_t BluetoothManager::init_advertising()
 
     if (!pAdvertising->start())
     {
-        ESP_LOGE(TAG, "Failed to start BLE advertising");
+        usb_serial.println("Failed to start BLE advertising");
         return ESP_FAIL;
     }
 
-    ESP_LOGI(TAG, "BLE advertising started as %s", BLE_DEVICE_NAME);
+    usb_serial.printf("BLE advertising started as %s\n", BLE_DEVICE_NAME);
     return ESP_OK;
 }
 
@@ -250,13 +258,13 @@ esp_err_t BluetoothManager::send_to_phone(const JsonDocument& json)
 {
     if (!is_connected())
     {
-        ESP_LOGW(TAG, "Cannot send BLE data: no client connected");
+        usb_serial.println("Cannot send BLE data: no client connected");
         return ESP_ERR_INVALID_STATE;
     }
 
     if (pTxCharacteristic == nullptr)
     {
-        ESP_LOGE(TAG, "TX characteristic is null");
+        usb_serial.println("TX characteristic is null");
         return ESP_FAIL;
     }
 
@@ -264,7 +272,7 @@ esp_err_t BluetoothManager::send_to_phone(const JsonDocument& json)
     serializeJson(json, payload);
     payload += "\r\n";
 
-    ESP_LOGI(TAG, "Sending BLE data: %s", payload.c_str());
+    usb_serial.printf("Sending BLE data: %s\n", payload.c_str());
 
     pTxCharacteristic->setValue(payload.c_str());
     pTxCharacteristic->notify();
@@ -279,7 +287,7 @@ esp_err_t BluetoothManager::deinit()
         return ESP_OK;
     }
 
-    ESP_LOGI(TAG, "Deinitializing Bluetooth");
+    usb_serial.println("Deinitializing Bluetooth");
     NimBLEDevice::deinit(true);
 
     pServer = nullptr;
@@ -288,6 +296,6 @@ esp_err_t BluetoothManager::deinit()
     rxBuffer.clear();
     is_initialised = false;
 
-    ESP_LOGI(TAG, "Bluetooth deinitialized");
+    usb_serial.println("Bluetooth deinitialized");
     return ESP_OK;
 }

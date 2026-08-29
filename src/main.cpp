@@ -3,24 +3,18 @@
 #include <lvgl.h>
 #include "esp_private/esp_clk.h"
 #include "esp_system.h"
-#include "esp_pm.h"          // Automatic light sleep + dynamic freq scaling BLE
+#include "esp_pm.h" // Automatic light sleep + dynamic freq scaling BLE
 
 #include "Common/globals.h"
-// #include "manager/lvgl_manager.h"
-// #include "manager/ble_manager.h"
-// #include "manager/settings_screen_manager.h"
-// #include "manager/notification_manager.h"
-// #include "manager/weather_manager.h"
-// #include "manager/call_screen_manager.h"
 
 static const char *TAG = "APP_MAIN";
 
 Arduino_DataBus *bus = new Arduino_ESP32QSPI(
-  LCD_CS /* CS */, LCD_SCLK /* SCK */, LCD_SDIO0 /* SDIO0 */, LCD_SDIO1 /* SDIO1 */,
-  LCD_SDIO2 /* SDIO2 */, LCD_SDIO3 /* SDIO3 */, true /* is_shared_interface */);
+    LCD_CS /* CS */, LCD_SCLK /* SCK */, LCD_SDIO0 /* SDIO0 */, LCD_SDIO1 /* SDIO1 */,
+    LCD_SDIO2 /* SDIO2 */, LCD_SDIO3 /* SDIO3 */, true /* is_shared_interface */);
 
 Arduino_GFX *gfx = new Arduino_CO5300(bus, LCD_RESET /* RST */,
-                                      0 /* rotation */,  LCD_WIDTH, LCD_HEIGHT,
+                                      0 /* rotation */, LCD_WIDTH, LCD_HEIGHT,
                                       22 /* col_offset1 */,
                                       0 /* row_offset1 */,
                                       0 /* col_offset2 */,
@@ -30,170 +24,257 @@ Arduino_GFX *gfx = new Arduino_CO5300(bus, LCD_RESET /* RST */,
 // FT3168 TOUCH CONTROLLER (via Arduino_DriveBus_Library)
 // ==========================================================
 std::shared_ptr<Arduino_IIC_DriveBus> IIC_Bus =
-  std::make_shared<Arduino_HWIIC>(IIC_SDA, IIC_SCL, &Wire);
+    std::make_shared<Arduino_HWIIC>(IIC_SDA, IIC_SCL, &Wire);
 
 void Arduino_IIC_Touch_Interrupt(void);
 
 std::unique_ptr<Arduino_IIC> FT3168(new Arduino_FT3x68(
-    IIC_Bus, 
+    IIC_Bus,
     FT3168_DEVICE_ADDRESS,
     DRIVEBUS_DEFAULT_VALUE, TP_INT,
     Arduino_IIC_Touch_Interrupt));
 
-void Arduino_IIC_Touch_Interrupt(void) {
-  FT3168->IIC_Interrupt_Flag = true;
+void Arduino_IIC_Touch_Interrupt(void)
+{
+    FT3168->IIC_Interrupt_Flag = true;
 }
 
 // ==========================================================
 // FT3168 TOUCH DRIVER (Thread-Safe)
 // ==========================================================
-bool lvgl_get_touch(int16_t &x, int16_t &y) {
-  bool is_touched = false;
+bool lvgl_get_touch(int16_t &x, int16_t &y)
+{
+    bool is_touched = false;
 
-  // Touch disabled if screen is off
-//   if (!gv.is_screen_active) {
-//     return false;
-//   }
-
-  if (xSemaphoreTake(i2c_mutex, pdMS_TO_TICKS(10))) {
-
-    if (FT3168->IIC_Interrupt_Flag == true) {
-      FT3168->IIC_Interrupt_Flag = false;
-
-      x = FT3168->IIC_Read_Device_Value(
-        FT3168->Arduino_IIC_Touch::Value_Information::TOUCH_COORDINATE_X);
-      y = FT3168->IIC_Read_Device_Value(
-        FT3168->Arduino_IIC_Touch::Value_Information::TOUCH_COORDINATE_Y);
-      is_touched = true;
-    //   previous_millis_screen_timeout = millis();
+    if (power_saver_manager.is_touch_disabled() or display_manager.is_sleeping())
+    {
+        return false;
     }
 
-    xSemaphoreGive(i2c_mutex);
-  }
+    if (xSemaphoreTake(i2c_mutex, pdMS_TO_TICKS(10)))
+    {
 
-  return is_touched;
+        if (FT3168->IIC_Interrupt_Flag == true)
+        {
+            FT3168->IIC_Interrupt_Flag = false;
+
+            x = FT3168->IIC_Read_Device_Value(
+                FT3168->Arduino_IIC_Touch::Value_Information::TOUCH_COORDINATE_X);
+            y = FT3168->IIC_Read_Device_Value(
+                FT3168->Arduino_IIC_Touch::Value_Information::TOUCH_COORDINATE_Y);
+
+            is_touched = true;
+
+            display_manager.reset_screen_timeout_timer();
+        }
+        xSemaphoreGive(i2c_mutex);
+    }
+    return is_touched;
 }
 
 // ==========================================================
 // PHYSICAL BOOT BUTTON INTERRUPT SERVICE ROUTINE (ISR)
 // ==========================================================
-void IRAM_ATTR bootButtonISR() {
-  static unsigned long last_interrupt_time = 0;
-  unsigned long interrupt_time = millis();
-  
-  // 200ms software debounce
-  if (interrupt_time - last_interrupt_time > 200) {
-    usb_serial.println("Power Button Pressed");
-    // power_button_pressed = true;
+void IRAM_ATTR bootButtonISR()
+{
+    static unsigned long last_interrupt_time = 0;
+    unsigned long interrupt_time = millis();
 
-    // BaseType_t taskWoken = pdFALSE;
-  
-    // if (task_gui_handle != NULL) {
-    //   vTaskNotifyGiveFromISR(task_gui_handle, &taskWoken);
-    // }
-    
-    // if (taskWoken) {
-    //   portYIELD_FROM_ISR(); // Yield once if any higher-priority task was unblocked
-    // }
-  }
-  last_interrupt_time = interrupt_time;
+    // 200ms software debounce
+    if (interrupt_time - last_interrupt_time > 200)
+    {
+        // power_button_pressed = true;
+
+        BaseType_t taskWoken = pdFALSE;
+
+        if (gui_task_handle != NULL)
+        {
+            xTaskNotifyFromISR(
+                gui_task_handle, BOOT_BUTTON_CLICK_EVENT, eSetBits, &taskWoken);
+            usb_serial.println("BOOT BUTTON :: BOOT_BUTTON_CLICK_EVENT sent");
+        }
+
+        if (taskWoken)
+        {
+            portYIELD_FROM_ISR(taskWoken); // Yield once if any higher-priority task was unblocked
+            usb_serial.printf("BOOT BUTTON :: taskWoken %d\n", taskWoken);
+        }
+    }
+    last_interrupt_time = interrupt_time;
 }
 
 void background_func(void *pvParameters)
 {
+    unsigned long now;
+    unsigned long update_time_event_timer = 0;
+
+    battery_manager.refresh();
+
     esp_err_t ret = wifi_manager.init();
-    if(ret != ESP_OK)
+    if (ret != ESP_OK)
     {
-        ESP_LOGE(TAG, "Failed to init wifi");
+        usb_serial.println("Failed to init wifi");
     }
-    else  
+    else
     {
         ret = rtc_manager.sync();
-        if(ret != ESP_OK)
+        if (ret != ESP_OK)
         {
-            ESP_LOGE(TAG, "Failed to sync rtc");
+            usb_serial.println("Failed to sync rtc");
         }
     }
     ret = wifi_manager.deinit();
-    if(ret != ESP_OK)
+    if (ret != ESP_OK)
     {
-        ESP_LOGE(TAG, "Failed to deinit wifi");
+        usb_serial.println("Failed to deinit wifi");
     }
 
-    // Ble init is depended on battery
-    battery_manager.refresh();
-
-    while(1)
+    while (1)
     {
         uint32_t events = 0;
         bool notified = xTaskNotifyWait(
-            0, UINT32_MAX, &events, pdMS_TO_TICKS(2000));
-        ESP_LOGI(TAG, "Background Task");
-        
+            0, UINT32_MAX, &events,
+            display_manager.is_sleeping() ? pdMS_TO_TICKS(30000) : pdMS_TO_TICKS(2000));
+
+        usb_serial.printf(
+            "APP_MAIN :: Background Task %d\n", display_manager.is_sleeping());
+
+        if(notified)
+        {
+            usb_serial.println("Notified");
+            if(events & BG_WAKE_UP)
+            {
+                display_manager.reset_screen_timeout_timer();
+                usb_serial.println("Reset time Triggered");
+            }
+            power_saver_manager.handle_ble_event(events);
+        }
+
         battery_manager.refresh();
 
-        int battery = battery_manager.get_battery_percentage();
-        if(
-            (battery <= 20) and 
-            (bluetooth_manager.is_init()))
+        now = millis();
+        
+        if (now - update_time_event_timer >= UPDATE_TIME_TIMER)
         {
-            esp_err_t err = bluetooth_manager.deinit();
-            if(err != ESP_OK)
+            update_time_event_timer = now;
+
+            if (gui_task_handle != nullptr and !display_manager.is_sleeping())
             {
-                ESP_LOGE(TAG, "Failed to deinit bluetooth");
-            }
-        }
-        else if (battery >= 25 and 
-            (!bluetooth_manager.is_init()))
-        {
-            esp_err_t err = bluetooth_manager.init();
-            if(err != ESP_OK)
-            {
-                ESP_LOGE(TAG, "Failed to init bluetooth");
+                xTaskNotify(
+                    gui_task_handle, UPDATE_TIME_EVENT, eSetBits);
             }
         }
 
-        
+        if (!display_manager.is_sleeping() and 
+            (now - display_manager.get_screen_timeout_timer()) >=
+            power_saver_manager.get_screen_timeout())
+        {
+            display_manager.reset_screen_timeout_timer(now);
+            if (gui_task_handle != nullptr)
+            {
+                usb_serial.println("SCREEN_OFF_EVENT Triggered");
+                xTaskNotify(gui_task_handle, SCREEN_OFF_EVENT, eSetBits);
+            }
+        }
+        // usb_serial.printf(
+        //     "Screen Timeout: %d; Subtract Timeout: %d; Saved Timer: %d\n",
+        //     power_saver_manager.get_screen_timeout(),
+        //     (now - display_manager.get_screen_timeout_timer()),
+        //     display_manager.get_screen_timeout_timer()
+        // );
     }
-    vTaskDelete(nullptr);
 }
 
 void gui_func(void *pvParameters)
 {
-
-    while(1)
+    esp_err_t ret = screen_manager.load_default_screen();
+    if (ret != ESP_OK)
     {
-        // ESP_LOGI(TAG, "GUI Task");
-        uint32_t wait = lv_timer_handler();
-        
-        if (wait < 5) wait = 5;
-        if (wait > 100) wait = 100;
-
-        vTaskDelay(pdMS_TO_TICKS(wait));
+        usb_serial.println("APP_MAIN :: Failed to load home screen");
     }
-    vTaskDelete(nullptr);
-}
 
+    display_manager.reset_screen_timeout_timer();
+
+    while (true)
+    {
+        uint32_t events = 0;
+
+        bool notified = xTaskNotifyWait(
+            0, UINT32_MAX, &events,
+            display_manager.is_sleeping() ? portMAX_DELAY : pdMS_TO_TICKS(10));
+
+        uint32_t display_events =
+            events & (
+                BOOT_BUTTON_CLICK_EVENT |
+                SCREEN_ON_EVENT |
+                SCREEN_OFF_EVENT
+        );
+
+        uint32_t app_events =
+            events & ~(
+                BOOT_BUTTON_CLICK_EVENT |
+                SCREEN_ON_EVENT |
+                SCREEN_OFF_EVENT
+        );
+
+        if (display_events & BOOT_BUTTON_CLICK_EVENT)
+        {
+            usb_serial.println("BOOT_BUTTON_CLICK_EVENT");
+            if (display_manager.is_sleeping())
+                display_manager.wake();
+            else
+                display_manager.sleep();
+            
+            usb_serial.printf("APP_MAIN :: GUI Task %d\n", display_manager.is_sleeping());
+        }
+        else if (display_events & SCREEN_ON_EVENT)
+        {
+            usb_serial.println("SCREEN_ON_EVENT");
+            display_manager.wake();
+        }
+        else if (display_events & SCREEN_OFF_EVENT)
+        {
+            usb_serial.println("SCREEN_OFF_EVENT");
+            display_manager.sleep();
+        }
+
+        if (app_events)
+        {
+            if(!display_manager.is_sleeping())
+            {
+                screen_manager.handle_events(app_events);
+            }
+            power_saver_manager.handle_events(app_events);
+        }
+
+        if(!display_manager.is_sleeping())
+        {
+            uint32_t wait = lv_timer_handler();
+
+            if (wait < 5)
+                wait = 5;
+            if (wait > 100)
+                wait = 100;
+
+            vTaskDelay(pdMS_TO_TICKS(wait));
+        }
+    }
+}
 
 // ==========================================================
 // MAIN SETUP
 // ==========================================================
-void setup() { 
+void setup()
+{
 
-    esp_reset_reason_t reason = esp_reset_reason();
-    ESP_LOGW(
-        "BOOT",
-        "Reset reason = %d",
-        reason
-    );
-    ESP_LOGW(
-        "SYSTEM",
-        "Free heap: %u",
-        ESP.getFreeHeap()
-    );
     usb_serial.begin(115200);
     delay(1000);
-    ESP_LOGI(TAG, "Booting NSMARTWATCH...");
+
+    esp_reset_reason_t reason = esp_reset_reason();
+    usb_serial.printf("Reset reason = %d\n",reason);
+    usb_serial.printf("Free heap: %u\n",ESP.getFreeHeap());
+    
+    usb_serial.println("Booting NSMARTWATCH...");
 
     // Configure physical BOOT button (GPIO0) as input with pullup and interrupt
     pinMode(BOOT_BUTTON_PIN, INPUT_PULLUP);
@@ -204,37 +285,35 @@ void setup() {
 
     // ── Automatic light sleep
     esp_pm_config_t pm_config = {
-        .max_freq_mhz = 240,   // matches board's normal running clock
-        .min_freq_mhz = 40,    // XTAL-derived floor - safe default for automatic light sleep on ESP32-S3
-        .light_sleep_enable = false
-    };
+        .max_freq_mhz = 240, // matches board's normal running clock
+        .min_freq_mhz = 40,  // XTAL-derived floor - safe default for automatic light sleep on ESP32-S3
+        .light_sleep_enable = true};
     esp_err_t pm_ret = esp_pm_configure(&pm_config);
-    if (pm_ret != ESP_OK) 
+    if (pm_ret != ESP_OK)
     {
-        ESP_LOGE(TAG, "[PM] esp_pm_configure failed (%d)", pm_ret);
-    } else 
-    {
-        ESP_LOGE(TAG, "[PM] Automatic light sleep enabled (BLE-safe)");
+        usb_serial.printf("[PM] esp_pm_configure failed (%d)\n", pm_ret);
     }
-  
-  // Initialize the Two Power Locks
-//   esp_pm_lock_create(ESP_PM_NO_LIGHT_SLEEP, 0, "sleep_lock", &sleep_lock);
+    else
+    {
+        usb_serial.println("[PM] Automatic light sleep enabled (BLE-safe)");
+    }
 
-//   // Acquire immediately since the screen boots ON
-//   esp_pm_lock_acquire(sleep_lock);
+    esp_pm_lock_create(ESP_PM_NO_LIGHT_SLEEP, 0, "sleep_lock", &sleep_lock);
+    esp_pm_lock_acquire(sleep_lock);
 
     i2c_mutex = xSemaphoreCreateMutex();
-    ESP_LOGI(TAG, "I2C Mutex initialised");
+    usb_serial.println("I2C Mutex initialised");
 
     Wire.begin(IIC_SDA, IIC_SCL);
-    Wire.setClock(100000); 
+    Wire.setClock(100000);
 
-    #ifdef GFX_EXTRA_PRE_INIT
-        GFX_EXTRA_PRE_INIT();
-    #endif
+#ifdef GFX_EXTRA_PRE_INIT
+    GFX_EXTRA_PRE_INIT();
+#endif
 
-    if (!gfx->begin()) {
-        ESP_LOGE(TAG, "Screen init failed!");
+    if (!gfx->begin())
+    {
+        usb_serial.println("Screen init failed!");
     }
     gfx->fillScreen(RGB565_BLACK);
 
@@ -246,59 +325,56 @@ void setup() {
     esp_err_t ret = battery_manager.init();
     if (ret != ESP_OK)
     {
-        ESP_LOGE(
-            TAG,
-            "Battery manager initialization failed: %s",
-            esp_err_to_name(ret)
-        );
+        usb_serial.printf(
+            "Battery manager initialization failed: %s\n",
+            esp_err_to_name(ret));
     }
     else
     {
-        ESP_LOGI(
-            TAG,
-            "Battery manager initialized successfully"
-        );
+        usb_serial.println("Battery manager initialized successfully");
     }
 
-    while (FT3168->begin() == false) 
+    while (FT3168->begin() == false)
     {
-        ESP_LOGE(TAG, "FT3168 initialization fail");
+        usb_serial.println("FT3168 initialization fail");
         delay(2000);
     }
-//   usb_serial.println("FT3168 initialization successfully");
+    //   usb_serial.println("FT3168 initialization successfully");
 
     FT3168->IIC_Write_Device_State(
         FT3168->Arduino_IIC_Touch::Device::TOUCH_POWER_MODE,
         FT3168->Arduino_IIC_Touch::Device_Mode::TOUCH_POWER_MONITOR);
 
-
-//   gv.ble_passkey = 100000 + (esp_random() % 900000);
+    //   gv.ble_passkey = 100000 + (esp_random() % 900000);
 
     rtc_manager.init();
 
     lvgl_manager_init();
 
+    // display_manager.init();
+    power_saver_manager.init();
+
+    screen_manager.init();
+
     // Create Background Sensor Monitoring Task, pinned to Core 0
     xTaskCreatePinnedToCore(
-        background_func,       
-        "BACKGROUND",      
-        12288,                  
-        NULL,                  
-        1,                     
-        &background_task_handle, 
-        0                      
-    );
+        background_func,
+        "BACKGROUND",
+        12288,
+        NULL,
+        1,
+        &background_task_handle,
+        0);
 
     // Create GUI Task, pinned to Core 1
     xTaskCreatePinnedToCore(
-        gui_func,              
-        "GUI",             
-        16384,                 
-        NULL,                  
-        2,         
-        &gui_task_handle,        
-        1                    
-    );
+        gui_func,
+        "GUI",
+        16384,
+        NULL,
+        2,
+        &gui_task_handle,
+        1);
 
     vTaskDelete(NULL);
 }

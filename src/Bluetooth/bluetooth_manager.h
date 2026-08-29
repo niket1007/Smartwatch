@@ -17,6 +17,16 @@
 #define BLE_CHAR_TX_UUID \
     "6E400003-B5A3-F393-E0A9-E50E24DCCA9E"
 
+enum BLE_STATUS
+{
+    NOTHING = 0,
+    CONNECTED = 1,
+    DISCONNECTED = 2,
+    PAIRING = 3,
+    PAIRTING_FAILED = 4,
+    PAIRED = 5
+};
+
 
 class BluetoothManager
 {
@@ -31,6 +41,7 @@ private:
     esp_err_t send_to_phone(const JsonDocument& json);
 
 public:
+    static BLE_STATUS ble_status;
     static String rxBuffer;
     static std::string connected_device_name;
     esp_err_t init();
@@ -40,4 +51,5 @@ public:
     std::string get_connected_device_name() const;
     bool is_connected() const;
     bool is_init() const;
+    BLE_STATUS get_ble_status();
 };

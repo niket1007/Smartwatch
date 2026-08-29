@@ -12,3 +12,6 @@ BatteryManager battery_manager;
 WifiManager wifi_manager;
 RTCManager rtc_manager;
 BluetoothManager bluetooth_manager;
+ScreenManager screen_manager;
+DisplayManager display_manager;
+PowerSaverManager power_saver_manager;

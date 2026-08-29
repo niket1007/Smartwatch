@@ -1,5 +1,5 @@
 #include "rtc_manager.h"
-#include "pin_config.h"
+#include "Common/globals.h"
 
 static const char* TAG = "BLUETOOTH_MANAGER";
 
@@ -20,12 +20,12 @@ esp_err_t RTCManager::sync()
 
     if (!getLocalTime(&timeinfo, 15000))
     {
-        ESP_LOGE(TAG, "Failed to obtain time from NTP server.");
+        usb_serial.println("Failed to obtain time from NTP server.");
         return ESP_FAIL;
     } 
     else 
     {
-        ESP_LOGI(TAG, "NTP Time Fetched Successfully!");
+        usb_serial.println("NTP Time Fetched Successfully!");
     //   if (xSemaphoreTake(i2c_mutex, pdMS_TO_TICKS(1000))) 
     //   {
         rtc.setDateTime(timeinfo.tm_year + 1900, 
@@ -35,7 +35,7 @@ esp_err_t RTCManager::sync()
                         timeinfo.tm_min, 
                         timeinfo.tm_sec);
         // xSemaphoreGive(i2c_mutex);
-        ESP_LOGI(TAG, "RTC updated with latest time");
+        usb_serial.println("RTC updated with latest time");
     //   }
     }
 
