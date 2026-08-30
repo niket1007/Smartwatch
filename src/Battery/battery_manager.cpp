@@ -9,12 +9,16 @@ esp_err_t BatteryManager::init()
     {
         power.disableTSPinMeasure();
         power.enableBattDetection();
-        power.enableBattVoltageMeasure();
-        power.enableVbusVoltageMeasure();
+        // power.enableBattVoltageMeasure();
+        // power.enableVbusVoltageMeasure();
         power.enableGauge();
+
+        errored = false;
 
         return ESP_OK;
     }
+
+    errored = true;
     return ESP_FAIL;
 }
 

@@ -44,6 +44,11 @@ constexpr uint32_t BOOT_BUTTON_CLICK_EVENT = 1U << 14;
 constexpr uint32_t TOUCH_DISABLED_EVENT = 1U << 15;
 constexpr uint32_t TOUCH_ENABLED_EVENT = 1U << 16;
 
+// SETTINGS
+constexpr uint32_t SETTINGS_OPTION_CLICKED_EVENT = 1U << 17;
+
+// WIFI
+constexpr uint32_t WIFI_CRED_STORED_EVENT = 1U << 18;
 
 /*
 *   Other Events
@@ -64,6 +69,13 @@ constexpr uint32_t ACCEPT_CALL_EVENT = 1U << 5;
 constexpr uint32_t REJECT_CALL_EVENT = 1U << 6;
 constexpr uint32_t SEND_BATTERY_DATA_EVENT = 1U << 7;
 constexpr uint32_t INIT_WEATHER_FETCH_EVENT = 1U << 8;
+
+// BATTERY
+constexpr uint32_t BATTERY_SLEEP_EVENT = 1U << 9;
+constexpr uint32_t BATTERY_WAKE_EVENT = 1U << 10;
+
+// WIFI
+constexpr uint32_t WIFI_SAVE_CRED_EVENT = 1U << 11;
 
 // ---------------------- Timeout -----------------
 constexpr uint32_t UPDATE_TIME_TIMER = 3000; //3 sec

@@ -1,6 +1,6 @@
 #include "images.h"
 
-const ext_img_desc_t images[47] = {
+const ext_img_desc_t images[48] = {
     { "battery_charging", &img_battery_charging },
     { "info", &img_info },
     { "notification", &img_notification },
@@ -48,4 +48,5 @@ const ext_img_desc_t images[47] = {
     { "roundabout_uturn", &img_roundabout_uturn },
     { "offroute", &img_offroute },
     { "nav_finish", &img_nav_finish },
+    { "developer", &img_developer },
 };

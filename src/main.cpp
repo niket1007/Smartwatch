@@ -134,26 +134,37 @@ void background_func(void *pvParameters)
         uint32_t events = 0;
         bool notified = xTaskNotifyWait(
             0, UINT32_MAX, &events,
-            display_manager.is_sleeping() ? pdMS_TO_TICKS(30000) : pdMS_TO_TICKS(2000));
+            display_manager.is_sleeping() ? pdMS_TO_TICKS(60000) : pdMS_TO_TICKS(2000));
 
         usb_serial.printf(
             "APP_MAIN :: Background Task %d\n", display_manager.is_sleeping());
 
-        if(notified)
+        if (notified)
         {
             usb_serial.println("Notified");
-            if(events & BG_WAKE_UP)
+
+            if (events & BG_WAKE_UP)
             {
                 display_manager.reset_screen_timeout_timer();
                 usb_serial.println("Reset time Triggered");
             }
+
+            if(events & WIFI_SAVE_CRED_EVENT)
+            {
+                storage_manager.store_wifi_credentials();
+                if(gui_task_handle != nullptr)
+                {
+                    xTaskNotify(gui_task_handle, WIFI_CRED_STORED_EVENT, eSetBits);
+                }
+            }
+
             power_saver_manager.handle_ble_event(events);
         }
 
         battery_manager.refresh();
 
         now = millis();
-        
+
         if (now - update_time_event_timer >= UPDATE_TIME_TIMER)
         {
             update_time_event_timer = now;
@@ -165,9 +176,9 @@ void background_func(void *pvParameters)
             }
         }
 
-        if (!display_manager.is_sleeping() and 
+        if (!display_manager.is_sleeping() and
             (now - display_manager.get_screen_timeout_timer()) >=
-            power_saver_manager.get_screen_timeout())
+                power_saver_manager.get_screen_timeout())
         {
             display_manager.reset_screen_timeout_timer(now);
             if (gui_task_handle != nullptr)
@@ -204,27 +215,28 @@ void gui_func(void *pvParameters)
             display_manager.is_sleeping() ? portMAX_DELAY : pdMS_TO_TICKS(10));
 
         uint32_t display_events =
-            events & (
-                BOOT_BUTTON_CLICK_EVENT |
-                SCREEN_ON_EVENT |
-                SCREEN_OFF_EVENT
-        );
+            events & (BOOT_BUTTON_CLICK_EVENT |
+                      SCREEN_ON_EVENT |
+                      SCREEN_OFF_EVENT);
 
         uint32_t app_events =
             events & ~(
-                BOOT_BUTTON_CLICK_EVENT |
-                SCREEN_ON_EVENT |
-                SCREEN_OFF_EVENT
-        );
+                         BOOT_BUTTON_CLICK_EVENT |
+                         SCREEN_ON_EVENT |
+                         SCREEN_OFF_EVENT);
 
         if (display_events & BOOT_BUTTON_CLICK_EVENT)
         {
             usb_serial.println("BOOT_BUTTON_CLICK_EVENT");
             if (display_manager.is_sleeping())
+            {
                 display_manager.wake();
+            }
             else
+            {
                 display_manager.sleep();
-            
+            }
+
             usb_serial.printf("APP_MAIN :: GUI Task %d\n", display_manager.is_sleeping());
         }
         else if (display_events & SCREEN_ON_EVENT)
@@ -240,14 +252,11 @@ void gui_func(void *pvParameters)
 
         if (app_events)
         {
-            if(!display_manager.is_sleeping())
-            {
-                screen_manager.handle_events(app_events);
-            }
+            screen_manager.handle_events(app_events);
             power_saver_manager.handle_events(app_events);
         }
 
-        if(!display_manager.is_sleeping())
+        if (!display_manager.is_sleeping())
         {
             uint32_t wait = lv_timer_handler();
 
@@ -271,9 +280,9 @@ void setup()
     delay(1000);
 
     esp_reset_reason_t reason = esp_reset_reason();
-    usb_serial.printf("Reset reason = %d\n",reason);
-    usb_serial.printf("Free heap: %u\n",ESP.getFreeHeap());
-    
+    usb_serial.printf("Reset reason = %d\n", reason);
+    usb_serial.printf("Free heap: %u\n", ESP.getFreeHeap());
+
     usb_serial.println("Booting NSMARTWATCH...");
 
     // Configure physical BOOT button (GPIO0) as input with pullup and interrupt

@@ -1,6 +1,7 @@
 {
   "navigation": {
     "selectedUserPageObject": "[SmartWatchUI.eez-project]:/userPages/11",
+    "selectedActionObject": "[SmartWatchUI.eez-project]:/actions/-1",
     "selectedBitmapObject": "[SmartWatchUI.eez-project]:/bitmaps/46",
     "subnavigationSelectedItems": {
       "variables-tab/sub-navigation/selected-item": "Global"
@@ -226,7 +227,8 @@
                   },
                   "icon": "svg:page"
                 }
-              ]
+              ],
+              "active": true
             },
             {
               "type": "row",
@@ -246,8 +248,7 @@
                       "enableClose": false,
                       "icon": "svg:properties"
                     }
-                  ],
-                  "active": true
+                  ]
                 },
                 {
                   "type": "tabset",
@@ -1187,9 +1188,15 @@
             "0": {
               "$selected": true
             },
-            "1": {},
-            "2": {},
-            "3": {}
+            "1": {
+              "$selected": true
+            },
+            "2": {
+              "$selected": true
+            },
+            "3": {
+              "$selected": true
+            }
           }
         }
       },
@@ -1326,7 +1333,9 @@
       "selectionFront": {},
       "selectionBack": {
         "0": {
-          "0": {}
+          "0": {
+            "$selected": true
+          }
         }
       },
       "transform": {
@@ -1347,16 +1356,7 @@
       "selectionFront": {},
       "selectionBack": {
         "0": {
-          "0": {
-            "0": {},
-            "1": {},
-            "2": {},
-            "7": {
-              "$selected": true
-            },
-            "9": {},
-            "11": {}
-          }
+          "0": {}
         }
       },
       "transform": {
@@ -1400,10 +1400,29 @@
       "selectionFront": {},
       "selectionBack": {
         "0": {
+          "0": {}
+        }
+      },
+      "transform": {
+        "translate": {
+          "x": -205,
+          "y": -251
+        },
+        "scale": 0.9
+      },
+      "timeline": {
+        "isEditorActive": false,
+        "position": 0,
+        "secondToPx": 200,
+        "scrollLeft": 0
+      }
+    },
+    "[SmartWatchUI.eez-project]:/userPages/14[flow-state]": {
+      "selectionFront": {},
+      "selectionBack": {
+        "0": {
           "0": {
-            "0": {
-              "$selected": true
-            }
+            "2": {}
           }
         }
       },
@@ -1412,7 +1431,28 @@
           "x": -205,
           "y": -251
         },
-        "scale": 1
+        "scale": 0.9
+      },
+      "timeline": {
+        "isEditorActive": false,
+        "position": 0,
+        "secondToPx": 200,
+        "scrollLeft": 0
+      }
+    },
+    "[SmartWatchUI.eez-project]:/userPages/15[flow-state]": {
+      "selectionFront": {},
+      "selectionBack": {
+        "0": {
+          "0": {}
+        }
+      },
+      "transform": {
+        "translate": {
+          "x": -205,
+          "y": -251
+        },
+        "scale": 0.9
       },
       "timeline": {
         "isEditorActive": false,
@@ -1435,11 +1475,7 @@
   "selectedStylePropertyName": "",
   "lvglPart": "MAIN",
   "lvglState": "DEFAULT",
-  "lvglExpandedPropertiesGroup": [
-    "TEXT",
-    "BACKGROUND",
-    "BORDER"
-  ],
+  "lvglExpandedPropertiesGroup": [],
   "showInactiveFlowsInDebugger": true,
   "globalFlowZoom": true,
   "flowZoom": 0.9,

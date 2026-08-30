@@ -33,8 +33,8 @@ class BluetoothManager
 private:
     NimBLEServer* pServer = nullptr;
     NimBLECharacteristic* pTxCharacteristic = nullptr;
-
     bool is_initialised = false;
+    int passkey;
 
     esp_err_t init_advertising();
 
@@ -44,6 +44,10 @@ public:
     static BLE_STATUS ble_status;
     static String rxBuffer;
     static std::string connected_device_name;
+    bool init_errored;
+    bool deinit_errored;
+
+
     esp_err_t init();
     esp_err_t deinit();
     esp_err_t handle_events();
@@ -52,4 +56,5 @@ public:
     bool is_connected() const;
     bool is_init() const;
     BLE_STATUS get_ble_status();
+    int get_passkey();
 };

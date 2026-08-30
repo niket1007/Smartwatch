@@ -17,6 +17,10 @@
 #include "Screen/Notification/notification_screen.h"
 #include "Screen/Weather/weather_screen.h"
 #include "Screen/Settings/settings_screen.h"
+#include "Screen/Brightness/brightness_screen.h"
+#include "Screen/Bluetooth/bluetooth_screen.h"
+#include "Screen/Wifi/wifi_screen.h"
+#include "Screen/Developer/developer_screen.h"
 
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
@@ -32,6 +36,16 @@ MenuScreen *ScreenManager::get_current_menu_screen()
     }
 
     return static_cast<MenuScreen *>(current_screen);
+}
+
+SettingsScreen *ScreenManager::get_current_settings_screen()
+{
+    if (current_screen_id != SCREEN_ID_SETTINGS)
+    {
+        return nullptr;
+    }
+
+    return static_cast<SettingsScreen *>(current_screen);
 }
 
 esp_err_t ScreenManager::init()
@@ -97,6 +111,22 @@ Screen *ScreenManager::get_screen_instance(int id)
     case SCREEN_ID_CALL:
     {
         return new CallScreen();
+    }
+    case SCREEN_ID_BLUETOOTH:
+    {
+        return new BluetoothScreen();
+    }
+    case SCREEN_ID_WIFI:
+    {
+        return new WifiScreen();
+    }
+    case SCREEN_ID_BRIGHTNESS:
+    {
+        return new BrightnessScreen();
+    }
+    case SCREEN_ID_DEVELOPER:
+    {
+        return new DeveloperScreen();
     }
     default:
     {
@@ -279,38 +309,39 @@ esp_err_t ScreenManager::handle_events(uint32_t events)
 // LVGL Gesture Event
 void action_gesture_func(lv_event_t *e)
 {
-    // if (power_saver_manager.is_touch_enabled())
-    // {
-        lv_dir_t dir = lv_indev_get_gesture_dir(lv_indev_active());
+    if(power_saver_manager.is_touch_disabled())
+    {
+        if ((gui_task_handle != nullptr) and
+            (screen_manager.get_current_screen_id() != SCREEN_ID_HOME))
+        {
+            xTaskNotify(
+                gui_task_handle, BACK_TO_HOME_EVENT, eSetBits);
+        }
+        return;
+    }
+    
+    
+    lv_dir_t dir = lv_indev_get_gesture_dir(lv_indev_active());
 
-        if (dir == LV_DIR_LEFT)
+    if (dir == LV_DIR_LEFT)
+    {
+        if (gui_task_handle != nullptr)
         {
-            if (gui_task_handle != nullptr)
-            {
-                xTaskNotify(
-                    gui_task_handle,
-                    SWIPE_LEFT_EVENT,
-                    eSetBits);
-            }
+            xTaskNotify(
+                gui_task_handle,
+                SWIPE_LEFT_EVENT,
+                eSetBits);
         }
-        else if (dir == LV_DIR_RIGHT)
+    }
+    else if (dir == LV_DIR_RIGHT)
+    {
+        if (gui_task_handle != nullptr)
         {
-            if (gui_task_handle != nullptr)
-            {
-                xTaskNotify(
-                    gui_task_handle,
-                    SWIPE_RIGHT_EVENT,
-                    eSetBits);
-            }
+            xTaskNotify(
+                gui_task_handle,
+                SWIPE_RIGHT_EVENT,
+                eSetBits);
         }
-    // }
-    // else
-    // {
-    //     if ((gui_task_handle != nullptr) and
-    //         (screen_manager.get_current_screen_id() != SCREEN_ID_HOME))
-    //     {
-    //         xTaskNotify(
-    //             gui_task_handle, BACK_TO_HOME_EVENT, eSetBits);
-    //     }
-    // }
+    }
+    
 }

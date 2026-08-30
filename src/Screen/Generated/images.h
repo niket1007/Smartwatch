@@ -54,6 +54,7 @@ extern const lv_img_dsc_t img_roundabout_straight;
 extern const lv_img_dsc_t img_roundabout_uturn;
 extern const lv_img_dsc_t img_offroute;
 extern const lv_img_dsc_t img_nav_finish;
+extern const lv_img_dsc_t img_developer;
 
 #ifndef EXT_IMG_DESC_T
 #define EXT_IMG_DESC_T
@@ -63,7 +64,7 @@ typedef struct _ext_img_desc_t {
 } ext_img_desc_t;
 #endif
 
-extern const ext_img_desc_t images[47];
+extern const ext_img_desc_t images[48];
 
 #ifdef __cplusplus
 }

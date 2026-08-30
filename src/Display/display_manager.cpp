@@ -33,10 +33,6 @@ esp_err_t DisplayManager::sleep()
     bus->writeCommand(0x10);   // Sleep In
     bus->endWrite();
 
-    // Force CS HIGH to stop the display from listening for noise
-    // pinMode(LCD_CS, OUTPUT);
-    // digitalWrite(LCD_CS, HIGH);
-
     current_sleep_status = true;
 
     esp_pm_lock_release(sleep_lock);
@@ -61,11 +57,10 @@ esp_err_t DisplayManager::wake()
     bus->endWrite();
 
     set_brightness(power_saver_manager.get_brightness_percentage());
+    
     current_sleep_status = false;
 
     vTaskDelay(pdMS_TO_TICKS(150)); 
-    
-    // reset_screen_timeout_timer();
 
     if (background_task_handle != nullptr)
     {

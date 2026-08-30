@@ -1,5 +1,8 @@
 #pragma once
 
+#include "freertos/FreeRTOS.h"
+#include "freertos/task.h"
+
 #include "Arduino_DriveBus_Library.h"
 #include <Arduino.h>
 #include "pin_config.h"
@@ -23,6 +26,7 @@
 #include "Screen/screen_manager.h"
 #include "Display/display_manager.h"
 #include "PowerSaver/power_saver_manager.h"
+#include "Storage/storage_manager.h"
 
 #define BOOT_BUTTON_PIN 0
 
@@ -36,6 +40,8 @@ extern Arduino_DataBus *bus;
 
 extern esp_pm_lock_handle_t sleep_lock;
 
+extern bool light_sleep_enable;
+
 extern bool lvgl_get_touch(int16_t &x, int16_t &y);
 
 extern BatteryManager battery_manager;
@@ -45,3 +51,4 @@ extern BluetoothManager bluetooth_manager;
 extern ScreenManager screen_manager;
 extern DisplayManager display_manager;
 extern PowerSaverManager power_saver_manager;
+extern StorageManager storage_manager;

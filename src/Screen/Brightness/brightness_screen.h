@@ -3,16 +3,10 @@
 #include "Screen/screen.h"
 #include <string>
 
-class SettingsScreen : public Screen
-{  
-private:
-    int selected_option_id;
-
+class BrightnessScreen : public Screen
+{   
 public:
-    ~SettingsScreen() = default;
-
-    void set_selected_option_id(int id);
-
+    ~BrightnessScreen() = default;
     esp_err_t on_enter() override;
     esp_err_t on_exit() override;
     esp_err_t handle_events(uint32_t events) override;

@@ -25,6 +25,10 @@ file(GLOB_RECURSE DISPLAY_SOURCES ${DISPLAY_DIR}/*.cpp )
 set(PS_DIR ./PowerSaver)
 file(GLOB_RECURSE PS_SOURCES ${PS_DIR}/*.cpp)
 
+set(STORAGE_DIR ./Storage)
+file(GLOB_RECURSE STORAGE_SOURCES ${STORAGE_DIR}/*.cpp)
+
+
 idf_component_register(
     SRCS 
         main.cpp
@@ -37,6 +41,7 @@ idf_component_register(
         ${WIFI_SOURCES}
         ${DISPLAY_SOURCES}
         ${PS_SOURCES}
+        ${STORAGE_SOURCES}
 
     INCLUDE_DIRS 
         .
@@ -49,4 +54,5 @@ idf_component_register(
         ${BLUETOOTH_DIR}
         ${DISPLAY_DIR}
         ${PS_DIR}
+        ${STORAGE_DIR}
 )

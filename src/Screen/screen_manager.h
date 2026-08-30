@@ -6,6 +6,7 @@
 #include "screen.h"
 
 #include "Screen/Menu/menu_screen.h"
+#include "Screen/Settings/settings_screen.h"
 
 class ScreenManager
 {
@@ -25,4 +26,5 @@ public:
     int get_current_screen_id();
 
     MenuScreen *get_current_menu_screen();
+    SettingsScreen *get_current_settings_screen();
 };

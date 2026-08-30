@@ -14,6 +14,8 @@ private:
     XPowersAXP2101 power;
 
 public:
+    bool errored;
+
     esp_err_t init();
     esp_err_t refresh();
 

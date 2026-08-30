@@ -23,6 +23,7 @@
     "ui_image_bluetooth_connected.c",
     "ui_image_brightness.c",
     "ui_image_calendar.c",
+    "ui_image_developer.c",
     "ui_image_info.c",
     "ui_image_keep_left.c",
     "ui_image_keep_right.c",

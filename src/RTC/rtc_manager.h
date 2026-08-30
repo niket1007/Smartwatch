@@ -21,6 +21,8 @@ class RTCManager
 
 
     public:
+        bool errored;
+        
         esp_err_t init();
         esp_err_t sync();
 

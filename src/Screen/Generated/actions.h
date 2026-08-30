@@ -12,6 +12,10 @@ extern void action_menu_click_func(lv_event_t * e);
 extern void action_weather_refresh_clicked(lv_event_t * e);
 extern void action_call_click_func(lv_event_t * e);
 extern void action_notif_click_func(lv_event_t * e);
+extern void action_ssid_text_area_click(lv_event_t * e);
+extern void action_wifi_password_text_area_click(lv_event_t * e);
+extern void action_settings_click_func(lv_event_t * e);
+extern void action_save_wifi_creds(lv_event_t * e);
 
 #ifdef __cplusplus
 }

@@ -5,7 +5,7 @@ static const char* TAG = "BLUETOOTH_MANAGER";
 
 String BluetoothManager::rxBuffer = "";
 std::string BluetoothManager::connected_device_name = "";
-BLE_STATUS ble_status = BLE_STATUS::NOTHING;
+BLE_STATUS BluetoothManager::ble_status = BLE_STATUS::NOTHING;
 
 // =====================================================================
 // BLE SERVER CALLBACKS
@@ -27,7 +27,7 @@ public:
             connInfo.isEncrypted());
 
         BluetoothManager::connected_device_name = connInfo.getAddress().toString();
-
+        
         pServer->updateConnParams(
             connInfo.getConnHandle(),
             160,     // 160 * 1.25 = 200 ms (min)
@@ -35,6 +35,11 @@ public:
             1,      // Latency = 1 for stability during security handshakes
             1000     // 1000 * 10 = 10000 ms timeout
         );
+        BluetoothManager::ble_status = BLE_STATUS::PAIRING;
+        if(gui_task_handle != nullptr)
+        {
+            xTaskNotify(gui_task_handle, BLE_STATUS_EVENT, eSetBits);
+        }
     }
 
     void onDisconnect(
@@ -55,16 +60,11 @@ public:
 
         NimBLEDevice::startAdvertising();        
         
-        ble_status = BLE_STATUS::DISCONNECTED;
-    }
-
-    uint32_t onPassKeyDisplay() override {
-        Serial.printf("Server Passkey Display\n");
-        /**
-         * This should return a random 6 digit number for security
-         *  or make your own static passkey as done here.
-         */
-        return 101010;
+        BluetoothManager::ble_status = BLE_STATUS::DISCONNECTED;
+        if(gui_task_handle != nullptr)
+        {
+            xTaskNotify(gui_task_handle, BLE_STATUS_EVENT, eSetBits);
+        }
     }
 
     void onAuthenticationComplete(
@@ -73,12 +73,23 @@ public:
         if (!connInfo.isEncrypted())
         {
             usb_serial.println("BLE authentication failed");
+            
             NimBLEDevice::getServer()->disconnect(connInfo.getConnHandle());
-            ble_status = BLE_STATUS::PAIRTING_FAILED;
-            return;
+            
+            BluetoothManager::ble_status = BLE_STATUS::PAIRTING_FAILED;
         }
-        ble_status = BLE_STATUS::PAIRED;
-        usb_serial.println("BLE authentication successful");
+        else 
+        {
+            BluetoothManager::ble_status = BLE_STATUS::PAIRED;
+            usb_serial.println("BLE authentication successful");
+        }
+        
+        if(gui_task_handle != nullptr)
+        {
+            xTaskNotify(gui_task_handle, BLE_STATUS_EVENT, eSetBits);
+        }
+        
+        return;
     }
 };
 
@@ -147,12 +158,16 @@ esp_err_t BluetoothManager::init()
         false   // secure connections
     );
 
-    NimBLEDevice::setSecurityPasskey(101010);
+    passkey = 100000 + (esp_random() % 900000);
+    usb_serial.printf("PassKey: %d\n", passkey);
+
+    NimBLEDevice::setSecurityPasskey(passkey);
     NimBLEDevice::setSecurityIOCap(BLE_HS_IO_DISPLAY_ONLY);
 
     pServer = NimBLEDevice::createServer();
     if (pServer == nullptr)
     {
+        init_errored = true;
         usb_serial.println("Failed to create BLE server");
         return ESP_FAIL;
     }
@@ -162,6 +177,7 @@ esp_err_t BluetoothManager::init()
     NimBLEService* pService = pServer->createService(BLE_SERVICE_UUID);
     if (pService == nullptr)
     {
+        init_errored = true;
         usb_serial.println("Failed to create BLE service");
         return ESP_FAIL;
     }
@@ -171,6 +187,7 @@ esp_err_t BluetoothManager::init()
 
     if (pTxCharacteristic == nullptr)
     {
+        init_errored = true;
         usb_serial.println("Failed to create TX characteristic");
         return ESP_FAIL;
     }
@@ -185,6 +202,7 @@ esp_err_t BluetoothManager::init()
 
     if (pRxCharacteristic == nullptr)
     {
+        init_errored = true;
         usb_serial.println("Failed to create RX characteristic");
         return ESP_FAIL;
     }
@@ -195,6 +213,7 @@ esp_err_t BluetoothManager::init()
     esp_err_t result = init_advertising();
     if (result != ESP_OK)
     {
+        init_errored = true;
         usb_serial.println("Failed to start BLE advertising");
         return result;
     }
@@ -202,6 +221,7 @@ esp_err_t BluetoothManager::init()
     is_initialised = true;
     usb_serial.println("Bluetooth initialized successfully");
 
+    init_errored = false;
     return ESP_OK;
 }
 
@@ -211,6 +231,7 @@ esp_err_t BluetoothManager::init_advertising()
 
     if (pAdvertising == nullptr)
     {
+        init_errored = true;
         usb_serial.println("BLE advertising object is null");
         return ESP_FAIL;
     }
@@ -223,11 +244,13 @@ esp_err_t BluetoothManager::init_advertising()
 
     if (!pAdvertising->start())
     {
+        init_errored = true;
         usb_serial.println("Failed to start BLE advertising");
         return ESP_FAIL;
     }
 
     usb_serial.printf("BLE advertising started as %s\n", BLE_DEVICE_NAME);
+    init_errored = false;
     return ESP_OK;
 }
 
@@ -243,6 +266,16 @@ bool BluetoothManager::is_connected() const
 std::string BluetoothManager::get_connected_device_name() const
 {
     return connected_device_name;
+}
+
+int BluetoothManager::get_passkey()
+{
+    return passkey;
+}
+
+BLE_STATUS BluetoothManager::get_ble_status()
+{
+    return ble_status;
 }
 
 esp_err_t BluetoothManager::handle_events()
@@ -288,7 +321,16 @@ esp_err_t BluetoothManager::deinit()
     }
 
     usb_serial.println("Deinitializing Bluetooth");
-    NimBLEDevice::deinit(true);
+    
+    bool ret = NimBLEDevice::deinit(true);
+    if(!ret)
+    {
+        deinit_errored = true;
+    }
+    else
+    {
+        deinit_errored = false;
+    }
 
     pServer = nullptr;
     pTxCharacteristic = nullptr;
