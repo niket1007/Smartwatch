@@ -50,7 +50,7 @@ SettingsScreen *ScreenManager::get_current_settings_screen()
 
 esp_err_t ScreenManager::init()
 {
-    usb_serial.println("ScreenManager :: init called");
+    // usb_serial.println("ScreenManager :: init called");
 
     create_screens();
 
@@ -172,8 +172,8 @@ esp_err_t ScreenManager::change_screen(int new_screen_id)
 
     transition_running_ = true;
 
-    usb_serial.printf("Changing screen: %d -> %d\n",
-        current_screen_id, new_screen_id);
+    // usb_serial.printf("Changing screen: %d -> %d\n",
+    //     current_screen_id, new_screen_id);
 
     Screen *new_screen = get_screen_instance(new_screen_id);
 
@@ -268,7 +268,7 @@ esp_err_t ScreenManager::navigate(int direction)
 
 esp_err_t ScreenManager::handle_events(uint32_t events)
 {
-    usb_serial.println("ScreenManager handl_events called");
+    // usb_serial.println("ScreenManager handl_events called");
     if ((events & BACK_TO_HOME_EVENT) and
         (current_screen_id != SCREEN_ID_HOME))
     {
@@ -290,13 +290,13 @@ esp_err_t ScreenManager::handle_events(uint32_t events)
 
     if ((events & BLE_STATUS_EVENT) and (current_screen_id != SCREEN_ID_BLE_STATUS))
     {
-        usb_serial.println("Ble status event called");
+        // usb_serial.println("Ble status event called");
         return change_screen(SCREEN_ID_BLE_STATUS);
     }
 
     if ((events & CALL_SCREEN_EVENT) and (current_screen_id != SCREEN_ID_CALL))
     {
-        usb_serial.println("Call screen event called");
+        // usb_serial.println("Call screen event called");
         return change_screen(SCREEN_ID_CALL);
     }
 

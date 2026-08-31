@@ -1,7 +1,6 @@
 {
   "navigation": {
-    "selectedUserPageObject": "[SmartWatchUI.eez-project]:/userPages/11",
-    "selectedActionObject": "[SmartWatchUI.eez-project]:/actions/-1",
+    "selectedUserPageObject": "[SmartWatchUI.eez-project]:/userPages/14",
     "selectedBitmapObject": "[SmartWatchUI.eez-project]:/bitmaps/46",
     "subnavigationSelectedItems": {
       "variables-tab/sub-navigation/selected-item": "Global"
@@ -196,34 +195,11 @@
                 {
                   "type": "tab",
                   "id": "#5843f785-a2c6-49aa-bc78-957d610e5e4b",
-                  "name": "Settings",
+                  "name": "Bluetooth",
                   "component": "editor",
                   "config": {
-                    "objectPath": "[SmartWatchUI.eez-project]:/userPages/11",
+                    "objectPath": "[SmartWatchUI.eez-project]:/userPages/14",
                     "permanent": false
-                  },
-                  "icon": "svg:page"
-                },
-                {
-                  "type": "tab",
-                  "id": "#5065a6fe-afdd-4b85-93e0-5d90d44647d2",
-                  "name": "Settings",
-                  "component": "editor",
-                  "config": {
-                    "objectPath": "[SmartWatchUI.eez-project]:/settings",
-                    "subObjectPath": "[SmartWatchUI.eez-project]:/settings",
-                    "permanent": false
-                  },
-                  "icon": "material:settings"
-                },
-                {
-                  "type": "tab",
-                  "id": "#e1153f2c-9ecb-469f-b0a5-220b9496c500",
-                  "name": "MenuScreenTwo",
-                  "component": "editor",
-                  "config": {
-                    "objectPath": "[SmartWatchUI.eez-project]:/userPages/2",
-                    "permanent": true
                   },
                   "icon": "svg:page"
                 }
@@ -1109,9 +1085,7 @@
       "selectionBack": {
         "0": {
           "0": {
-            "1": {
-              "$selected": true
-            }
+            "1": {}
           }
         }
       },
@@ -1120,7 +1094,7 @@
           "x": -205,
           "y": -251
         },
-        "scale": 0.9
+        "scale": 1
       },
       "timeline": {
         "isEditorActive": false,
@@ -1408,7 +1382,7 @@
           "x": -205,
           "y": -251
         },
-        "scale": 0.9
+        "scale": 1
       },
       "timeline": {
         "isEditorActive": false,
@@ -1422,7 +1396,8 @@
       "selectionBack": {
         "0": {
           "0": {
-            "2": {}
+            "2": {},
+            "3": {}
           }
         }
       },
@@ -1431,7 +1406,7 @@
           "x": -205,
           "y": -251
         },
-        "scale": 0.9
+        "scale": 1
       },
       "timeline": {
         "isEditorActive": false,
@@ -1447,6 +1422,23 @@
           "0": {}
         }
       },
+      "transform": {
+        "translate": {
+          "x": -205,
+          "y": -251
+        },
+        "scale": 1
+      },
+      "timeline": {
+        "isEditorActive": false,
+        "position": 0,
+        "secondToPx": 200,
+        "scrollLeft": 0
+      }
+    },
+    "[SmartWatchUI.eez-project]:/userPages/16[flow-state]": {
+      "selectionFront": {},
+      "selectionBack": {},
       "transform": {
         "translate": {
           "x": -205,
@@ -1478,7 +1470,7 @@
   "lvglExpandedPropertiesGroup": [],
   "showInactiveFlowsInDebugger": true,
   "globalFlowZoom": true,
-  "flowZoom": 0.9,
+  "flowZoom": 1,
   "implementationLanguage": "C",
   "openDialogDefaultPath": "C:\\Github_repos\\Smartwatch_platformio\\src\\Screen\\Generated"
 }

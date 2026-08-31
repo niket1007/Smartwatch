@@ -1735,6 +1735,7 @@ void create_screen_brightness() {
                     lv_obj_set_pos(obj, 22, 271);
                     lv_obj_set_size(obj, 333, 18);
                     lv_slider_set_value(obj, 25, LV_ANIM_OFF);
+                    lv_obj_add_event_cb(obj, action_brightness_change_event, LV_EVENT_RELEASED, (void *)0);
                 }
                 {
                     // brightness_percent_label

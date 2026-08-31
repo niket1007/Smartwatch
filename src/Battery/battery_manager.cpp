@@ -13,6 +13,8 @@ esp_err_t BatteryManager::init()
         // power.enableVbusVoltageMeasure();
         power.enableGauge();
 
+        power.disableALDO1(); // Handles power to speaker and mic on board
+
         errored = false;
 
         return ESP_OK;
@@ -62,7 +64,7 @@ esp_err_t BatteryManager::refresh()
                 if (events != 0)
                 {
                     xTaskNotify(gui_task_handle, events, eSetBits);
-                    usb_serial.println("Batt Event sent to gui");
+                    // usb_serial.println("Batt Event sent to gui");
                 }
             }
 
@@ -85,11 +87,11 @@ esp_err_t BatteryManager::refresh()
                 if (event != 0)
                 {
                     xTaskNotify(background_task_handle, event, eSetBits);
-                    usb_serial.println("Batt Event sent to background");
+                    // usb_serial.println("Batt Event sent to background");
                 }
             }
 
-            usb_serial.printf("Battery Percentage %d\n", current_batt_percentage_);
+            // usb_serial.printf("Battery Percentage %d\n", current_batt_percentage_);
         }
         // usb_serial.printf(
         //     "Battery Percentage %d %d\n", current_batt_percentage_, battery_percentage_);
@@ -104,9 +106,9 @@ esp_err_t BatteryManager::refresh()
         {
             xTaskNotify(
                 gui_task_handle, BAT_CHARGE_CHG_EVENT, eSetBits);
-            usb_serial.println("BAT_CHARGE_CHG_EVENT sent to gui");
+            // usb_serial.println("BAT_CHARGE_CHG_EVENT sent to gui");
         }
-        usb_serial.printf("Is Charging: %s\n", curent_charging_status_ ? "YES" : "NO");
+        // usb_serial.printf("Is Charging: %s\n", curent_charging_status_ ? "YES" : "NO");
     }
     // usb_serial.printf(
     //     "Is Charging: %s %s\n", 

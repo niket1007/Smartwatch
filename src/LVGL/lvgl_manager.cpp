@@ -10,7 +10,7 @@
 #if LV_USE_LOG != 0
 void lvgl_log_print_cb(lv_log_level_t level, const char *buf) {
   LV_UNUSED(level);
-  usb_serial.println(buf);
+  // usb_serial.println(buf);
   usb_serial.flush();
 }
 #endif

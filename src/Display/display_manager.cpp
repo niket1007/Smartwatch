@@ -33,6 +33,9 @@ esp_err_t DisplayManager::sleep()
     bus->writeCommand(0x10);   // Sleep In
     bus->endWrite();
 
+    pinMode(LCD_CS, OUTPUT);
+    digitalWrite(LCD_CS, HIGH);
+
     current_sleep_status = true;
 
     esp_pm_lock_release(sleep_lock);

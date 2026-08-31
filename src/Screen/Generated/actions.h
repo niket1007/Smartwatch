@@ -16,6 +16,7 @@ extern void action_ssid_text_area_click(lv_event_t * e);
 extern void action_wifi_password_text_area_click(lv_event_t * e);
 extern void action_settings_click_func(lv_event_t * e);
 extern void action_save_wifi_creds(lv_event_t * e);
+extern void action_brightness_change_event(lv_event_t * e);
 
 #ifdef __cplusplus
 }

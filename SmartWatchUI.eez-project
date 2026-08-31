@@ -194,6 +194,15 @@
       "componentGroups": [],
       "userProperties": [],
       "name": "save_wifi_creds"
+    },
+    {
+      "objID": "47536064-355d-4984-9c2f-a8f66c7b5b66",
+      "components": [],
+      "connectionLines": [],
+      "localVariables": [],
+      "componentGroups": [],
+      "userProperties": [],
+      "name": "brightness_change_event"
     }
   ],
   "userPages": [
@@ -6524,7 +6533,15 @@
                     "childStyles": []
                   },
                   "timeline": [],
-                  "eventHandlers": [],
+                  "eventHandlers": [
+                    {
+                      "objID": "9bff4a40-69f1-44fc-e900-960304d7f44c",
+                      "eventName": "RELEASED",
+                      "handlerType": "action",
+                      "action": "brightness_change_event",
+                      "userData": 0
+                    }
+                  ],
                   "identifier": "brightness_slider",
                   "leftUnit": "px",
                   "topUnit": "px",

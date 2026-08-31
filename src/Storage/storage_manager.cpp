@@ -12,7 +12,7 @@ void StorageManager::store_wifi_credentials()
     preferences.putString("PASSWORD", password.c_str());
     preferences.end();
 
-    usb_serial.println("store_wifi_credentials called");
+    // usb_serial.println("store_wifi_credentials called");
 }
 
 std::array<std::string, 2> StorageManager::fetch_wifi_credentials()

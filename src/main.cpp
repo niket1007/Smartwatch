@@ -5,6 +5,7 @@
 #include "esp_system.h"
 #include "esp_pm.h" // Automatic light sleep + dynamic freq scaling BLE
 
+
 #include "Common/globals.h"
 
 static const char *TAG = "APP_MAIN";
@@ -91,13 +92,13 @@ void IRAM_ATTR bootButtonISR()
         {
             xTaskNotifyFromISR(
                 gui_task_handle, BOOT_BUTTON_CLICK_EVENT, eSetBits, &taskWoken);
-            usb_serial.println("BOOT BUTTON :: BOOT_BUTTON_CLICK_EVENT sent");
+            // usb_serial.println("BOOT BUTTON :: BOOT_BUTTON_CLICK_EVENT sent");
         }
 
         if (taskWoken)
         {
             portYIELD_FROM_ISR(taskWoken); // Yield once if any higher-priority task was unblocked
-            usb_serial.printf("BOOT BUTTON :: taskWoken %d\n", taskWoken);
+            // usb_serial.printf("BOOT BUTTON :: taskWoken %d\n", taskWoken);
         }
     }
     last_interrupt_time = interrupt_time;
@@ -136,17 +137,17 @@ void background_func(void *pvParameters)
             0, UINT32_MAX, &events,
             display_manager.is_sleeping() ? pdMS_TO_TICKS(60000) : pdMS_TO_TICKS(2000));
 
-        usb_serial.printf(
-            "APP_MAIN :: Background Task %d\n", display_manager.is_sleeping());
+        // usb_serial.printf(
+        //     "APP_MAIN :: Background Task %d\n", display_manager.is_sleeping());
 
         if (notified)
         {
-            usb_serial.println("Notified");
+            // usb_serial.println("Notified");
 
             if (events & BG_WAKE_UP)
             {
                 display_manager.reset_screen_timeout_timer();
-                usb_serial.println("Reset time Triggered");
+                // usb_serial.println("Reset time Triggered");
             }
 
             if(events & WIFI_SAVE_CRED_EVENT)
@@ -160,6 +161,10 @@ void background_func(void *pvParameters)
 
             power_saver_manager.handle_ble_event(events);
         }
+        // else 
+        // {
+        //     esp_pm_dump_locks(stdout);
+        // }
 
         battery_manager.refresh();
 
@@ -183,7 +188,7 @@ void background_func(void *pvParameters)
             display_manager.reset_screen_timeout_timer(now);
             if (gui_task_handle != nullptr)
             {
-                usb_serial.println("SCREEN_OFF_EVENT Triggered");
+                // usb_serial.println("SCREEN_OFF_EVENT Triggered");
                 xTaskNotify(gui_task_handle, SCREEN_OFF_EVENT, eSetBits);
             }
         }
@@ -227,7 +232,7 @@ void gui_func(void *pvParameters)
 
         if (display_events & BOOT_BUTTON_CLICK_EVENT)
         {
-            usb_serial.println("BOOT_BUTTON_CLICK_EVENT");
+            // usb_serial.println("BOOT_BUTTON_CLICK_EVENT");
             if (display_manager.is_sleeping())
             {
                 display_manager.wake();
@@ -237,16 +242,16 @@ void gui_func(void *pvParameters)
                 display_manager.sleep();
             }
 
-            usb_serial.printf("APP_MAIN :: GUI Task %d\n", display_manager.is_sleeping());
+            // usb_serial.printf("APP_MAIN :: GUI Task %d\n", display_manager.is_sleeping());
         }
         else if (display_events & SCREEN_ON_EVENT)
         {
-            usb_serial.println("SCREEN_ON_EVENT");
+            // usb_serial.println("SCREEN_ON_EVENT");
             display_manager.wake();
         }
         else if (display_events & SCREEN_OFF_EVENT)
         {
-            usb_serial.println("SCREEN_OFF_EVENT");
+            // usb_serial.println("SCREEN_OFF_EVENT");
             display_manager.sleep();
         }
 
@@ -296,7 +301,7 @@ void setup()
     esp_pm_config_t pm_config = {
         .max_freq_mhz = 240, // matches board's normal running clock
         .min_freq_mhz = 40,  // XTAL-derived floor - safe default for automatic light sleep on ESP32-S3
-        .light_sleep_enable = true};
+        .light_sleep_enable = light_sleep_enable};
     esp_err_t pm_ret = esp_pm_configure(&pm_config);
     if (pm_ret != ESP_OK)
     {

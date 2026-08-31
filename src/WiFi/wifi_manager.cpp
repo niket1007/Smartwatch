@@ -14,8 +14,6 @@ esp_err_t WifiManager::init()
 
     usb_serial.println("Initiating Wifi Connection");
 
-    // StorageManager storage_manager;
-
     std::array<std::string, 2> cred = storage_manager.fetch_wifi_credentials();
     if(cred[0].empty() or cred[1].empty()) {
         errored = true;
@@ -25,7 +23,7 @@ esp_err_t WifiManager::init()
     ssid_ = cred[0];
     password_ = cred[1];
 
-    usb_serial.printf("SSID: %s; PASSWORD: %s\n", cred[0].c_str(), cred[1].c_str());
+    // usb_serial.printf("SSID: %s; PASSWORD: %s\n", cred[0].c_str(), cred[1].c_str());
 
     WiFi.persistent(false);
     WiFi.mode(WIFI_STA);

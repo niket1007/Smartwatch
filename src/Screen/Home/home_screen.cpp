@@ -167,7 +167,7 @@ esp_err_t HomeScreen::on_exit()
 
 esp_err_t HomeScreen::handle_events(uint32_t events)
 {
-    usb_serial.println("HomeScreen :: handle_events called");
+    // usb_serial.println("HomeScreen :: handle_events called");
 
     esp_err_t ret = ESP_OK;
     if (events & BAT_CHARGE_CHG_EVENT)

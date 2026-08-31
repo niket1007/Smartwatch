@@ -19,22 +19,23 @@ public:
         NimBLEServer* pServer,
         NimBLEConnInfo& connInfo) override
     {
-        usb_serial.printf(
-            "BLE CONNECTED addr=%s handle=%d bonded=%d encrypted=%d\n",
-            connInfo.getAddress().toString().c_str(),
-            connInfo.getConnHandle(),
-            connInfo.isBonded(),
-            connInfo.isEncrypted());
+        // usb_serial.printf(
+        //     "BLE CONNECTED addr=%s handle=%d bonded=%d encrypted=%d\n",
+        //     connInfo.getAddress().toString().c_str(),
+        //     connInfo.getConnHandle(),
+        //     connInfo.isBonded(),
+        //     connInfo.isEncrypted());
 
         BluetoothManager::connected_device_name = connInfo.getAddress().toString();
         
         pServer->updateConnParams(
             connInfo.getConnHandle(),
-            160,     // 160 * 1.25 = 200 ms (min)
-            320,     // 320 * 1.25 = 400 ms (max)
-            1,      // Latency = 1 for stability during security handshakes
+            320,     // 320 * 1.25 = 400 ms (min)
+            400,     // 320 * 1.25 = 500 ms (max)
+            4,      // Latency = 4 for stability during security handshakes
             1000     // 1000 * 10 = 10000 ms timeout
         );
+
         BluetoothManager::ble_status = BLE_STATUS::PAIRING;
         if(gui_task_handle != nullptr)
         {
@@ -47,11 +48,11 @@ public:
         NimBLEConnInfo& connInfo,
         int reason) override
     {
-        usb_serial.printf(
-            "BLE DISCONNECTED addr=%s reason=%d (%s)\n",
-            connInfo.getAddress().toString().c_str(),
-            reason,
-            NimBLEUtils::returnCodeToString(reason));
+        // usb_serial.printf(
+        //     "BLE DISCONNECTED addr=%s reason=%d (%s)\n",
+        //     connInfo.getAddress().toString().c_str(),
+        //     reason,
+        //     NimBLEUtils::returnCodeToString(reason));
 
         NimBLEDevice::whiteListAdd(connInfo.getAddress());
         
@@ -81,7 +82,7 @@ public:
         else 
         {
             BluetoothManager::ble_status = BLE_STATUS::PAIRED;
-            usb_serial.println("BLE authentication successful");
+            // usb_serial.println("BLE authentication successful");
         }
         
         if(gui_task_handle != nullptr)
@@ -114,7 +115,7 @@ public:
 
             if (line.startsWith("GB(")) 
             {
-                usb_serial.printf("%s\n", line.c_str());
+                // usb_serial.printf("%s\n", line.c_str());
             }
         }
     }
@@ -124,11 +125,11 @@ public:
         NimBLEConnInfo& connInfo,
         uint16_t subValue) override
     {
-        usb_serial.printf(
-            "Subscription changed: device=%s value=%u\n",
-            connInfo.getAddress().toString().c_str(),
-            subValue
-        );
+        // usb_serial.printf(
+        //     "Subscription changed: device=%s value=%u\n",
+        //     connInfo.getAddress().toString().c_str(),
+        //     subValue
+        // );
     }
 };
 
@@ -144,11 +145,11 @@ esp_err_t BluetoothManager::init()
 {
     if (is_initialised)
     {
-        usb_serial.println("Bluetooth already initialized");
+        // usb_serial.println("Bluetooth already initialized");
         return ESP_OK;
     }
 
-    usb_serial.println("Initializing Bluetooth");
+    // usb_serial.println("Initializing Bluetooth");
 
     NimBLEDevice::init(BLE_DEVICE_NAME);
 
@@ -305,7 +306,7 @@ esp_err_t BluetoothManager::send_to_phone(const JsonDocument& json)
     serializeJson(json, payload);
     payload += "\r\n";
 
-    usb_serial.printf("Sending BLE data: %s\n", payload.c_str());
+    // usb_serial.printf("Sending BLE data: %s\n", payload.c_str());
 
     pTxCharacteristic->setValue(payload.c_str());
     pTxCharacteristic->notify();
@@ -320,7 +321,7 @@ esp_err_t BluetoothManager::deinit()
         return ESP_OK;
     }
 
-    usb_serial.println("Deinitializing Bluetooth");
+    // usb_serial.println("Deinitializing Bluetooth");
     
     bool ret = NimBLEDevice::deinit(true);
     if(!ret)

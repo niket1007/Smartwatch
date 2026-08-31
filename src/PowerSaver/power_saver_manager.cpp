@@ -119,7 +119,7 @@ esp_err_t PowerSaverManager::change_screen_timeout_value(int batt)
     if (current_screen_timeout_ != screen_timeout)
     {
         current_screen_timeout_ = screen_timeout;
-        usb_serial.println("Screen timeout changed");
+        // usb_serial.println("Screen timeout changed");
     }
 
     return ESP_OK;

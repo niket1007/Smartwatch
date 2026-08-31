@@ -56,13 +56,13 @@ esp_err_t WifiScreen::handle_events(uint32_t events)
 
 void action_wifi_password_text_area_click(lv_event_t *e)
 {
-    usb_serial.println("action_wifi_password_text_area_click called");
+    // usb_serial.println("action_wifi_password_text_area_click called");
     lv_keyboard_set_textarea(objects.wifi_keyboard, objects.wifi_password_text_area);
 }
 
 void action_ssid_text_area_click(lv_event_t *e)
 {
-    usb_serial.println("action_ssid_text_area_click called");
+    // usb_serial.println("action_ssid_text_area_click called");
     lv_keyboard_set_textarea(objects.wifi_keyboard, objects.wifi_ssid_text_area);
 }
 
