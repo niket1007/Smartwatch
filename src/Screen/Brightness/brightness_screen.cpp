@@ -10,7 +10,7 @@ esp_err_t BrightnessScreen::on_enter()
 {
     int brightness_percent = power_saver_manager.get_brightness_percentage();
 
-    lv_slider_set_value(objects.brightness_percent_label, brightness_percent, LV_ANIM_OFF);
+    lv_slider_set_value(objects.brightness_slider, brightness_percent, LV_ANIM_OFF);
 
     lv_label_set_text(
         objects.brightness_percent_label,

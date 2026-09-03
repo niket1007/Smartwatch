@@ -21,4 +21,7 @@ public:
 
     int get_battery_percentage();
     bool is_charging();
+
+    void disable_display_power();
+    void enable_display_power();
 };

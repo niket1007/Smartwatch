@@ -1,20 +1,12 @@
 #include "display_manager.h"
 #include "Common/globals.h"
 
-void DisplayManager::init()
-{
-    set_brightness(70);
-    reset_screen_timeout_timer();
-}
-
 void DisplayManager::set_brightness(uint32_t brightness_percent) {
     // Send command 0x51 (brightness register) followed by the brightness value
     uint32_t brightness_val = (brightness_percent * 255)/100;
     brightness_val = brightness_val > 255u ? 255u : brightness_val;
 
-    bus->beginWrite();
-    bus->writeC8D8(0x51, brightness_val);
-    bus->endWrite();
+    gfx->setBrightness(brightness_val);
 }
 
 esp_err_t DisplayManager::sleep()
@@ -33,8 +25,11 @@ esp_err_t DisplayManager::sleep()
     bus->writeCommand(0x10);   // Sleep In
     bus->endWrite();
 
-    pinMode(LCD_CS, OUTPUT);
-    digitalWrite(LCD_CS, HIGH);
+    vTaskDelay(pdMS_TO_TICKS(150));
+ 
+    battery_manager.disable_display_power();
+
+    delay(50);
 
     current_sleep_status = true;
 
@@ -48,6 +43,10 @@ esp_err_t DisplayManager::wake()
     if (!current_sleep_status) return ESP_OK;
     
     esp_pm_lock_acquire(sleep_lock);
+
+    battery_manager.enable_display_power();
+    
+    delay(50);
 
     bus->beginWrite();
     bus->writeCommand(0x11); // Amoled Sleep Out
@@ -79,7 +78,6 @@ esp_err_t DisplayManager::wake()
     }
     return ESP_OK;
 }
-
 
 bool DisplayManager::is_sleeping()
 {

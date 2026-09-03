@@ -27,6 +27,7 @@
 #include "Display/display_manager.h"
 #include "PowerSaver/power_saver_manager.h"
 #include "Storage/storage_manager.h"
+// #include "Logs/log_manager.h"
 
 #define BOOT_BUTTON_PIN 0
 
@@ -35,7 +36,7 @@ extern TaskHandle_t background_task_handle;
 
 extern HWCDC usb_serial;
 extern SemaphoreHandle_t i2c_mutex;
-extern Arduino_GFX *gfx;
+extern Arduino_CO5300 *gfx;
 extern Arduino_DataBus *bus;
 
 extern esp_pm_lock_handle_t sleep_lock;
@@ -52,3 +53,4 @@ extern ScreenManager screen_manager;
 extern DisplayManager display_manager;
 extern PowerSaverManager power_saver_manager;
 extern StorageManager storage_manager;
+// extern Log log;

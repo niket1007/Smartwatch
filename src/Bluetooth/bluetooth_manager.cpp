@@ -243,6 +243,9 @@ esp_err_t BluetoothManager::init_advertising()
 
     pAdvertising->setScanFilter(false, false);
 
+    pAdvertising->setMinInterval(3200);
+    pAdvertising->setMaxInterval(4000); // ~2.0s - 2.5s
+
     if (!pAdvertising->start())
     {
         init_errored = true;

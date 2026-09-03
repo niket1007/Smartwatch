@@ -7,13 +7,24 @@ esp_err_t BatteryManager::init()
 {
     if (power.begin(Wire, AXP2101_SLAVE_ADDRESS, IIC_SDA, IIC_SCL))
     {
+        power.disableIRQ(XPOWERS_AXP2101_ALL_IRQ);
+        power.setChargeTargetVoltage(3);
+        // Clear all interrupt flags
+        power.clearIrqStatus();
+    
         power.disableTSPinMeasure();
         power.enableBattDetection();
         // power.enableBattVoltageMeasure();
         // power.enableVbusVoltageMeasure();
         power.enableGauge();
 
-        power.disableALDO1(); // Handles power to speaker and mic on board
+        power.setALDO2Voltage(3300);
+        power.enableALDO2();
+        
+        power.disableALDO3();      // audio analog rail — not used, off permanently
+        power.disableBLDO2();      // codec/speaker rail — not used, off permanently
+
+        delay(50);
 
         errored = false;
 
@@ -126,4 +137,20 @@ int BatteryManager::get_battery_percentage()
 bool BatteryManager::is_charging()
 {
     return curent_charging_status_;
+}
+
+void BatteryManager::disable_display_power()
+{
+    if(power.enableALDO2())
+    {
+        power.disableALDO2();
+    }
+}
+
+void BatteryManager::enable_display_power()
+{
+    if(!power.isEnableALDO2())
+    {
+        power.enableALDO2();
+    }
 }

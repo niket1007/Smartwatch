@@ -10,8 +10,6 @@ class DisplayManager
         bool current_sleep_status = false;
 
     public:
-        void init();
-
         esp_err_t sleep();
         esp_err_t wake();
 

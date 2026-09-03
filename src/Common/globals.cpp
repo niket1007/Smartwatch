@@ -18,3 +18,4 @@ ScreenManager screen_manager;
 DisplayManager display_manager;
 PowerSaverManager power_saver_manager;
 StorageManager storage_manager;
+// Log log;

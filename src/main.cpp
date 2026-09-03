@@ -14,7 +14,7 @@ Arduino_DataBus *bus = new Arduino_ESP32QSPI(
     LCD_CS /* CS */, LCD_SCLK /* SCK */, LCD_SDIO0 /* SDIO0 */, LCD_SDIO1 /* SDIO1 */,
     LCD_SDIO2 /* SDIO2 */, LCD_SDIO3 /* SDIO3 */, true /* is_shared_interface */);
 
-Arduino_GFX *gfx = new Arduino_CO5300(bus, LCD_RESET /* RST */,
+Arduino_CO5300 *gfx = new Arduino_CO5300(bus, LCD_RESET /* RST */,
                                       0 /* rotation */, LCD_WIDTH, LCD_HEIGHT,
                                       22 /* col_offset1 */,
                                       0 /* row_offset1 */,
@@ -111,31 +111,31 @@ void background_func(void *pvParameters)
 
     battery_manager.refresh();
 
-    esp_err_t ret = wifi_manager.init();
-    if (ret != ESP_OK)
-    {
-        usb_serial.println("Failed to init wifi");
-    }
-    else
-    {
-        ret = rtc_manager.sync();
-        if (ret != ESP_OK)
-        {
-            usb_serial.println("Failed to sync rtc");
-        }
-    }
-    ret = wifi_manager.deinit();
-    if (ret != ESP_OK)
-    {
-        usb_serial.println("Failed to deinit wifi");
-    }
+    // esp_err_t ret = wifi_manager.init();
+    // if (ret != ESP_OK)
+    // {
+    //     usb_serial.println("Failed to init wifi");
+    // }
+    // else
+    // {
+    //     ret = rtc_manager.sync();
+    //     if (ret != ESP_OK)
+    //     {
+    //         usb_serial.println("Failed to sync rtc");
+    //     }
+    // }
+    // ret = wifi_manager.deinit();
+    // if (ret != ESP_OK)
+    // {
+    //     usb_serial.println("Failed to deinit wifi");
+    // }
 
     while (1)
     {
         uint32_t events = 0;
         bool notified = xTaskNotifyWait(
             0, UINT32_MAX, &events,
-            display_manager.is_sleeping() ? pdMS_TO_TICKS(60000) : pdMS_TO_TICKS(2000));
+            display_manager.is_sleeping() ? pdMS_TO_TICKS(120000) : pdMS_TO_TICKS(2000));
 
         // usb_serial.printf(
         //     "APP_MAIN :: Background Task %d\n", display_manager.is_sleeping());
@@ -159,12 +159,12 @@ void background_func(void *pvParameters)
                 }
             }
 
-            power_saver_manager.handle_ble_event(events);
+            // power_saver_manager.handle_ble_event(events);
         }
-        // else 
-        // {
-        //     esp_pm_dump_locks(stdout);
-        // }
+        else 
+        {
+            esp_pm_dump_locks(stdout);
+        }
 
         battery_manager.refresh();
 
@@ -221,13 +221,11 @@ void gui_func(void *pvParameters)
 
         uint32_t display_events =
             events & (BOOT_BUTTON_CLICK_EVENT |
-                      SCREEN_ON_EVENT |
                       SCREEN_OFF_EVENT);
 
         uint32_t app_events =
             events & ~(
                          BOOT_BUTTON_CLICK_EVENT |
-                         SCREEN_ON_EVENT |
                          SCREEN_OFF_EVENT);
 
         if (display_events & BOOT_BUTTON_CLICK_EVENT)
@@ -243,11 +241,6 @@ void gui_func(void *pvParameters)
             }
 
             // usb_serial.printf("APP_MAIN :: GUI Task %d\n", display_manager.is_sleeping());
-        }
-        else if (display_events & SCREEN_ON_EVENT)
-        {
-            // usb_serial.println("SCREEN_ON_EVENT");
-            display_manager.wake();
         }
         else if (display_events & SCREEN_OFF_EVENT)
         {
@@ -284,22 +277,15 @@ void setup()
     usb_serial.begin(115200);
     delay(1000);
 
-    esp_reset_reason_t reason = esp_reset_reason();
-    usb_serial.printf("Reset reason = %d\n", reason);
-    usb_serial.printf("Free heap: %u\n", ESP.getFreeHeap());
-
     usb_serial.println("Booting NSMARTWATCH...");
 
     // Configure physical BOOT button (GPIO0) as input with pullup and interrupt
     pinMode(BOOT_BUTTON_PIN, INPUT_PULLUP);
     attachInterrupt(digitalPinToInterrupt(BOOT_BUTTON_PIN), bootButtonISR, FALLING);
 
-    esp_sleep_enable_gpio_wakeup();
-    gpio_wakeup_enable((gpio_num_t)BOOT_BUTTON_PIN, GPIO_INTR_LOW_LEVEL);
-
     // ── Automatic light sleep
     esp_pm_config_t pm_config = {
-        .max_freq_mhz = 240, // matches board's normal running clock
+        .max_freq_mhz = 80,// matches board's normal running clock
         .min_freq_mhz = 40,  // XTAL-derived floor - safe default for automatic light sleep on ESP32-S3
         .light_sleep_enable = light_sleep_enable};
     esp_err_t pm_ret = esp_pm_configure(&pm_config);
@@ -315,26 +301,15 @@ void setup()
     esp_pm_lock_create(ESP_PM_NO_LIGHT_SLEEP, 0, "sleep_lock", &sleep_lock);
     esp_pm_lock_acquire(sleep_lock);
 
+    esp_sleep_enable_gpio_wakeup();
+    gpio_wakeup_enable((gpio_num_t)BOOT_BUTTON_PIN, GPIO_INTR_LOW_LEVEL);
+
+
     i2c_mutex = xSemaphoreCreateMutex();
     usb_serial.println("I2C Mutex initialised");
 
     Wire.begin(IIC_SDA, IIC_SCL);
     Wire.setClock(100000);
-
-#ifdef GFX_EXTRA_PRE_INIT
-    GFX_EXTRA_PRE_INIT();
-#endif
-
-    if (!gfx->begin())
-    {
-        usb_serial.println("Screen init failed!");
-    }
-    gfx->fillScreen(RGB565_BLACK);
-
-    gfx->setTextSize(2);
-    gfx->setTextColor(0xFFFF);
-    gfx->setCursor(100, 251);
-    gfx->printf("Loading System.....");
 
     esp_err_t ret = battery_manager.init();
     if (ret != ESP_OK)
@@ -348,6 +323,16 @@ void setup()
         usb_serial.println("Battery manager initialized successfully");
     }
 
+    if (!gfx->begin())
+    {
+        usb_serial.println("Screen init failed!");
+    }
+    gfx->fillScreen(RGB565_BLACK);
+    gfx->setTextSize(2);
+    gfx->setTextColor(0xFFFF);
+    gfx->setCursor(100, 251);
+    gfx->printf("Loading System.....");
+
     while (FT3168->begin() == false)
     {
         usb_serial.println("FT3168 initialization fail");
@@ -359,13 +344,10 @@ void setup()
         FT3168->Arduino_IIC_Touch::Device::TOUCH_POWER_MODE,
         FT3168->Arduino_IIC_Touch::Device_Mode::TOUCH_POWER_MONITOR);
 
-    //   gv.ble_passkey = 100000 + (esp_random() % 900000);
-
     rtc_manager.init();
 
     lvgl_manager_init();
 
-    // display_manager.init();
     power_saver_manager.init();
 
     screen_manager.init();
